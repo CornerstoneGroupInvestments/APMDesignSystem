@@ -1,0 +1,77 @@
+/* APM - Architecture diagram kit
+   Reusable vocabulary for technical/architecture diagrams in DDDs, HLDs and decks.
+   Absolute-positioned boxes on a .dgm-stage canvas, wired with an SVG overlay.
+   Usage: fixed-size .dgm-fig canvas, snapshot to PNG for Word/PDF embedding. */
+
+:root {
+  --dgm-line: var(--apm-navy-600);
+  --dgm-line-accent: var(--apm-orange-500);
+  --dgm-zone-border: #AEB7D2;
+  --dgm-box-border: var(--apm-navy-600);
+  --dgm-soft-border: #C7CEE0;
+  --dgm-caption-h: 62px;
+}
+
+/* ---- Figure shell: navy caption bar + stage ---- */
+.dgm-fig { position: relative; background: var(--neutral-0); border-radius: 14px; overflow: hidden; font-family: var(--font-ui, 'Mulish', sans-serif); }
+.dgm-cap { position: absolute; top: 0; left: 0; right: 0; height: var(--dgm-caption-h); background: var(--gradient-navy); display: flex; align-items: center; padding: 0 28px; gap: 14px; }
+.dgm-cap b { font-family: var(--font-display, 'Poppins', sans-serif); font-weight: 600; font-size: 20px; color: var(--text-on-dark); }
+.dgm-cap .dgm-tag { font-family: var(--font-display, 'Poppins', sans-serif); font-size: 10.5px; font-weight: 600; letter-spacing: .14em; color: var(--brand-primary); border: 1px solid rgba(248,151,40,.5); border-radius: 999px; padding: 4px 11px; }
+.dgm-cap .dgm-ref { margin-left: auto; font-family: var(--font-display, 'Poppins', sans-serif); font-size: 11.5px; font-weight: 600; letter-spacing: .12em; color: var(--apm-navy-200); }
+.dgm-stage { position: relative; padding-top: var(--dgm-caption-h); }
+
+/* ---- Zones: dashed groupings with a notched label ---- */
+.dgm-zone { position: absolute; border: 1.5px dashed var(--dgm-zone-border); border-radius: 16px; background: rgba(31,45,88,.015); }
+.dgm-zone > span { position: absolute; top: -11px; left: 20px; background: var(--neutral-0); padding: 0 11px; font-family: var(--font-display, 'Poppins', sans-serif); font-size: 12px; font-weight: 600; color: var(--text-strong); letter-spacing: .07em; }
+.dgm-zone.is-accent { border-color: var(--apm-orange-300); background: rgba(248,151,40,.05); }
+.dgm-zone.is-boundary { border-style: solid; border-color: var(--brand-primary); }
+.dgm-zone.is-accent > span, .dgm-zone.is-boundary > span { color: var(--apm-orange-800); }
+
+/* ---- Boxes: the diagram's nouns ---- */
+.dgm-box { position: absolute; border: 1.6px solid var(--dgm-box-border); border-radius: 11px; background: var(--neutral-0); padding: 11px 14px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box; }
+.dgm-box h4 { margin: 0; font-family: var(--font-display, 'Poppins', sans-serif); font-size: 15.5px; font-weight: 600; color: var(--text-strong); line-height: 1.15; }
+.dgm-box p { margin: 0; font-size: 13px; color: var(--apm-navy-400); line-height: 1.4; }
+.dgm-box.is-navy { background: var(--surface-dark); border-color: var(--surface-dark); }
+.dgm-box.is-navy h4 { color: var(--text-on-dark); }
+.dgm-box.is-navy p { color: var(--apm-navy-100); }
+.dgm-box.is-accent { background: var(--apm-orange-50); border-color: var(--brand-primary); border-width: 2px; }
+.dgm-box.is-accent h4 { color: var(--apm-orange-800); }
+.dgm-box.is-accent p { color: var(--apm-orange-900); }
+.dgm-box.is-soft { background: #F5F7FB; border-color: var(--dgm-soft-border); }
+.dgm-box.is-centred { align-items: center; justify-content: center; padding: 0 10px; }
+.dgm-box.is-centred h4 { text-align: center; }
+
+/* ---- Chips: attributes inside a box ---- */
+.dgm-chip { display: inline-block; background: var(--apm-navy-50); border-radius: 20px; padding: 2px 9px; font-family: var(--font-display, 'Poppins', sans-serif); font-size: 10.5px; font-weight: 600; color: var(--text-strong); margin: 2px 4px 0 0; }
+.dgm-box.is-navy .dgm-chip { background: rgba(255,255,255,.14); color: var(--text-on-dark); }
+.dgm-box.is-accent .dgm-chip { background: rgba(248,151,40,.2); color: var(--apm-orange-800); }
+
+/* ---- Wires: SVG overlay sized to the stage ---- */
+.dgm-wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.dgm-lbl { position: absolute; font-family: var(--font-display, 'Poppins', sans-serif); font-size: 11.5px; font-weight: 600; color: var(--text-strong); background: var(--neutral-0); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border-subtle); white-space: nowrap; }
+.dgm-lbl.is-accent { color: var(--apm-orange-800); border-color: var(--apm-orange-200); background: #FFF7EC; }
+
+/* ---- Steps: numbered sequence markers ---- */
+.dgm-step { position: absolute; width: 27px; height: 27px; border-radius: 50%; background: var(--brand-primary); color: #4A2705; font-family: var(--font-display, 'Poppins', sans-serif); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(248,151,40,.4); }
+
+/* ---- Heat cells: capability impact overlays ---- */
+.dgm-heat { position: absolute; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; border: 1.5px solid transparent; box-sizing: border-box; }
+.dgm-heat h5 { margin: 0; font-family: var(--font-display, 'Poppins', sans-serif); font-size: 13.5px; font-weight: 600; line-height: 1.15; }
+.dgm-heat p { margin: 0; font-size: 11.5px; line-height: 1.3; }
+.dgm-heat.is-high { background: var(--brand-primary); border-color: var(--apm-orange-600); color: #4A2705; }
+.dgm-heat.is-high p { color: #5A3008; }
+.dgm-heat.is-medium { background: var(--apm-orange-200); border-color: var(--apm-orange-300); color: var(--apm-orange-800); }
+.dgm-heat.is-medium p { color: var(--apm-orange-900); }
+.dgm-heat.is-low { background: var(--neutral-100); border-color: var(--border-default); color: var(--apm-navy-500); }
+.dgm-heat.is-low p { color: var(--apm-navy-400); }
+
+/* ---- Legend + key ---- */
+.dgm-legend { position: absolute; display: flex; gap: 16px; align-items: center; font-family: var(--font-display, 'Poppins', sans-serif); font-size: 11px; font-weight: 600; color: var(--apm-navy-400); }
+.dgm-legend i { display: inline-block; width: 22px; height: 0; border-top: 2.5px solid var(--dgm-line); margin-right: 6px; vertical-align: middle; }
+.dgm-legend i.is-dashed { border-top-style: dashed; }
+.dgm-legend i.is-accent { border-top-color: var(--dgm-line-accent); }
+.dgm-key { position: absolute; display: flex; gap: 14px; align-items: center; font-family: var(--font-display, 'Poppins', sans-serif); font-size: 11px; font-weight: 600; color: var(--apm-navy-400); }
+.dgm-key em { display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 5px; vertical-align: -2px; font-style: normal; }
+
+/* ---- Footnote under a figure ---- */
+.dgm-note { position: absolute; font-size: 12.5px; color: var(--apm-navy-400); margin: 0; }

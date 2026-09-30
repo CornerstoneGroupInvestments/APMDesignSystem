@@ -1,0 +1,1387 @@
+
+# Detail Design Document
+
+**Template V0.1**
+23 June 2026
+
+| Project Name: | Job Seeker Kiosk and AVD Solution |
+| --- | --- |
+| Document Owner: | the Head of Digital Transformation & Architecture,  <br> Head of Digital Transformation & Architecture |
+| Contact Details: | [redacted]@apm.net.au |
+| Program Name: |  |
+| Division/Unit: |  |
+| Document Status: |  |
+| Document Version: |  |
+| Product ID: |  |
+FOR INTERNAL USE ONLY
+Commercial in confidence
+© APM
+
+**Document control**
+
+**Version History**
+
+| Version | Date | Author | Key changes |
+| --- | --- | --- | --- |
+| V0.1 | 27/3/26 | the AVD Solution Engineer (Twiki Corp) | Creation |
+| V0.2 | 27/4/26 | the AVD Solution Engineer (Twiki Corp) | Single Password Design & Labeling |
+| V0.3 | 14/4/26 | the AVD Solution Engineer (Twiki Corp) | Rotating individual Passwords, final Network build, final approved design |
+| V1.0 | 23/6/26 | the AVD Solution Engineer (Twiki Corp) | Document used to build from and adjust as needed with commentary |
+Consultation
+
+| Name | Position title | Date |
+| --- | --- | --- |
+|  |  |  |
+|  |  |  |
+References and Derivation
+
+| Version # | Document Title | Reference Location |
+| --- | --- | --- |
+| V7.7m | AVD RFFR SoA based on ISM September 2025 | AVD RFFR SoA based on ISM September 2025 v7.7m.xlsx |
+|  |  |  |
+SDA Approval
+
+| Name | Role/Group | Signature | Date |
+| --- | --- | --- | --- |
+|  |  |  |  |
+
+## Confidentiality & Disclaimer
+This document is provided by Advanced Personnel Management International Pty Ltd and / or its related entities (APM) on a confidential basis. This document is subject to approval of the APM Board and does not constitute an offer capable of acceptance. No agreement binding APM or its related companies in respect of this document is intended or proposed unless and until the terms and conditions between APM or its related entities are agreed in writing in a formal agreement with the named Company or Prospective Client.
+APM will not be bound by any pricing or any other material contained in this response until the above has taken place.
+
+### Photography
+Photographs used in this document are for illustration only 
+and should not be interpreted to mean that any person or organisation whose assets are shown in them endorses this document.
+
+## Introduction
+
+### Purpose
+This document provides the detailed technical design for the Job Seeker Kiosk solution as part of the APM digital workplace transformation program. It defines the physical device configuration, Azure Virtual Desktop (AVD) session host image, identity and access controls, security architecture, and service management model required to deliver a standardised, secure, and ephemeral computing environment for job seekers at APM sites nationally.
+This document builds on the Job Seeker High-Level Design (HLD) and provides the implementation-ready specification for the build, test, and deployment phases. It maps directly to the business requirements captured in the HLD and traces each requirement to its technical resolution.
+The aim of this document is to:
+Define the technical architecture across all architecture domains (business, application, technology, information, and cyber)
+Trace business requirements to their detailed technical implementation
+Specify Intune configuration profiles, Entra ID groups, conditional access policies, and Nerdio settings at build-ready depth
+Document design decisions, assumptions, and open items requiring stakeholder sign-off
+Outline the implementation sequence, service management model, and operational handover plan
+
+### Audience
+The primary audience for this document is APM’s Digital Delivery, Digital Operations, Cyber Security, and Information Architecture teams responsible for build, integration, support, and maintenance. Business owners and operations staff should be involved in reviewing the business requirements traceability and design decisions.
+This includes:
+Business Sponsor,
+Project Management office,
+Digital Transformation & Architecture,
+Digital Operations
+Digital Delivery
+Cyber Security
+
+## Overview
+APM delivers Workforce Australia employment services under contract with the Department of Employment and Workplace Relations (DEWR). Job seekers attending APM sites nationally require access to computing facilities for job search, resume preparation, government service interaction, and training. The current device fleet has several problems, including very old hardware, slow internet connections and a lack of manageability.
+This document defines the detailed design for the Job Seeker Kiosk solution. It replaces the existing shared device model with a standardised architecture: Dell thin client hardware running Windows 11 IoT Enterprise in kiosk mode, connected to Azure Virtual Desktop (AVD) session hosts managed through Nerdio Manager for Enterprise. Intune handles device management and policy enforcement. Entra ID handles identity and access control.
+Every session is ephemeral. Job seekers work in a locked-down AVD desktop limited to Edge, Word, Excel and PowerPoint. When the session ends, the host is reimaged from a golden image. The next job seeker gets a clean environment. The design meets Right Fit for Risk (RFFR) accreditation requirements for protecting job-seeker PII.
+This document covers only the physical kiosk device. The CTA Laptop image and Outreach Laptop will be addressed in separate design documents.
+
+### Scope
+Physical kiosk device provisioning and configuration (Dell thin clients, Windows 11 IoT Enterprise)
+Windows Autopilot self-deploying mode deployment
+Shell Launcher/kiosk mode configuration via Intune
+Windows App (AVD client) deployment and auto-connection
+AVD session host golden image design and Intune policy configuration
+Microsoft Edge browser hardening (bookmarks, homepage, content filtering, data clearing)
+Microsoft 365 Apps deployment via browser only (Word, Excel and PowerPoint) with device-based licensing
+Session management (10-minute inactivity timeout, disconnect-on-lock, profile cleanup)
+Nerdio host pool management, auto-scaling, and session host reimaging
+Identity architecture (Entra ID device groups, kiosk user accounts, conditional access)
+Printing operating model where users email required documents to their case worker via webmail for printing
+USB storage access for resume transfer
+Security and RFFR compliance alignment
+Managed bookmark deployment across job search, government, support, training, and transport categories
+
+### Out of Scope
+CTA Laptop image design (separate document)
+Outreach laptop design (separate document)
+Network infrastructure and site cabling
+Printer hardware procurement and physical placement
+End-user training material and laminated instruction sheets (operational deliverable)
+RFFR formal accreditation audit (this document supports but does not constitute the ISMS)
+
+### Guiding Principles
+
+| ID | User Story |
+| --- | --- |
+| Zero Trust | No implicit trust. Every session is authenticated via device-based Entra ID credentials. Conditional Access restricts sign-in to approved kiosk identities and approved access conditions. <br> |
+| Ephemeral by Default | No user data persists beyond the session. Session hosts are reimaged from a golden image after each use. Edge profiles are temporary. User profiles are deleted on reboot. |
+| Least Privilege | Job seekers can access Word, Excel, PowerPoint and Edge only. No settings, command prompt, task manager, file explorer, or system access. <br> |
+| Simplicity | The end-user experience is frictionless. Device powers on, auto-launches Windows App, user enters device-specific credentials from the screensaver, and lands in their AVD desktop. |
+| Compliance | The architecture meets RFFR requirements for the handling of job seeker PII, aligning with ISO 27001 and the ASD ISM. |
+
+### Assumptions
+
+| Ref | Assumption | Impact If Incorrect |
+| --- | --- | --- |
+| A-01 | Dell thin client hardware is procured with TPM 2.0 and supports Autopilot self-deploying mode | Hardware must be re-specified; deployment model changes |
+| A-02 | Hardware hashes are registered in Autopilot at the point of procurement | Manual hash registration required per device on-site |
+| A-03 | Zscaler proxy/web filtering is applied at the network layer (existing APM standard) | Device-level web filtering must be designed into the image |
+| A-04 | APM has M365 Apps Enterprise device-based + Windows VDA per-device licensing via the licensing reseller for 540 devices | Licensing must be procured before deployment |
+| A-05 | Nerdio Manager for Enterprise is deployed and licensed in the APM Azure tenant | AVD host pool management and reimaging capabilities are unavailable |
+| A-06 | Job seekers have an active email address for document retrieval (if not, the case manager assists) | Alternative document handoff method required (USB only) |
+| A-07 | RFFR compliance is managed under APM’s existing ISMS with the Cyber Security Lead (cybersecurity) | These are listed in a separate accompanying spreadsheet. <br> AVD RFFR SoA based on ISM September 2025 v7.7m.xlsx |
+
+## Business Architecture
+
+### Business Context
+The kiosk solution is a response to three target business outcomes: consistent data privacy across all sites, standardised device management at scale, and compliance with RFFR accreditation requirements under the Workforce Australia Service Deed.
+
+### Business Requirements
+The following requirements are drawn from the Unified SOE Requirements V2 and the Job Seeker HLD. Each requirement is expressed as a user story with acceptance criteria and priority (Must/Should/Could).
+
+#### Kiosk Device Requirements
+
+| ID | Category | User Story | Acceptance Criteria | Priority |
+| --- | --- | --- | --- | --- |
+| 01 | User Access | As a job seeker, I want to log in as a guest so I can quickly access the device without needing an account. | Device boots to Windows standard user auto login and then launches Windows App to display the AVD login page. The user signs in using the device-specific Entra ID username and password displayed on the lock screen. <br> | Must |
+| 02 | Accessibility | As a job seeker, I want Windows accessibility features so I can use the device independently | All shortcuts function; features discoverable via Settings/help. Narrator, high contrast, font scaling, speech-to-text, onscreen keyboard   <br> Desktop shortcuts will be available for accessibility tools where technically feasible | Must |
+| 03 | Accessibility | As a job seeker with visual or language needs, I want magnifier and browser translation tools so I can comfortably use the device. | Magnifier shortcut works. Edge translation/Read Aloud available.   <br> Desktop shortcuts will be available for accessibility tools where technically feasible | Must |
+| 04 | Session Management | As a job seeker, I want my session wiped whenever the session ends so no one can access my personal data. | The system wipes the user profile and all locally stored data when any of the following occur: 
+User manually logs out 
+Device auto-logs out after inactivity 
+Laptop (Outreach) lid is closed and resumes to login screen | Must |
+| 05 | Session Management | As a job seeker, I want the system to automatically log me out after inactivity, so my session is not left open. | Inactivity timeout (10 min) triggers auto-logout; login screen shown afterwards.  <br> Note: If proposed 10mins is longer apply existing (SOE) timeout. | Must |
+| 06 | Device Maintenance | As Job seeker, I want forced restarts for system updates to occur only outside business hours, so my work is not interrupted. | System applies updates during an overnight maintenance window. Forced restarts do not occur while a job seeker is actively using the device. If the overnight restart is missed, the restart occurs on next boot before login. As kiosk sessions are non-persistent, users must save required documents to USB or personal email before ending their session. | Must |
+| 07 | Applications | As a job seeker, I want a modern browser so I can perform job searches and access online services. | Edge installed 
+Default homepage set | Must |
+| 08 | Applications | As a job seeker, I want Microsoft Office so I can create resumes and documents. | Word, Excel and PowerPoint are available via web access using the approved Microsoft 365 licensing model for kiosk devices. | Must |
+| 09 | Applications | As a job seeker, I want a PDF reader so I can view job ads, forms, and resumes. | PDF viewer enabled via Edge or Adobe Reader app (Optional) | Must |
+| 10 | Applications | As Job seeker, I do NOT want Teams/Zoom installed because video interviews will not be conducted on these devices. | Teams/Zoom excluded.  
+No webcam or drivers required. | Could |
+| 11 | Web Filtering | As a job seeker, I want inappropriate sites blocked so I don’t accidentally access harmful content. | Block adult, gambling, explicit, violence, and illegal-content categories.  <br> As per APM standard <br> | Must |
+| 12 | Web Filtering | As Job seeker, I want required job search websites whitelisted, so they don’t get incorrectly blocked. | Refer Favorites Urls section for whitelist sites | Must |
+| 13 | Web Filtering | As a job seeker, I want Facebook allowed so I can access community job boards. | Facebook allowed 
+TikTok, Instagram, X blocked by default. | Must |
+| 14 | Web Filtering | As a job seeker, I want access to public AI tools to help with resumes/interview prep. | Public AI tools allowed unless high risk. Blocked only if categorised unsafe. | Must |
+| 15 | USB Storage | As a job seeker, I want to use a USB drive so I can load or save my resume. | USB mass storage enabled; device mounts successfully; no additional scanning required beyond existing security layers. | Must |
+| 16 | Printing | As a job seeker, I want access to a printer so I can print my resume or documents. | No direct printing from kiosk devices is provided. Documents must be sent by email to the job seeker’s case worker via webmail for printing. This operating model was approved by the CTO/CISO. <br> | Must |
+| 17 | Printing | As IT, I want print jobs limited to a small number of pages, so costs and misuse are controlled. | No direct printing from kiosk devices is required. Documents must be emailed to the user’s case worker via webmail for printing. This operating model was approved by the CTO/CISO. <br> Note: This optional requirement is retained only to assess whether a technical solution exists to implement print job limits. | Could |
+| 18 | Printing | As a job seeker, I want to print in black and white and collect the printout from staff, so the process remains simple and low-cost. | No direct printing from kiosk devices is provided. Users must email required documents to their case worker via webmail for printing. This operating model was approved by the CTO/CISO. <br> Printing is completed by the case worker as an operational process. | Must |
+| 19 | Security & Compliance | As IT, I want existing web logging levels maintained so incidents can be reviewed without increasing costs. | Zscaler/Proxy logs retained per current policy. 
+No new log depth introduced. | Must |
+| 20 | Security & Compliance | As IT, I want devices isolated from the corporate network, so they don’t pose security risks. | Devices use the re-purposed Job Seeker VLAN with connectivity restricted to approved Azure, Microsoft, and APM-managed service dependencies only. No general access to corporate systems, internal business applications, or personal device connectivity is permitted. | Must |
+
+#### Kiosk Bookmarks
+
+| Link Name | URL | Comments |
+| --- | --- | --- |
+| Workforce Australia Online for Individuals | Workforce Australia Online for Individuals | Workforce Australia Online for Individuals |
+| Video - Your Workforce Australia Homepage | https://www.youtube.com/watch?v=AFnNpzrBGbg |  |
+| Video – Link Workforce Australia account in myGov | https://youtu.be/lVLdwUecxhc?si=cs11EOO2N-rgPk75 |  |
+| Video - How to create your profile on Workforce Australia Online for Individuals | https://www.youtube.com/watch?v=Ac04__5k2xk&pp=0gcJCcUKAYcqIYzv |  |
+| Compliance Framework | https://www.workforceaustralia.gov.au/individuals/obligations/learn/dont-meet-your-obligations/compliance-demerits |  |
+| Contact Us | https://www.workforceaustralia.gov.au/individuals/contact-us/ |  |
+| How to submit multiple Job Search efforts | https://youtu.be/xSyU4Y8B1I4?si=gemhL8Odn4FTQt0Y |  |
+| Your Workforce Australia Job Plan explained | https://www.youtube.com/watch?v=1YTeDgjivcw |  |
+| Video – Your Points Target Explained (for Workforce Australia Services only) | https://www.youtube.com/watch?v=kzK5JBN8eUw |  |
+| Video - Earning and reporting points (for Workforce Australia Services only) | https://www.youtube.com/watch?v=PErET8hpo-I |  |
+| Video - How to gain points for study and training (only for Workforce Australia Services) | https://www.youtube.com/watch?v=rXjUN_xW7t4&pp=0gcJCcUKAYcqIYzv |  |
+| Video - How to gain points for paid work (only for Workforce Australia Services) | https://www.youtube.com/watch?v=OwsyN6Tsqsw |  |
+|  |  |  |
+| Centrelink/Services Australia Website | Centrelink/Services Australia Website | Centrelink/Services Australia Website |
+| Centrelink Medical Certificate form (SU415) | https://www.servicesaustralia.gov.au/su415 |  |
+| Verification of medical conditions form (SU684) | https://www.servicesaustralia.gov.au/su684 |  |
+| Centrelink online account help - Report employment income | https://www.servicesaustralia.gov.au/centrelink-online-account-help-report-employment-income#:~:text=a%20mobile%20device.-,Step%201:%20get%20started,information%2C%20go%20to%20Step%203. |  |
+| Job Search and Job Application Resources | Job Search and Job Application Resources | Job Search and Job Application Resources |
+| Resume Templates (variothemes and designs) | https://create.microsoft.com/en-us/templates/resumes |  |
+| Cover Letter Templates (variothemes and designs) | https://create.microsoft.com/en-us/templates/cover-letters |  |
+| Improve Your Job Search | https://www.workforceaustralia.gov.au/individuals/coaching/job-search |  |
+| Seek.com (for Job Search) | https://www.seek.com.au/ |  |
+| Jora (for Job Search) | https://au.jora.com/ |  |
+| Indeed (for Job Search) | https://au.indeed.com/ |  |
+| Gumtree (for Job Search) | https://www.gumtree.com.au/ |  |
+| Ethical Jobs (for Job Search) | https://www.ethicaljobs.com.au/ |  |
+| APS Jobs (for Job Search) | https://www.apsjobs.gov.au/s/ |  |
+| Facebook (for Job Search) | www.facebook.com |  |
+| Workforce Australia Online for Individuals – Job Search | https://www.workforceaustralia.gov.au/individuals/jobs/search |  |
+| National Police Check Australia | https://cvcheck.com/national-police-check/ |  |
+| Essential Support Services | Essential Support Services | Essential Support Services |
+| Ask Izzy | https://askizzy.org.au/ |  |
+| Beyond Blue | https://www.beyondblue.org.au/ |  |
+| Headspace | https://headspace.org.au/ |  |
+| Drug Foundation Help and Support | https://adf.org.au/resources/druginfo/ |  |
+| Financial Counselling | Financial counselling - Moneysmart.gov.au |  |
+| Other Services | Other Services | Other Services |
+| Fair Work – Home Page | https://www.fairwork.gov.au/ |  |
+| Fair Work – Pay and Conditions Tool | https://calculate.fairwork.gov.au/ |  |
+| Volunteering Australia | https://govolunteer.com.au/ |  |
+| Transport Canberra | https://www.transport.act.gov.au/ | ACT |
+| Transport for NSW | https://www.transport.nsw.gov.au/ | NSW |
+| Department of Transport NT | https://nt.gov.au/driving https://nt.gov.au/driving | NT |
+| Department of Transport and Main Roads - QLD | https://www.tmr.qld.gov.au/ | QLD |
+| Department of Infrastructure and Transport - SA | https://www.dit.sa.gov.au/ | SA |
+| Department of Transport and Planning - VIC | https://www.vic.gov.au/department-transport-and-planning | VIC |
+| Department of Transport WA | https://www.transport.wa.gov.au/ | WA |
+| Transport Services - TAS | https://www.transport.tas.gov.au/ | TAS |
+| Training | Training | Training |
+| Duke | https://duke.co/ |  |
+| MCI | https://www.mciinstitute.edu.au/ |  |
+| Alffie | https://www.alffie.com/ |  |
+| TAFE QLD | https://tafeqld.edu.au/ | QLD |
+| TAFE ACT | https://www.tafecourses.com.au/courses/act/ | ACT |
+| TAFE NSW | https://www.tafensw.edu.au/ | NSW |
+| TAFE VIC | https://www.vic.gov.au/tafe | VIC |
+| TAFE WA | https://www.tafe.wa.edu.au/ | WA |
+| TAFE NT | https://www.tafecourses.com.au/courses/northern-territory/ | NT |
+| TAFE SA | https://www.tafesa.edu.au/ | SA |
+| TAFE TAS | https://www.tastafe.tas.edu.au/ | TAS |
+
+### Decision Register
+The following design decisions have been raised during the requirements and design process. Items marked Pending require formal sign-off before build. The design documents the most likely resolution and can accommodate either outcome without architectural change.
+
+| ID | Decision | Status | Proposed Resolution | Stakeholder Comments | Design Treatment |
+| --- | --- | --- | --- | --- | --- |
+| DR-001 | Include Excel on kiosk devices? | Pending | Include Excel. Low additional cost; allows job seekers to practise Excel skills. | the CEO, Employment Services: “Could probably live without it, but is it a big deal or additional cost?” | Excel will be provisioned for web use using the approved Microsoft 365 licensing model for kiosk devices <br> |
+| DR-002 | Printing approach for kiosks | Agreed | No direct printing from kiosk devices is provided. Users email required documents to their case worker for printing via webmail. This operating model was approved by the CTO/CISO. <br> | the CEO, Employment Services: “Not ideal. Need to drill into this further. Thought RFFR requires printers isolated from non-staff access.” | Email-to-case-worker printing is the agreed model. No direct kiosk-to-printer workflow is required. Approved by the CTO/CISO. <br> |
+| DR-003 | Bookmark consolidation | Agreed | Combine bookmarks across kiosk and CTA into single list with clear folders. CTA gets separate Eskilled folder. | the CEO, Employment Services: “As long as folders are clearly visible.” the Employment Services training owner: “Happy to combine. CTA requires separate Eskilled folder.” | Implemented. Unified bookmark set with categorised folders. |
+| DR-004 | Password rotation frequency | Agreed | 12-month rotation for kiosk device credentials. | Per requirements document. | Individual password per account. The password can be rotated at any frequency if required. |
+| DR-005 | Data wipe notice on screensaver | Under consideration | Add data wipe notice to screensaver in addition to wallpaper. | the CEO, Employment Services: “We could also look at putting this on a screensaver.” | Wallpaper implemented. Screensaver noted as build-phase enhancement. |
+| DR-006 | Wi-Fi-VLAN | Agreed | Re-use VLAN for kiosk devices. <br> - Re-use VLAN <br> - Existing single subnet for all sites <br> - Wi-Fi will no longer be public; the APM-KIOSK SSID will be hidden and access will be controlled through a pre-shared key deployed via Intune policy | Previous timing constraints related to direct kiosk printing no longer apply under the agreed email-to-case-worker printing model. | The APM-KIOSK network is reserved for kiosk devices only and is no longer available for personal use. Users requiring internet access must do so via a kiosk device. |
+| DR-007 | PDF Viewer | Agreed | PDFs will be viewed via Edge <br> | No other applications are being installed |  |
+| DR-008 | SSID Naming Convention | Approved – the Head of Digital Operations | Rename current Job Seeker SSID to APM-KIOSK <br> SSID will be hidden and accessed via a pre-shared key deployed to kiosk devices through Intune policy <br> | Hidden SSID and pre-shared Key | The APM-KIOSK network is reserved for kiosk devices only and is no longer available for personal use. Users requiring internet access must do so via a kiosk device. <br> |
+| DR-009 | Available IP Addresses | Agreed | We will need for the project, in total 135 available IP addresses on the Subnet | 253 will be available, 256 in total | 4 devices per server, 540 devices in total |
+
+## Application Architecture
+
+### Solution Overview
+The kiosk solution consists of two tiers: a physical kiosk device tier running Windows 11 IoT Enterprise in kiosk mode, and a virtual desktop tier running AVD session hosts managed by Nerdio. The physical device acts as a managed thin client, with Windows App (AVD client) as the primary user-facing application. All user-facing applications (Edge, Word, Excel and PowerPoint) run inside the AVD session.
+This separation means no job seeker data is retained on the physical device after the session ends. All persistent data handling occurs on the AVD session host, which is reimaged after every session.
+
+### Solution Component Inventory
+
+| Component | Product / Service | Version | Licensing | Purpose |
+| --- | --- | --- | --- | --- |
+| Physical device OS | Windows 11 IoT Enterprise | Latest | Installed on Imaging | Kiosk thin client operating system |
+| AVD client | Windows App (msrdcw.exe) | Latest | Included with Windows | Connects physical device to AVD session host |
+| Session host OS | Windows 11 Enterprise | Latest | Windows VDA per-device | AVD session host golden image base |
+| Office suite online | Microsoft 365 Online Apps | Current Channel | Microsoft 365 device-based licensing | Word, Excel and PowerPoint for document creation and editing via web access |
+| Browser | Microsoft Edge | Stable channel | Included with Windows | Job search, government services, webmail access |
+| Endpoint protection (AVD) | Defender for Endpoint P2 <br> Defender for Office 365 P2 <br> Defender for Identity | Latest | APM Licenced | Real-time protection; feeds compliance policy |
+| Endpoint protection (Kiosk Device) | Defender for Endpoint P2 <br> Network policy | Latest | APM Licenced | Real-time protection; feeds compliance policy.  <br> Network connectivity will be restricted to approved Azure, Microsoft, and APM-managed service dependencies required to deliver the kiosk solution |
+| Device management | Microsoft Intune | Current | APM M365 E3/E5 | Configuration profiles, app deployment, compliance |
+| Identity provider | Microsoft Entra ID | Current | APM M365 E3/E5 | Device join, user auth, conditional access, groups |
+| AVD management | Nerdio Manager for Enterprise | Current | APM licensed | Host pool management, auto-scaling, reimaging |
+| Web filtering (AVD) | Zscaler with IPSEC Tunnel | Existing APM standard | APM licensed | Category-based web filtering and logging |
+| Image gallery | Azure Compute Gallery | Current | Azure subscription | Golden image storage and versioning |
+
+### Intune Configuration Profiles
+The following Intune configuration profiles are applied to the kiosk solution. Profiles targeting the physical device are scoped to SG-APM-Autopilot-Kiosk-Devices. Profiles targeting the AVD session host are scoped to APM-AVD-SessionHosts.
+
+#### Office Device-Based Licensing
+Setting Name: APM-AVD-OfficeDeviceLicense
+Setting Type: Settings Catalog
+Scope: APM-AVD-SessionHosts
+Path: Microsoft Office 2016 (Machine) > Licensing Settings
+Setting: Use a device-based license for Office 365 ProPlus = Enabled
+Forces Office to activate per-device rather than per-user. Required because kiosk sessions have no named user identity. Licensing is provisioned via the licensing reseller as Microsoft 365 Apps Enterprise device-based licensing for the kiosk fleet.
+
+#### Assigned Access (Multi-App Kiosk)
+Setting Name: APM-AVD-AssignedAccess
+Setting Type: Custom OMA-URI
+Scope: APM-AVD-SessionHosts
+OMA-URI: ./Vendor/MSFT/AssignedAccess/Configuration
+Data type: Custom XML
+This is the primary control enforcing the “Word, Excel, PowerPoint, and Edge only” experience inside the AVD session.
+
+| Allow/Block | Applications |
+| --- | --- |
+| Allowed | Microsoft Word, Microsoft Excel, Microsoft PowerPoint, Microsoft Edge <br> |
+| Blocked | File Explorer, Control Panel, Settings, Command Prompt, PowerShell, Task Manager, all other applications |
+
+#### Session Time Limits
+Setting Name: APM-AVD-SessionLimits
+Setting Type: Settings Catalog
+Scope: APM-AVD-SessionHosts
+Path: Admin Templates > Windows Components > Remote Desktop Services > RD Session Host > Session Time Limits
+
+| Setting | Value | Purpose |
+| --- | --- | --- |
+| Set time limit for active but idle sessions | Enabled – 10 minutes | Auto-disconnect after 10 minutes of no input |
+| Set time limit for disconnected sessions | Enabled – 1 minute | Immediate session termination after disconnect |
+| End session when time limits are reached | Enabled | Triggers log-off and enables Nerdio reimaging |
+
+#### Session Lock Behaviour
+Setting Name: APM-AVD-DisconnectOnLock
+Setting Type: Settings Catalog
+Scope: APM-AVD-SessionHosts
+Setting: Disconnect remote session on lock for Microsoft identity platform authentication = Enabled
+When the session locks, it disconnects instead of showing a lock screen. That triggers the 1-minute disconnected session limit, which triggers Nerdio reimaging. Locking the screen effectively ends the session and wipes all data.
+
+#### Shell Launcher (Thin Client)
+Setting Name: APM-Kiosk-ShellLauncher
+Setting Type: Custom OMA-URI
+Scope: APM-Autopilot-Kiosk-Devices
+OMA-URI: ./Vendor/MSFT/AssignedAccess/ShellLauncher
+Replaces Explorer.exe with Windows App as the shell. No Start menu, no taskbar, no desktop. Local IoT kiosk account auto-created and auto-signed-in. Ctrl+Alt+Del disabled.
+To ensure each Entra ID kiosk user is restricted to its assigned device, a PowerShell script dynamically generates the Shell Launcher XML configuration. This is required because the assigned Entra ID user must be derived from the device serial number and inserted into the XML configuration at deployment time.
+When the assigned user signs in to the device, the UPN matches the Shell Launcher XML configuration and launches the Windows App to connect to AVD. If the UPN does not match the Shell Launcher configuration, the launcher calls logoff.exe, immediately logging off the user and terminating the session before access to the kiosk desktop or Windows App is granted.
+
+#### Edge Browser Policies
+Setting Name: APM-AVD-EdgeHardening
+Setting Type: Settings Catalog
+Scope: APM-AVD-SessionHosts
+
+| Policy Key | Value | Purpose |
+| --- | --- | --- |
+| RestoreOnStartup | 4 (Open a list of URLs) | Launch to bookmarks/start page |
+| ClearBrowsingDataOnExit | Enabled | Deletes all browsing data when Edge closes |
+| ForceEphemeralProfiles | Enabled | Edge profile is temporary and discarded on close |
+| PasswordManagerEnabled | Disabled | No password saving |
+| AutofillAddressEnabled | Disabled | No address autofill |
+| AutofillCreditCardEnabled | Disabled | No credit card autofill |
+| SavingBrowserHistoryDisabled | Enabled | No history retention |
+| SearchSuggestEnabled | Disabled | No search suggestions |
+| BrowserSignin | 0 (Disabled) | No Edge sign-in |
+| SyncDisabled | Enabled | No profile sync |
+| DefaultGeolocationSetting | 2 (Block) | Block location permission prompts |
+| PrintingEnabled | Disabled <br> | Printing is handled by emailing documents to the case worker via webmail <br> |
+| DownloadRestrictions | 0 (No restrictions) | Allow downloads to desktop (cleaned on session end) |
+| ManagedFavorites | JSON config – see 4.3.7 | Preloaded managed bookmarks |
+
+#### Edge Managed Favourites
+Bookmarks deployed via the ManagedFavorites Edge policy as JSON. Unified across kiosk and CTA device types (DR-003) with clear folder separation.
+
+| Folder | Contents | Count |
+| --- | --- | --- |
+| Favourites Bar | Word Online, PowerPoint Online, Excel Online | 3 |
+| Workforce Australia | WA portal, Provider Portal, jobactive, DES, ParentsNext, Transition to Work, videos, compliance, contact | 10 |
+| Centrelink / Services Australia | myGov, Centrelink medical forms (SU415, SU684), report employment income | 3 |
+| Job Search | SEEK, Jora, Indeed, Gumtree, Ethical Jobs, APS Jobs, Facebook Jobs, WA Job Search | 8 |
+| Essential Support | Ask Izzy, Beyond Blue, Headspace, Drug Foundation, Financial Counselling Australia | 5 |
+| Other Services | Fair Work Ombudsman, Pay Calculator, GoVolunteer | 3 |
+| Transport | State-by-state: ACT, NSW, NT, QLD, SA, VIC, WA, TAS | 8 |
+| Training | Duke, MCI, Alffie, TAFE by state (QLD, ACT, NSW, VIC, WA, NT, SA, TAS) | 10 |
+| Resume & Cover Letter | Microsoft resume templates, cover letter templates | 2 |
+| CTA Training | Eskilled (apm.eskilled.com.au) – separate folder per the Employment Services training owner | 1 |
+| National Police Check | CVCheck national police check | 1 |
+
+#### Office 365 Application Access
+Access to Microsoft Office is by web only. Bookmarks are added to Edge for access.
+
+#### User Profile Cleanup
+Setting Name: APM-AVD-ProfileCleanup
+Setting Type: ADMX
+Scope: APM-SessionHosts
+Setting: Delete user profiles older than 0 days on system restart
+Defence-in-depth control that complements Nerdio reimaging. If reimaging fails or is delayed, profile cleanup ensures no user data survives a restart.
+
+#### Password Rotation Proactive Remediation
+A proactive remediation is configured to run hourly to detect and rotate the password (as per section 5.1.1.1).
+
+## Technology Architecture
+
+### Physical Kiosk Device
+
+#### Hardware Specification
+Dell thin client running Windows 11 IoT Enterprise. All kiosk devices connect via Wi-Fi as no ethernet capability is available close to these devices. Each device is equipped with TPM 2.0 for Autopilot self-deploying mode compatibility.
+
+##### Credential Management
+This is a per-device unique-credential model. Each kiosk device holds its own unique, automatically generated and rotated password.
+
+###### Summary of Design
+
+| Aspect | Design |
+| --- | --- |
+| Account Creation | Account created based on device serial number on addition to Kiosk device group |
+| Password scope | Unique password per device / user |
+| Password generation | Azure Automation Runbook generates per-user |
+| Lock screen display | Device-specific password shown on each device |
+| Rotation | Rotate all passwords individually per schedule or as required |
+| Blast radius on compromise | Single kiosk only |
+| Credential storage | Per-device entry in Azure Key Vault |
+
+###### Account Creation
+Each kiosk device has its own Microsoft 365 F3 user account. The account is created automatically by an Azure Automation Runbook when the device first joins the dynamic security group SG-APM-Autopilot-Kiosk-Devices on Entra ID-join completion.
+UPN Format
+The kiosk user account format is Kiosk-[SERIAL]@apm.net.au where the {serialnumber} is the BIOS serial number of the kiosk device, in lowercase, with non-alphanumeric characters removed. For example, a thin client with the serial number 1ABC345 becomes Kiosk-1abc345@apm.net.au.
+This format provides:
+A clear visual indicator that the account is a kiosk account, not a human account
+A one-to-one mapping between the physical device and identity, support per-device security controls
+A namespace separation (the kiosk- prefix) that supports filtering, dynamic groups, conditional access policy targeting and identity governance reporting
+Trigger
+The Account Creation runbook is triggered when a new device joins SG-APM-Autopilot-Kiosk-Devices. The group is set to dynamic membership, so any device successfully provisioned through the kiosk Autopilot profile falls into scope automatically. The runbook polls the group via Microsoft Graph at a five-minute interval. When a new member is detected, if proceeds to the steps below:
+
+| Property | Value |
+| --- | --- |
+| UPN | Kiosk-{serialnumber}@apm.net.au |
+| Display Name | Kiosk {serialnumber} |
+| Mail Nickname | Kiosk-serialnumber |
+| Usage Location | AU |
+| License | M365 F3 assigned via group-based licensing on SG-APM-Kiosk-Users |
+| Password | 16-character random, generated per the Credential Storage section |
+| ForceChangePasswordNextSignIn | False |
+| PasswordPolicies | DisablePasswordExpiration (password rotation is managed by the runbook) |
+| AccountEnabled | True |
+| Job Title | Kiosk Device |
+| Department | Kiosk Fleet |
+| Group Membership | Added to SG-APM-Kiosk-Users |
+Runbook Steps
+Detect a new member of SG-APM-Autopilot-Kiosk-Devices via GET /groups/{id}/members on Microsoft Graph
+For each new device member, read the device’s serial number from the Intune managed-device resource: GET /deviceManagement/managedDevices/{id} and retrieve the serialNumber property
+Normalise the serial number converting to lowercase and removing non-alphanumeric characters
+Compose the UPN kiosk-{serialnumber}@apm.net.au
+Generate a random 16-character password containing uppercase, lowercase, numbers and special characters
+Create the user via POST /users on Microsoft Graph with the properties in the table above
+Store the password in the Key Vault kv-apm-kiosk as a secret named kiosk-{serialnumber}. The runbook executes on the Hybrid Runbook Worker so it can reach the Key Vault private endpoint.
+Add the new user to SG-APM-Kiosk-Users via POST /groups/{id}/members/$ref. Group-based licensing then automatically assigned the M365 F3 license.
+Log the event to Azure Log Analytics
+The lockscreen Proactive Remediation script (section 5.1.1.1.8) detects the new credential within its next hourly cycle and renders the per-device lockscreen image on the device
+Lifecycle and Retirement
+When a kiosk device is retired, a pair retirement runbook:
+Disables the kiosk user account
+Removes the kiosk user from SG-APM-Kiosk-Users (which removes the F3 license too)
+Soft deletes the Key Vault secret. The 90-day soft delete retention on the Key Vault provides recovery cover
+After a 90-day period and confirmation that the device is not being recommissioned, the password is hard deleted from the Key Vault
+
+###### Password Generation
+Each kiosk user account password is generated by the Azure Automation Runbook that creates the M365 F3 account. The Runbook generates a random 16-character password containing uppercase, lowercase, digits, and special characters; sets the password on the kiosk user account via Update-MgUser; ensures ForceChangePasswordNextSignIn is set to false; stores the password securely in Azure Key Vault as a per-device secret; and logs the provisioning event to Azure Log Analytics. The password itself is never logged.
+
+###### Credential Storage
+Passwords are stored in an Azure Key Vault (kv-apm-kiosk) with access only via a private endpoint. The Key Vault is reachable only from within the Azure VNet and provides per-secret access policies, automatic soft-delete and purge protection, audit logging, and versioning.
+
+| Key Value Setting | Value |
+| --- | --- |
+| Key Vault Name | auea-kv-apm-kiosk-001 |
+| SKU | Standard |
+| Soft-delete retention | 90 days |
+| Purge protection | Enabled |
+| Network access | Private endpoint only; public access disabled |
+| Private endpoint | auea-pep-kv-apm-kiosk-001  in auea-snet-avd-kiosk-pe-001 (hub) |
+| Access model | Azure RBAC (no access policies) |
+
+###### Credential Proxy (Azure Function)
+Because the Key Vault has public network access disabled, kiosk devices at sites cannot reach it directly. A Credential Proxy Azure Function App is deployed in the hub VNet with VNet integration enabled, allowing it to reach the Key Vault private endpoint. The kiosk-side Proactive Remediation script calls the Function App over HTTPS to retrieve the device-specific password without exposing the Key Vault directly.
+This will be done via Microsoft Entra ID authentication via App Service Authentication (EasyAuth) with the kiosk's primary refresh token (no embedded secrets, higher implementation complexity).
+
+###### Hybrid Runbook Worker
+Azure Automation Runbooks executing in the Azure-hosted sandbox run on Microsoft-managed infrastructure outside the customer VNet and cannot reach the Key Vault private endpoint. A System Hybrid Runbook Worker is deployed on an existing shared-services VM in snet-shared-service. The Hybrid Worker executes the Runbook in the context of the Automation Account Managed Identity, which has the required Get/Set Secret permissions on the Key Vault.
+
+###### Lock Screen Image Generation
+The Intune Proactive Remediation script on each kiosk device retrieves the device-specific password via the Credential Proxy and generates a per-device lock screen image showing the device-specific UPN and password. The detection script reads the device serial number from WMI, retrieves the current password version hash from C:\APM\Kiosk\current_hash.txt, calls the Credential Proxy, computes the SHA256 of the retrieved password, and compares it against the stored hash. On a mismatch, the remediation script generates a new 1920x1080 PNG, writes the new hash, and updates the lock screen wallpaper.
+
+###### AutoLogon Credential Refresh
+The per-device F3 password is used for two purposes on each kiosk: it signs the device into Windows automatically via AutoLogon at boot and it is displayed on the lockscreen for the job seeker to use when Windows App connects to the AVD session. Both consumers of the password must be updated when password rotations occur.
+AutoLogon Credential Storage
+For an Entra ID-joined kiosk device, AutoLogon credentials are stored in the Windows Local Security Authority (LSA). The secret is encrypted and is only readable by the SYSTEM account.
+The LSA private data is written via the LsaStorePrivateData Win32 API.
+
+| Step | Detection Script | Remediation Script |
+| --- | --- | --- |
+| 1 | Read serial number from WMI | Read serial number from WMI |
+| 2 | Read current_hash.txt from C:\APM\Kiosk | Call Credential Proxy Function App with the device’s UPN to receive the per-device password |
+| 3 | Call Credential Proxy Function App with the device’s UPN to receive the per-device password | Write the new password to LSA private data under the DefaultPassword secret via LsaStorePrivateData |
+| 4 | Computer SHA265 of the retrieved password | Generate the lockscreen image (per 5.1.1.16) using the new password |
+| 5 | Compare against stored hash. Exit 1 if mismatch. Exit 0 if match | Update current_hash.txt with the new SHA256 hash |
+| 6 | - | Log to Azure Log analytics |
+The detections script runs on the Intune Proactive Remediation cadence. For this design, the cadence is set to 60 minutes. The LSA secret update and lockscreen generation must complete together.
+
+###### Rotation Schedule
+Kiosk credentials are managed using a per-device credential model. Each kiosk device has a unique Entra ID account and password, stored as a per-device secret in Azure Key Vault. Password rotation is performed individually for each kiosk account by an Azure Automation Runbook running on the Hybrid Runbook Worker, which can securely access the Key Vault private endpoint.
+The password rotation Runbook iterates through the kiosk user accounts in scope, generates a new random 16-character password for each device, updates the password in Entra ID, writes the updated secret to Azure Key Vault, and logs the event to Azure Log Analytics. Rotation can be performed on a scheduled basis or triggered on demand in response to operational or security requirements.
+Each kiosk device retrieves its own password through the Credential Proxy Azure Function App and locally regenerates the lock screen image used to display the device-specific sign-in credentials. The Intune Proactive Remediation script detects password changes by comparing a stored hash with the current password hash and, where a mismatch is found, updates the lock screen image and local hash file accordingly.
+The lock screen image is generated locally on the device and stored in C:\APM\Kiosk\lockscreen.png, with the associated password hash stored in C:\APM\Kiosk\currenthash.txt. This ensures the displayed credentials remain aligned to the device’s currently assigned password.
+The lock screen wallpaper specifications are:
+The wallpaper is APM-branded and approved
+The wallpaper displays:
+the kiosk device’s Entra ID username
+the kiosk device’s Entra ID password
+a user notice advising that data is not retained after the session and that documents must be saved to USB or personal email before ending the session
+When a password is rotated, the device lock screen is updated during the next Intune Proactive Remediation cycle
+The detection script:
+verifies that the wallpaper image exists
+reads the device serial number from WMI
+reads the current password hash from C:\APM\Kiosk\currenthash.txt
+calls the Credential Proxy Function App to retrieve the current device-specific password
+computes the SHA256 hash of the retrieved password
+compares the new hash with the locally stored hash
+exits with code 0 if no update is required
+exits with code 1 if remediation is required
+The remediation script:
+reads the device serial number
+retrieves the current device-specific password through the Credential Proxy Function App
+creates C:\APM\Kiosk if it does not already exist
+generates a new lock screen image including APM branding, the device-specific username and password, and the approved user notice
+writes the image to C:\APM\Kiosk\lockscreen.png
+writes the updated SHA256 hash to C:\APM\Kiosk\currenthash.txt
+applies the updated lock screen at the next lock event
+logs the update event to the approved monitoring platform
+
+#### the Device Build Partner – Device Wipe and Prep Process:
+Check the locations device allocation list, validate how many devices are required per site and take note of the site code.
+Unpack device, power on and assess if DOA
+Add/update device in asset register
+Trigger full device wipe (not Autopilot Refresh, etc).
+Confirm TPM 2.0 and UEFI support
+Prepare USB image with Windows 11 IoT
+Install Windows 11 IoT
+Connect to Ethernet (if available), otherwise connect to Wifi during the OOBE using Shift+F10 then start ms-settings: to config Wi-Fi
+Confirm the device is in autopilot and assigned the correct profile
+If the device is not in Autopilot, install and run Get-WindowsAutopilotInfo powershell script to push hardware has into Autopilot or store on a CSV to be provided back to APM
+E.g. Get-WindowsAutopilotInfo -OutputFile C:\AP\hash.csv -GroupTag KIOSKTAGIncLOCATION -AssignedUser Kiosk-[serialnumber]@apm.net.au
+Assign device to EntraID group based on location
+Naming convention applied based on location (EntraID Group)
+Restart device to kick off provisioning using self-deploying mode
+Validate device logs in via username and password
+Validate Wi-Fi is operational
+Repackage device
+Create label with device name and stick on outside of the box
+Insert instruction sheet inside box
+Send to location
+
+#### Autopilot Self-Deploying mode
+Kiosk devices are provisioned through Windows Autopilot in self-deploying mode. This eliminates all user interaction during provisioning:
+Device is registered in Autopilot at point of procurement (hardware hash upload)
+Device boots and connects to Wi-Fi; OOBE detects Autopilot registration
+Autopilot locks OOBE to the APM tenant – no user input, no credentials
+Device is Entra ID joined and enrolled into Intune
+Intune applies security baseline, Shell Launcher profile, and Windows App installation
+Enrolment Status Page (ESP) blocks until all required apps and policies are applied
+Device reboots into kiosk mode
+
+| Setting | Value |
+| --- | --- |
+| Name | APM-Kiosk-SelfDeploying |
+| Deployment mode | Self-deploying |
+| Join type | Microsoft Entra ID join |
+| User sign-in | Not required |
+| Skip EULA / privacy settings | Yes |
+| Convert all targeted devices to Autopilot | Yes |
+| Assigned to | SG-APM-Autopilot-Kiosk-Devices |
+
+#### Windows App Deployment
+
+| Setting | Value |
+| --- | --- |
+| App type | Win32 (Windows App / msrdcw.exe) |
+| Assignment | Device-based, Required |
+| Install timing | During ESP – blocks device readiness until complete |
+| Workspace subscription | Pre-configured to subscribe to the APM AVD workspace |
+| Auto-connect | Enabled – launches directly into the AVD session |
+
+#### Naming Convention
+Format: KI-APM-[SITECODE]-[ID] Example: KI-APM- U718-01
+
+| Component | Value | Example |
+| --- | --- | --- |
+| KI | Kiosk device type identifier | KI |
+| APM | Organisation | APM |
+| SITE | LOC# last 4 digits | 1491 |
+| ID | 2-digit sequential number | 01–99 |
+Naming is enforced via an Intune device rename script during Autopilot provisioning. Dynamic device groups filter on KI-APM- prefix.
+
+#### End-to-End Device Experience
+When a provisioned device is powered on at the site:
+Device boots and auto-signs into local IoT kiosk account
+Shell Launcher replaces Explorer with Windows App
+Windows App launches and subscribes to the APM AVD workspace
+User sees AVD sign-in prompt
+User enters device-specific credentials from wallpaper
+User lands in their AVD desktop with Edge, Word, Excel and PowerPoint available via managed Edge bookmarks
+After 10 minutes of inactivity, the session disconnects and the session host is reimaged
+
+### AVD Session Host
+
+#### AVD Sizing Specification
+
+| Parameter |  | Detail |
+| --- | --- | --- |
+| VM SKU | D2s_v5 (2 vCPU, 8 GB RAM) | Good for light workload of a browser + two Office apps. No Teams, no multi-session. Microsoft recommends 2 vCPU / 8 GB as the minimum for single-session AVD with Office. |
+| OS Disk | 128 GB Standard SSD | Golden image with Windows 11, Edge, M365 Apps. Standard SSD is sufficient. Session hosts are ephemeral and reimaged frequently. Premium SSD adds cost with no benefit for this workload. |
+| Temp Disk | Included with D2s_v5 | Used for pagefile and transient session data. Adequate for single-user light workload. |
+| GPU | Not Required | No video conferencing, no graphics-intensive applications. |
+| Accelerated Networking | Enabled | Default on D2s_v5. Reduces latency for RDP protocol. |
+
+#### Golden Image Specification
+
+| Component | Detail |
+| --- | --- |
+Printing approach where users email required documents to their case worker for printing
+
+| Operating system | Windows 11 Enterprise (single-session or multi-session per licensing) |
+| --- | --- |
+| Microsoft Edge | Managed browser with hardened policies and preloaded bookmarks |
+| Microsoft 365 Apps | Word, PowerPoint and Excel via web only (device-based licensing) |
+| Microsoft Defender | Enabled; feeds Intune compliance policy |
+| Zscaler IPSEC Tunnel | Included as required by APM standard |
+| Custom wallpaper | Data wipe notice informing job seekers that all data is cleared on session end |
+| Accessibility tools | Narrator, Magnifier, high contrast, font scaling, speech-to-text, on-screen keyboard |
+
+#### Printing
+No direct printing from kiosk devices is provided. Users must email required documents to their case worker via webmail for printing. This operating model was approved by the CTO/CISO.
+
+#### USB Storage
+The Kiosk devices will require access to USB storage devices and require an exception to be able to read and write to these devices to load or save resumes.  As these USB devices are expected to be client-owned devices, and accessibility will need to be maintained from these devices to client-owned computers of varying types and operating systems, Bitlocker and Bitlocker-to-Go encryption cannot be enabled as compatibility cannot be guaranteed between these and the client-owned computers.
+To support this, two additional policies will be created using the existing security configuration for Windows, with the settings modified from the default policies per the tables below.
+All other existing security layers, including Zscaler, Defender, Application Control for Business will remain applied.
+
+##### USB Configuration exception policy
+
+| Setting | Value |
+| --- | --- |
+| Name | APM-W11-SEC-USB Exception-P-1.0 |
+| Removable Disk Deny Write Access | Disable |
+| Removable Disk Deny Write Access (User) | Disable |
+| Deny write access to removable drives not protected by Bitlocker | Disabled |
+| Control use of Bitlocker on removable drives | Disabled |
+
+##### Bitlocker configuration exception policy
+
+| Setting | Value |
+| --- | --- |
+| Name | APM-W11-SEC-Bitlocker Exception-P-1.0 |
+| Write access to removable data-drive not protected by Bitlocker | Not configured (Enabled) |
+
+### Nerdio Manager for Enterprise
+
+#### Host Pool Configuration
+
+| Setting | Value |
+| --- | --- |
+| Host pool name | HP-APM-Kiosk |
+| Host pool type | Pooled |
+| Load balancing | Breadth-first |
+| Max session limit | 1 (single-session kiosk) |
+| Validation environment | No (separate validation pool for image testing) |
+| Preferred app group type | Desktop |
+| Start VM on Connect | Enabled (allows scale-to-zero during off-peak) |
+| RDP properties | No printer or drive redirection required <br> |
+| FSLogic Single-Session Enforcement | ProfileType = 1 (Prevents one kiosk user logging into another AVD session) |
+
+#### Golden Image Lifecycle
+Image built from Windows 11 Enterprise base with required applications and policies
+Sysprep applied before capture
+Image stored in Azure Compute Gallery
+Image patched monthly (OS, Edge, Defender definitions)
+Patched image deployed to validation host pool for testing
+After validation, promoted to production host pool
+All production session hosts reimaged from the new golden image
+
+#### Auto-Scaling
+
+| Period | Behaviour |
+| --- | --- |
+| Business hours (7:00 AM – 7:00 PM) | Minimum hosts = expected concurrent users. Scale up on demand. |
+| Ramp-up (6:00 AM – 7:00 AM) | Hosts power on ahead of business hours to reduce latency. |
+| Ramp-down (7:00 PM – 8:00 PM) | Active sessions complete. No new sessions to hosts marked for shutdown. |
+| Off-peak (8:00 PM – 6:00 AM) | Scale to zero. Start VM on Connect handles out-of-hours connections. |
+| Cost optimisation | Idle VMs are deallocated after ramp-down. |
+
+#### Session Host Reimaging
+Reimaging is the primary mechanism for zero data persistence:
+Job seeker session disconnects (idle timeout, lock, or manual log-off)
+Disconnected session time limit expires (1 minute)
+Session host reports zero active sessions to Nerdio
+Nerdio reimages from the current golden image
+Session host rejoins the pool with a completely clean state
+
+### Network & Infrastructure
+The Jobseeker kiosk solution reuses the existing Job Seeker network to securely support walk-in participants accessing online job services via Azure Virtual Desktop (AVD).
+Kiosk devices are connected to the existing Job Seeker VLAN, which will be repurposed for kiosk use and renamed to APM-KIOSK. This is not a new network deployment; rather, the existing wireless service is being updated to support the kiosk solution, including an increase to 20Mbps bandwidth per site and the removal of the existing CAPTCHA requirement to allow a smoother kiosk user experience. The APM-KIOSK SSID will not be publicly visible, and access to it will be controlled through a pre-shared key deployed to kiosk devices via Intune policy. The network remains tightly controlled and restricted to the connectivity required to support the APM Azure tenant, Microsoft endpoints, and other approved service dependencies, including Azure Key Vault and Azure Function App.
+The VNET hosting the AVD workload will be restricted from communicating with other Azure-based resources via the newly deployed east-west Palo Alto firewalls. The VNET will be permitted to communicate with approved internet destinations and Zscaler through a IPSEC tunnel. All other east-west traffic will be blocked.
+The design utilises the organisation’s existing public internet breakout, complemented by the renamed APM-KIOSK SSID and Microsoft’s AVD Public Access model. This approach aligns with the same security controls implemented for the current Staff AVD deployment, ensuring consistency in governance and risk posture.
+As part of this design, the existing Job Seeker VLAN is dedicated exclusively to kiosk devices and does not permit personal mobile internet connectivity or personal device access. The capability for personal devices to connect to this network will be removed. Should a user require internet access, they can use a kiosk device. All kiosk endpoints will connect solely to the renamed APM-KIOSK network, ensuring controlled access and appropriate separation from standard corporate and personal connectivity use cases.
+The solution does not provide general access to APM corporate systems, internal business applications, or unrestricted internet services. All permitted traffic is subject to inspection and policy enforcement through APM-managed network security controls, including Palo Alto east-west firewalls and approved egress paths to internet and Zscaler. All other traffic is blocked.
+Network Diagram:
+The following diagram illustrates the end-to-end data flow from thin client through to Azure AVD session hosts and internal corporate resources.
+Logical view of Network & Infrastructure
+
+#### Physical Kiosk Device Network Configuration
+The physical kiosk device network uses the existing Job Seeker VLAN, repurposed as APM-KIOSK, with tightly controlled connectivity to approved Azure, Microsoft, and APM-managed service dependencies required for kiosk operation. Access is restricted through firewall and policy enforcement, and the network does not permit general corporate access, personal device connectivity, or unrestricted internet usage.
+
+##### Network Design
+
+| Element | Specification | Rationale |
+| --- | --- | --- |
+| Network Type | Re-purposed Job Seeker VLAN (APM-KIOSK) | Provides a controlled kiosk access network with restricted connectivity and no general corporate or personal device access |
+| Supernet | 10.73.0.0/16 | A unique /26 from 10.73.0.0/16 will be assigned to each site through Meraki template use. |
+| VLAN ID | 73 |  |
+| Segmentation | Layer 3 segmentation with firewall enforcement | Prevents unrestricted internet usage while allowing required service access |
+| Internet Access | Restricted to approved destinations only | Prevents unrestricted internet usage while allowing access to approved service destinations required for kiosk operation. |
+| Security Model | Default-deny with explicitly permitted connectivity | Only explicitly allowed services are reachable |
+
+##### Connectivity Controls
+
+| Element | Specification | Rationale |
+| --- | --- | --- |
+| Allowed Destinations | Entra ID, Intune, AVD, approved Microsoft endpoints, Azure Key Vault, Azure Function App, Zscaler, all allowed web URL’s in table 3.22 and other approved service dependencies | Enables required functionality only |
+| Blocked Destinations | All non-approved internet, corporate, and unrelated service destinations | Enforces strict access control |
+| DNS | Restricted resolution for approved Microsoft, Azure, and APM-managed service dependencies | Prevents access to unauthorised domains |
+| Traffic Direction | Device-initiated outbound connectivity only <br> | No inbound exposure to kiosks |
+
+##### Firewall & Filtering (Meraki)
+
+| Element | Specification | Rationale |
+| --- | --- | --- |
+| Policy Model | Default Deny (Egress Filtering) | Strong security baseline |
+| Allowed Ports | TCP 443 (HTTPS only) | Minimises attack surface |
+| Filtering Method | FQDN/IP-based allow rules for approved Microsoft, Azure, Zscaler, and APM-managed service dependencies | Fine-grained control |
+| Inspection | TLS inspection subject to APM standard internet security policy and service compatibility requirements. | Enhances monitoring and compliance |
+
+| Source | Destination | Action |
+| --- | --- | --- |
+| 10.73.0.0/16 | - AVD service FQDNs (*.wvd.microsoft.com, login.microsoftonline.com <br> Note: Other AVD-related rules listed in  Required FQDNs and endpoints for Azure Virtual Desktop - Azure Virtual Desktop \| Microsoft Learn might need to be reviewed / allowed if the above doesn’t work. <br>  - Azure KV Private Endpoint 10.40.112.32/28 | Allow |
+| 10.73.0.0/16 | Any | Deny |
+
+##### Rate Limiting (Meraki)
+
+| Element | Specification | Rationale |
+| --- | --- | --- |
+| Per Site Bandwidth | 20Mbps | Provides enough headroom to handle virtual desktop tasks for up to 5 concurrent connections. |
+
+##### AVD Integration
+
+| Element | Specification | Rationale |
+| --- | --- | --- |
+| Access Model | Outbound to AVD control plane | No inbound connectivity required |
+| Protocol | HTTPS (TLS 1.2/1.3) | Secure communication |
+| Client | Local AVD client on kiosk device | Enables desktop session access |
+| Session Control | Brokered via Azure | Centralised session management |
+
+##### Endpoint & Device Management
+
+| Element | Specification | Rationale |
+| --- | --- | --- |
+| Device Management | Microsoft Intune | Centralised governance |
+| Compliance | Intune device compliance policies | Enforces security posture |
+| Updates | Managed via Intune policies | Controlled patching without internet |
+| Authentication | Microsoft Entra ID <br> | Secure identity integration |
+
+##### Device Restrictions
+
+| Element | Specification | Rationale |
+| --- | --- | --- |
+| OS Mode | Kiosk Mode (locked down) | Prevents user tampering |
+| Peripheral Access | Peripheral Access – Restricted to approved use cases (USB storage permitted, other peripheral access limited by policy) | Minimises misuse while allowing approved job seeker functions |
+| Local Storage | No persistent data | Protects sensitive information |
+
+##### Monitoring & Logging
+
+| Element | Specification | Rationale |
+| --- | --- | --- |
+| Logging | Intune / Azure monitoring | Operational visibility |
+| Network Monitoring | Firewall logs | Detect anomalies |
+| Session Monitoring | AVD diagnostics | Track user activities <br> |
+
+##### Ethernet Port Configuration (Re-Imaging)
+Although kiosks operate on Wi-Fi, Ethernet ports must remain enabled to support operational servicing activities.
+Ethernet connectivity is required by the Device Build Partner for device recovery, re-imaging, troubleshooting, and Autopilot or Intune remediation where Wi-Fi is unavailable or unstable during staging.
+Purpose:
+Ensures devices can be serviced without bypassing security controls
+Avoids ad-hoc cabling to corporate networks
+
+#### Azure Virtual Desktop Network Architecture
+
+##### Traffic Flow
+Thin Client to AVD (Northbound):
+Kiosk devices connect to the re-purposed APM-KIOSK wireless network and initiate outbound connectivity to required Microsoft and Azure service endpoints over approved protocols. User authentication is performed through Entra ID, with access governed by Conditional Access policies and device compliance controls where applicable. On successful authentication, the device establishes an Azure Virtual Desktop (AVD) session using Microsoft’s public AVD access model.
+Kiosk to AVD connection flows through the palo firewalls over the SD-WAN.
+AVD to Approved Services and Platform Dependencies (East/West and Outbound):
+AVD session hosts are deployed within a dedicated Azure Virtual Network and are restricted from direct communication with on-premises corporate networks and unrelated Azure workloads. Required connectivity to approved platform dependencies, including Azure Key Vault, Azure Function App, Microsoft service endpoints, internet destinations, and Zscaler, is permitted only through approved and firewall-controlled paths. East-west traffic is inspected and enforced by the newly deployed Palo Alto firewalls, with all non-approved traffic blocked by default.
+
+##### Security
+The solution uses a controlled connectivity model rather than a fully isolated network. Kiosk devices operate on the existing Job Seeker VLAN, renamed APM-KIOSK, which is dedicated to kiosk devices only and no longer supports personal device connectivity or personal mobile internet access. The APM-KIOSK SSID is not publicly visible, and access is restricted through a pre-shared key deployed to kiosk devices via Intune policy. Traffic from kiosk devices and AVD session hosts is limited to explicitly approved destinations and is subject to APM-managed inspection, filtering, and policy enforcement. The solution does not provide general access to APM corporate systems, internal business applications, or unrestricted internet services.
+
+##### Authentication & Access Control:
+
+| Identity Provider | Microsoft Entra ID – aligned with the existing Staff AVD identity platform <br> |
+| --- | --- |
+| Conditional Access | Conditional Access policies restrict sign-in to approved kiosk identities and approved access conditions, including blocking high-risk sign-ins and enforcing session controls in line with data handling requirements. |
+| Device Compliance | Kiosk devices are Intune-managed and configured as dedicated kiosk endpoints. Access is controlled through device configuration, Conditional Access policies, restricted network paths, and session controls rather than relying solely on standard user-driven compliance enforcement. |
+| Token Lifetime | Authentication tokens are short-lived, typically 60-90 minutes and users are required to re-authenticate following session timeout, disconnect, or session reset events. |
+
+##### Azure VNet Design
+AVD session hosts deployed into a dedicated Azure Virtual Network
+Subnets restricted from direct communication with:
+on-prem corporate networks
+non-related Azure workloads
+Connectivity permitted only via approved and firewall-controlled paths to required platform dependencies
+
+##### Network Topology
+The solution uses a hub-and-spoke topology, per the Microsoft Cloud Adoption Framework reference architecture for Azure Virtual Desktop. Shared services (DNS Private Resolver, NAT egress, Azure Firewall provisioning, hybrid connectivity gateway provisioning) reside in the hub VNet; AVD session hosts and per-workload resources reside in the AVD spoke VNet. This pattern allows additional workloads (CTA Laptop image, future internal services) to be added as separate spokes without re-architecting the kiosk solution.
+Kiosk devices at APM sites do not connect to Azure over a site-to-site VPN or ExpressRoute. They are cloud-native endpoints that authenticate via Entra ID and connect to AVD session hosts via the Microsoft-managed reverse-connect transport over the public internet. There is no on-premises hybrid connectivity infrastructure in scope for the initial deployment.
+
+##### AVD Hub VNet
+
+| Setting | Value |
+| --- | --- |
+| VNet Name | auea-vnet-avd-kiosk-hub-ctrl-001 |
+| Region | Australia East (Sydney) |
+| Address space | 10.40.112.0/24 |
+| auea-snet-avd-kiosk-dns-private-resolver-inbound-001 | 10.40.112.0/28 – Azure DNS Private Resolver inbound endpoint |
+| auea-snet-avd-kiosk-dns-private-resolver-outbound-001 | 10.40.112.16/28 – Azure DNS Private Resolver outbound endpoint |
+| auea-snet-avd-kiosk-pe-001 | 10.40.112.32/28 – Hub-scoped private endpoints (Key Vault, Function App storage) |
+| auea-snet-avd-kiosk-shared-service-001 | 10.40.112.64/27 – Hybrid Runbook Worker host and shared management VMs |
+| auea-snet-avd-kiosk-natgw-hub-001 | 10.40.112.96/27 – NAT Gateway subnet for hub outbound egress |
+| GatewaySubnet (reserved) | 10.40.112.128/27 – Reserved for future VPN/ExpressRoute gateway provisioning |
+| AzureFirewallSubnet (reserved) | 10.40.112.192/26 – Reserved for optional Azure Firewall deployment |
+
+##### AVD Spoke VNet
+
+| Setting | Value |
+| --- | --- |
+| VNet Name | auea-vnet-avd-kiosk-spoke-ctrl-001 |
+| Region | Australia East (Sydney) |
+| Address space | 10.40.114.0/23 |
+| auea-snet-avd-kiosk-session-host-001 | 10.40.114.0/24 – AVD session host VMs |
+| auea-snet-avd-kiosk-spoke-pe-001 | 10.40.115.0/28 – Spoke-scoped private endpoints (Azure Files / FSLogix) |
+| auea-snet-avd-management-001 | 10.40.115.32/27 – AVD management traffic and jump hosts |
+| auea-snet-avd-kiosk-natgw-spoke-001 | 10.40.115.64/27 – NAT Gateway subnet for AVD outbound egress |
+
+##### VNet Peering
+Bidirectional peering between hub and spoke. All cross-VNet traffic traverses the hub; there is no spoke-to-spoke peering in the initial topology. The peering carries traffic for Azure DNS Private Resolver queries from the spoke to the hub, private endpoint access to hub-scoped PaaS resources, and management traffic.
+
+| Peering Setting | Hub to Spoke | Spoke to Hub |
+| --- | --- | --- |
+| Allow virtual network access | Enabled | Enabled |
+| Allow forwarded traffic | Enabled | Enabled |
+| Allow gateway transit | Enabled (future) | Use remote gateways (future) |
+| Allow remote VNet to use remote gateways | – | – |
+
+##### NAT Gateway
+Azure is retiring default outbound internet access for new VMs. Two NAT Gateways are deployed, one per VNet, to provide explicit, deterministic outbound egress for session hosts and shared-services hosts, respectively. Each NAT Gateway is associated with the subnet that requires outbound access.
+
+###### Spoke NAT Gateway (AVD)
+
+| Peering Setting | Hub to Spoke |
+| --- | --- |
+| NAT Gateway Name | auea-natgw-ctrl-avd-kiosk-spoke-001 |
+| Region | Australia East |
+| Associated Subnet | auea-snet-avd-kiosk-session-host-001 |
+| Public IP | aue-pip-natgw-ctrl-avd-kiosk-spoke-001 (Standard, static) |
+| Idle Timeout | 10 minutes |
+| Zones | Zone-redundant (1, 2, 3) where available |
+
+###### Hub NAT Gateway
+
+| Peering Setting | Hub to Spoke |
+| --- | --- |
+| NAT Gateway Name | auea-natgw-ctrl-avd-kiosk-spoke-001 |
+| Region | Australia East |
+| Associated Subnet | auea-snet-avd-kiosk-shared-service-001 |
+| Public IP | aue-pip-natgw-ctrl-avd-kiosk-hub-001 (Standard, static) |
+| Idle Timeout | 10 minutes |
+| Zones | Zone-redundant (1, 2, 3) where available |
+
+##### Network Security Groups
+NSGs are applied at the subnet level. Rules below show the explicit allows; the default outbound-allow remains in effect. Inbound is default-deny.
+
+###### AVD Session Host NSG (nsg-avd-session-hosts)
+
+| Priority | Name | Direction | Source | Destination | Port | Action |
+| --- | --- | --- | --- | --- | --- | --- |
+| 100 | Allow-RDP-Shortpath-Inbound | Inbound | VirtualNetwork | * | 3390/UDP | Allow |
+| 200 | Allow-Azure-IMDS | Outbound | * | 169.254.169.254 | 80/TCP | Allow |
+| 210 | Allow-Azure-WireServer | Outbound | * | 168.63.129.16 | 80, 32526/TCP | Allow |
+| 300 | Allow-AVD-Service | Outbound | * | WindowsVirtualDesktop (svc tag) | 443/TCP | Allow |
+| 310 | Allow-Entra-Auth | Outbound | * | AzureActiveDirectory (svc tag) | 443/TCP | Allow |
+| 320 | Allow-AzureMonitor | Outbound | * | AzureMonitor (svc tag) | 443/TCP | Allow |
+| 330 | Allow-KMS | Outbound | * | Internet | 1688/TCP | Allow |
+| 400 | Allow-DNS-Hub | Outbound | * | 10.40.112.0/28 | 53/UDP, 53/TCP | Allow |
+| 500 | Allow-FSLogix-PE | Outbound | * | 10.40.115.0/28 | 445/TCP | Allow |
+| 4096 | Deny-All-Outbound | Outbound | * | * | * | Deny |
+
+###### Private Endpoint NSG (nsg-avd-pe)
+
+| Priority | Name | Direction | Source | Destination | Port | Action |
+| --- | --- | --- | --- | --- | --- | --- |
+| 100 | Allow-SMB-From-SessionHosts | Inbound | 10.40.114.0/24 | * | 445/TCP | Allow |
+| 110 | Allow-SMB-From-Mgmt | Inbound | 10.40.115.32/27 | * | 445/TCP | Allow |
+| 4096 | Deny-All-Inbound | Inbound | * | * | * | Deny |
+By default, Azure ignores NSG rules on traffic destined to private endpoints. The subnet property PrivateEndpointNetworkPolicies must be set to Enabled on snet-avd-private-endpoints for the NSG above to take effect.
+
+##### Private Endpoints
+Private endpoints provide private IP connectivity from the AVD spoke and hub to Azure PaaS services. No session host or kiosk-side service traffic traverses the public internet for these resources.
+
+| Service | Private Endpoint | Subnet | Private DNS Zone |
+| --- | --- | --- | --- |
+| Azure Files (FSLogix profiles) | auea-pep-stg-apm-fslogix-file-001 | auea-snet-avd-kiosk-spoke-pe-001 | privatelink.file.core.windows.net |
+| Azure Key Vault (kiosk credentials) | auea-pep-kv-apm-kiosk-001 | auea-snet-avd-kiosk-pe-001 (hub) | privatelink.vaultcore.azure.net |
+| Function App storage (blob) | auea-pep-stg-apm-func-blob-001 | auea-snet-avd-kiosk-pe-001 (hub) | privatelink.blob.core.windows.net |
+| Function App storage (table) | auea-pep-stg-apm-func-table-001 | auea-snet-avd-kiosk-pe-001 (hub) | privatelink.table.core.windows.net |
+| Function App storage (queue) | auea-pep-stg-apm-func-queue-001 | auea-snet-avd-kiosk-pe-001 (hub) | privatelink.queue.core.windows.net |
+| Function App (Credential Proxy) | auea-pep-func-apm-kiosk-cred-001 | auea-snet-avd-kiosk-pe-001  <br> (hub) | privatelink.azurewebsites.net |
+The Credential Proxy Function App requires its backing storage account (stgfuncapmcred) to expose blob, table, and queue endpoints as separate private endpoints so that Function-runtime calls to the storage account stay within the VNet.
+
+##### Hybrid Connectivity (Future Provision)
+The hub VNet reserves a GatewaySubnet (10.40.112.128/27) so that a VPN or ExpressRoute gateway can be added later without re-addressing the VNet. The initial deployment has no hybrid connectivity requirement; kiosk devices connect over the public internet to the AVD service.
+
+##### Kiosk Device Connectivity (Site Network)
+The physical kiosks do not use Azure networking directly. They establish AVD sessions over the site's existing internet egress. The high-level flow:
+Kiosk device joins the local site “APM-KIOSK” Wi-Fi network ( kiosk VLAN/SSID per the Network Segmentation section).
+Zscaler IPSEC Tunnel (if applied at the site) tunnels web traffic to the nearest Zscaler data centre for filtering.
+AVD service FQDNs (*.wvd.microsoft.com, *.service.windows.cloud.microsoft) resolve via public DNS.
+Windows App establishes an outbound TCP 443 reverse-connect session to the AVD control plane. No inbound site-firewall ports are opened for AVD.
+AVD brokers the session and connects the kiosk to a session host VM in the AVD spoke. Where RDP Shortpath for public networks is available, a direct UDP 3478 path is established via STUN/TURN; it falls back to the TCP 443 reverse-connect path if UDP is blocked.
+
+##### Required Outbound Connectivity
+AVD session hosts require outbound HTTPS (TCP 443) connectivity to Microsoft cloud services, including:
+Azure Virtual Desktop control plane
+Microsoft Entra ID
+Microsoft Intune
+Microsoft Defender
+Microsoft Edge update services
+Firewalls or proxies must not block required Microsoft service endpoints.
+
+#### DNS Configuration
+
+##### DNS Architecture Overview
+The kiosk solution has two distinct DNS resolution contexts: the physical kiosk devices at the site (which resolve names via the site's standard DNS forwarders to the public internet), and the AVD session hosts in Azure (which resolve names via the Azure DNS Private Resolver in the hub VNet). The recommended architecture uses Azure Private DNS Zones linked to the hub VNet, with the Private Resolver serving as the bridge between Azure-internal name resolution and any external resolution required.
+
+##### Kiosk Device DNS
+The physical kiosk devices at APM sites connect to the local site network. DNS resolution for these devices is provided by the site's standard DNS forwarders (typically the site network appliance). The kiosk devices do not join the APM corporate domain and do not require resolution of Active Directory domain names; all required FQDNs are public Internet endpoints (AVD service, Entra ID, Microsoft Update, Defender).
+
+##### AVD Session Host DNS
+The AVD session host VMs in the AVD spoke VNet use the Azure DNS Private Resolver (deployed in the hub VNet) as their primary DNS resolver. The Private Resolver's inbound endpoint is within the hub, and the AVD spoke is configured with that IP as its custom DNS server at the VNet level.
+
+###### Azure DNS Private Resolver
+
+| Component | Configuration |
+| --- | --- |
+| Private Resolver Name | auea-dnspr-avd-kiosk-001 |
+| VNet | auea-vnet-avd-kiosk-hub-ctrl-001 |
+| Inbound Endpoint | 10.40.112.4 in auea-snet-avd-kiosk-dns-private-resolver-inbound-001 |
+| Outbound Endpoint | 10.40.112.20 in auea-snet-avd-kiosk-dns-private-resolver-outbound-001 |
+| Private DNS Zones (linked) | privatelink.file.core.windows.net; privatelink.vaultcore.azure.net; privatelink.blob.core.windows.net; privatelink.table.core.windows.net; privatelink.queue.core.windows.net; privatelink.azurewebsites.net |
+
+###### Required FQDNs for AVD Session Hosts
+The AVD session host VMs must be able to resolve and connect to the following FQDNs. These are required for the AVD agent, Entra ID authentication, monitoring, and Microsoft 365 application activation. Traffic to 169.254.169.254 (Azure Instance Metadata Service) and 168.63.129.16 (WireServer) must not be intercepted, proxied, or SSL-inspected, as this breaks Azure platform integration.
+
+| FQDN | Protocol / Port | Purpose |
+| --- | --- | --- |
+| login.microsoftonline.com | TCP 443 | Entra ID authentication |
+| *.wvd.microsoft.com | TCP 443 | AVD service traffic |
+| *.service.windows.cloud.microsoft | TCP 443 | AVD service traffic (new endpoint) |
+| catalogartifact.azureedge.net | TCP 443 | Azure Marketplace |
+| *.prod.warm.ingest.monitor.core.windows.net | TCP 443 | Azure Monitor telemetry |
+| gcs.prod.monitoring.core.windows.net | TCP 443 | Azure Monitor |
+| azkms.core.windows.net | TCP 1688 | Windows KMS activation |
+| mrsglobalsteus2prod.blob.core.windows.net | TCP 443 | AVD agent |
+| oneocsp.microsoft.com | TCP 80 | Certificate revocation |
+| ctldl.windowsupdate.com | TCP 80 | Certificate trust list |
+| *.endpoint.security.microsoft.com | TCP 443 | Defender for Endpoint |
+| *.events.data.microsoft.com | TCP 443 | Microsoft telemetry |
+| 169.254.169.254 | TCP 80 | Azure Instance Metadata Service (no intercept) |
+| 168.63.129.16 | TCP 80, 32526 | Azure WireServer (no intercept) |
+
+#### Zscaler IPSEC tunnel (Recommended)
+Zscaler IPSEC tunnel is the proposed solution for webfiltering and logging of traffic
+Requirements for recommendation:
+the managed network service provider will need to have a Zscaler IPSEC tunnel will need to be configured for this to work
+Changes made from ZCC to IPSEC tunnel
+IPSEC tunnel should be used rather than ZCC as the traffic flows through the Palos and there are no internal resources that the ZCC is protecting against once the palo checks occur.
+Traffic Flow
+Palo will forward the traffic from the AVD Vnet to ZIA edge from the IPSEC tunnel
+
+###### Interaction flow
+
+###### Key Components
+
+| Component | Purpose |
+| --- | --- |
+| Zscaler IPSEC Tunnel <br> | <br> Responsible for:  <br> Forwarding user traffic ZIA |
+| <br> Zscaler Internet Access (ZIA) <br> | Central policy enforcement platform  <br> Provides:  <br> URL filtering <br> Threat protection <br> SSL inspection <br> |
+Firewall Policies (Palo Alto)
+
+| Rule Name | Source Zone | Source Address <br> | Destination Zone | Destination Address | Application | Service | Action | Rule Type |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Allow To Azure Key Vault | EW-Private | (AVD SUBNET) | EW-Private | (Key Vault FQDN) | SSL, Web browsing | App Default | Allow | Intrazone |
+| Allow Kiosk to AVDs | EW-Private | 10.73.0.0/16 <br> | EW-Private | (AVD Subnet) | Confirm | App Default | Allow | Intrazone |
+| Allow Kiosk to AVDs – non std <br> | EW-Private | 10.73.0.0/16 | EW-Private | (AVD Subnet) | Ms-rdp <br> | Udp-3390 | Allow | Intrazone |
+| Zscaler Web Proxy Access <br> |  | (Add AVD SUBNET) <br> |  |  |  |  |  | Existing Policy |
+| Zscaler PBF - Excluded Sources |  | (Add AVD Subnet to address group) |  |  |  |  |  | Address group |
+
+###### Monitoring & Logging
+All the logs in the Azure Sentinel as it per the current state.
+Retention period for these logs is currently set to 180 days.
+
+| Element | Specification | Rationale |
+| --- | --- | --- |
+| Logging | Sentinel ~ 180 days | Operational visibility  <br> Detect anomalies |
+| Logging | ZIA(Zscaler) ~ 180 days | IP address specific logs <br> User activity |
+
+#### Fall back option:
+
+##### Traffic Routing
+All internet traffic from:
+AVD session hosts (if required by APM Azure standard)
+Routed through existing Zscaler infrastructure
+
+##### Web Filtering Enforcement
+Zscaler policies enforce:
+Blocked categories:
+Adult
+Gambling
+Explicit content
+Violence
+Illegal content
+Explicitly allowed:
+Facebook
+Approved public AI tools (unless categorised unsafe)
+Whitelisted:
+All URLs defined in managed Edge bookmarks
+No additional logging depth beyond existing APM standards.
+
+##### Authentication Model
+Zscaler authentication based on:
+Network location
+Device identity
+EntraID logins will authenticate via username and set password
+
+#### Printing Network Considerations
+Printing is not required in this design
+
+#### Network Responsibilities & Dependencies
+
+| Area | Responsibility |
+| --- | --- |
+| Kiosk Wi-Fi SSID | Network team |
+| VLAN / segmentation | Network team |
+| IP addressing & DHCP | Network team |
+| Zscaler routing & policy | Network / Cyber |
+| Entra ID Named Locations | Identity / Endpoint |
+| AVD VNet design | Cloud / Azure |
+
+#### Network Items Out of Scope
+Site cabling remediation
+Switch hardware upgrades
+Wi-Fi coverage optimisation
+Internet bandwidth upgrades
+Printer physical placement
+
+## Information & Data Architecture
+
+### Information Model
+The kiosk solution does not introduce a persistent data store. All data exists transiently within the AVD session and is destroyed when the session ends. The information model is defined by the data that flows through the session:
+Job seeker input: resumes, cover letters, job applications, form submissions
+Browser data: browsing history, cookies, cached pages, autofill data, download files
+Session metadata: AVD connection logs, session duration, disconnect events
+Authentication tokens: Entra ID session tokens, Edge profile data
+
+### Information Classification
+The kiosk solution processes job seekers' personally identifiable information (PII) with short-term retention only. No data is persisted beyond the active session.
+
+| Data Element | Classification | Retention | Protection Mechanism |
+| --- | --- | --- | --- |
+| Resume/cover letter content | PII - Sensitive | Session only | Ephemeral profile + Nerdio reimaging + profile cleanup |
+| Job applications | PII - Sensitive | Session only | Ephemeral profile + Nerdio reimaging |
+| Centrelink medical forms | PII - Health | Session only | Ephemeral profile + Nerdio reimaging |
+| Webmail credentials (if entered) | PII - Credentials | Session only | Edge ephemeral profile + no password manager |
+| Financial information | PII - Financial | Session only | Ephemeral profile + no autofill |
+| Browsing history | Activity data | Session only | ClearBrowsingDataOnExit + reimaging |
+| Zscaler web logs | Activity data | Per APM retention policy | Retained in Zscaler per existing standard |
+| AVD session logs | Operational data | Per Azure retention policy | AVD Diagnostics in Azure Monitor |
+
+### Analytics and reporting Patterns
+Job seeker data follows a strictly ephemeral lifecycle with three independent destruction mechanisms:
+Job seeker connects to a clean, reimaged session host
+During the session, data exists only in the AVD session (RAM and temporary disk)
+No data is stored on the physical kiosk device (thin client runs only Windows App)
+When the session ends: Edge data is cleared (mechanism 1), the user profile is deleted on reboot (mechanism 2), session host is reimaged from the golden image (mechanism 3)
+USB storage allows job seekers to take their own documents
+
+## Cyber & Security Architecture
+
+### RFFR Overview
+APM operates under the Workforce Australia Service Deed, which requires compliance with the Right Fit for Risk (RFFR) cybersecurity accreditation framework administered by DEWR. RFFR is based on ISO 27001 and the ASD ISM.
+RFFR compliance is managed under APM’s existing ISMS with the Compliance Manager as responsible, Cyber Security is consulted and provides assurance. This document supports the accreditation process but does not constitute the ISMS.
+
+### Identity and Access Control
+
+#### F3 Licence Assignment
+As part of the Entra ID provisioning process, the kiosk user identity is configured using a default-deny access model. All Microsoft 365 service plans, application entitlements, and resource access are disabled by default, with only the explicitly approved services, including Word, PowerPoint and Excel are enabled for the account.
+This enforces least-privilege access at the identity layer and reduces the attack surface associated with the kiosk account. In the event that a kiosk user credential or device is compromised, the account is technically constrained from being used to access unauthorised Microsoft 365 workloads, data repositories, or adjacent tenant resources, thereby limiting lateral movement and containing the blast radius of compromise.
+
+#### Entra ID Groups
+
+| Group Name | Type | Membership | Purpose |
+| --- | --- | --- | --- |
+| APM-Autopilot-Kiosk-Devices | Device (dynamic) | Dynamic: device name starts with KI-APM- | Target Autopilot profile and kiosk Intune policies |
+| APM-AVD-SessionHosts | Device (assigned) | AVD session host VM objects | Target Intune policies for AVD session host image |
+| APM-AVD-KioskUsers | User (assigned) | Per-device kiosk Entra ID accounts | AVD app group assignment and conditional access |
+| APM-JS-[LOCATION]-Devices | Device (assigned) | Per location Job Seker devices | Apply location specific policies, auto naming convention, asset management assistance |
+
+#### Kiosk User Accounts
+
+| Property | Value |
+| --- | --- |
+| UPN format | Kiosk-[SERIAL]@apm.net.au |
+| Example | kiosk-CU9G7H2@apm.net.au |
+| Password delivery | Kiosk Screen Saver (username, password, asset tag, data wipe notice) |
+| Password rotation | Every 12 months |
+| MFA | Not required – device is trust anchor; conditional access restricts sign-in – The device is authenticated via its hardware hash and TPM attestation during initial device enrolment |
+| Group membership | APM-AVD-KioskUsers |
+
+#### Conditional Access Policies
+CA-APM-Kiosk-WebOnly-Office
+This Conditional Access policy restricts kiosk user identities to Microsoft 365 web‑based productivity services required for resume and document creation (Word, Excel, and PowerPoint Online) and blocks access to all other Microsoft 365 workloads and third‑party cloud applications.
+The policy enforces device‑bound access by requiring the session to originate from an APM‑managed, Entra ID‑joined, Intune‑compliant kiosk device provisioned via the approved Autopilot profile.
+Access to services outside the approved Office Online scope (including Exchange Online, Teams, and non‑business SaaS applications) is explicitly denied.
+
+| Field | Value |
+| --- | --- |
+| Name | CA-APM-Kiosk-WebOnly-Office |
+| Users / Groups | Include: SG-APM-Kiosk-Users |
+| Cloud Apps | Include: All cloud apps
+Exclude: Microsoft Office Online |
+| Conditions > Device platforms | Include: Windows |
+| Conditions > Device filter | Include: device.enrollmentProfileName -eq "APM-Kiosk-SelfDeploying" AND device.trustType -eq "AzureAD" |
+| Grant | Block access |
+| Session | Sign-in frequency: 12 hours |
+CA-APM-Kiosk-DeviceBound
+The primary access control is a Conditional Access (CA) policy that filters on the device enrolment profile. This ensures that only devices provisioned through the APM kiosk Autopilot profile can authenticate to AVD resources.
+
+| Field | Value |
+| --- | --- |
+| Name | CA-APM-Kiosk-DeviceBound |
+| Users / Groups | Include: SG-APM-Kiosk-Users |
+| Cloud Apps | Include: Azure Virtual Desktop, Windows Cloud Login, Microsoft Remote Desktop |
+| Conditions > Device platforms | Include: Windows |
+| Conditions > Device filter | Include: device.enrollmentProfileName -eq "APM-Kiosk-SelfDeploying" AND device.trustType -eq "AzureAD" |
+| Grant | Require device to be marked as compliant; Require all selected controls |
+| Session | Sign-in frequency: 12 hours |
+What this blocks: Any sign-in attempt from a device that was not provisioned via the APM-Kiosk-SelfDeploying Autopilot profile is denied, regardless of whether the credentials are correct. This includes personal Windows laptops, corporate devices enrolled under a different Autopilot profile, and any device that is not Entra ID joined with a compliant status. The device filter evaluates the hardware identity of the requesting device at authentication time, not the network location.
+Two additional CA policies provide defence in depth by blocking access from non-Windows platforms and from the AVD web client (browser-based access).
+Together, these two policies ensure that even if Layer 1 were misconfigured, kiosk credentials cannot be used from any non-Windows device or from the AVD web portal. The web client block is particularly important because the AVD web client (https://client.wvd.microsoft.com) does not present a device identity and would therefore bypass device-based CA filters.
+CA-APM-Kiosk-BlockNonWindows
+
+| Field | Value |
+| --- | --- |
+| Name | CA-APM-Kiosk-BlockNonWindows |
+| Users / Groups | Include: SG-APM-Kiosk-Users |
+| Cloud Apps | Include: Azure Virtual Desktop, Windows Cloud Login, Microsoft Remote Desktop |
+| Conditions > Device platforms | Include: Android, iOS, macOS, Linux |
+| Conditions > Client apps | Browser, Mobile apps and desktop clients |
+| Grant | Block access |
+CA-APM-Kiosk-BlockWebClient
+
+| Field | Value |
+| --- | --- |
+| Name | CA-APM-Kiosk-BlockWebClient |
+| Users / Groups | Include: SG-APM-Kiosk-Users |
+| Cloud Apps | Include: Azure Virtual Desktop |
+| Conditions > Client apps | Browser only |
+| Grant | Block access |
+CA-APM-Kiosk-RequireCompliantDevice
+
+| Field | Value |
+| --- | --- |
+| Name | CA-APM-Kiosk-RequireCompliantDevice |
+| Users/Groups | Include: APM-AVD-KioskUsers |
+| Cloud Apps | Include: Azure Virtual Desktop, Windows Cloud Login, Microsoft Remote Desktop |
+| Conditions > Device Platforms | Include: Windows |
+| Conditions > Device Filter | Include: device.enrollmentProfileName -eq “APM-Kiosk-SelfDeploying” AND device.trustType -eq “AzureAD” |
+| Grant | Require device to be marked as compliant; Require all selected controls |
+| Session (optional) | Sign-in frequency: 12 hours |
+| Purpose | Prevents sign-in from unmanaged or non-compliant devices. Prevents sign-in to non-authorised cloud apps via Entra ID from kiosk devices. Prevents sign-ins from any non-kiosk devices regardless of enrolment status. |
+CA-APM-Kiosk-BlockNonWindows
+
+| Field | Value |
+| --- | --- |
+| Name | CA-APM-Kiosk-BlockNonWindows |
+| Users/Groups | Include: APM-AVD-KioskUsers |
+| Cloud Apps | Include: Azure Virtual Desktop, Windows Cloud Login, Microsoft Remote Desktop |
+| Conditions > Device Platforms | Include: Android, iOS, macOS, Linux |
+| Conditions > Client Apps | Include: Browser, Mobile apps and desktop clients |
+| Grant | Block access |
+| Purpose | Second layer policy to the above. Blocks non-Windows platforms from using the kiosk users to log in. |
+CA-APM-Kiosk-BlockWebClient
+
+| Field | Value |
+| --- | --- |
+| Name | CA-APM-Kiosk-BlockWebClient |
+| Users/Groups | Include: APM-AVD-KioskUsers |
+| Cloud Apps | Include: Azure Virtual Desktop |
+| Conditions > Client Apps | Include: Browser Only |
+| Grant | Block access |
+| Purpose | Additional second layer policy. Required to block the AVD web portal. When used in conjunction the policy above it blocks the kiosk credentials being used from any non-windows device or from the AVR web portal. |
+CA-APM-Kiosk-BlockExchangeOnline
+
+| Field | Value |
+| --- | --- |
+| Name | CA-APM-Kiosk-BlockExchangeOnline |
+| Users / Groups | Include: APM-AVD-KioskUsers |
+| Cloud Apps | Include: Exchange Online |
+| Grant | Block access |
+| Purpose | Blocks Outlook / Exchange Online access for kiosk users (mailbox exists due to licensing, but access is denied). |
+CA-APM-Kiosk-BlockTeams
+
+| Field | Value |
+| --- | --- |
+| Name | CA-APM-Kiosk-BlockTeams |
+| Users / Groups | Include: APM-AVD-KioskUsers |
+| Cloud Apps | Include:  Badge |
+| Grant | Block access |
+| Purpose | Blocks Microsoft Teams access for kiosk users without impacting Office Online dependencies. |
+CA-104-All Users and Guests – All Apps – High Sign in Risk - Block
+
+| Field | Value |
+| --- | --- |
+| Name | CA-104-All Users and Guests – All Apps – High Sign in Risk - Block |
+| Users / Groups | Include: All Users |
+| Cloud Apps | Include:  All Resources (All Cloud Apps) |
+| Grant | Block access |
+| Purpose | Blocks High Risk sign-ins across all users and cloud apps.. |
+
+#### Compliance Policy
+Policy: CMP-APM-AVD-SessionHosts  |  Scope: APM-AVD-SessionHosts
+
+| Setting | Required Value |
+| --- | --- |
+| Operating system | Windows 11 |
+| Microsoft Defender | Enabled |
+| BitLocker | Enabled |
+| Firewall | Enabled |
+| TPM | Required |
+
+#### AVD Application Group
+
+| Setting | Value |
+| --- | --- |
+| Type | Desktop Application Group |
+| Assigned to | APM-AVD-KioskUsers |
+| Experience | Full desktop session (not RemoteApp) |
+| Host pool | HP-APM-Kiosk |
+
+#### Microsoft Office Hardening
+As Microsoft Office is available online only, the organisation acknowledges that Microsoft Word, Excel, and PowerPoint Online do not support endpoint-level application hardening controls such as macro configuration, Protected View enforcement, OLE/DDE restrictions, or application allow-listing. This limitation is inherent to Microsoft’s SaaS delivery model and cannot be mitigated through Intune or endpoint configuration. In the Job Seeker Kiosk environment, this risk is accepted on the basis that kiosk devices are single-purpose, locked-down endpoints with restricted user interaction, hardened browser configuration, enforced device compliance, and ephemeral user sessions that do not persist data locally. Access to Microsoft 365 services is constrained through Conditional Access, network and device trust controls, and Microsoft-managed service security, rather than individual user authentication factors such as MFA, which are not appropriate for anonymous or assisted kiosk use. Where application-level control or higher assurance is required, desktop Microsoft Office delivered via a hardened Azure Virtual Desktop environment is used in accordance with Right-Fit-For-Risk principles.
+
+### Security Controls Alignment
+
+| Control Area | Solution Component | Implementation Detail |
+| --- | --- | --- |
+| Access Control | Entra ID + Conditional Access | Device-based auth, location-restricted to APM site Ips, compliant device required |
+| Session Management | AVD session limits + Nerdio reimaging | 10-min idle timeout, disconnect on lock, 1-min disconnect timeout, full reimage |
+| Data Protection | Zero persistence architecture | Ephemeral profiles, profile cleanup, VM reimaged from golden image |
+| Data at Rest | BitLocker | Required on all session hosts via compliance policy |
+| Web Filtering | Zscaler (existing APM standard) AVD Instance | Category-based filtering, whitelist for approved sites |
+| Endpoint Protection | Microsoft Defender | Real-time protection, feeds compliance policy |
+| Logging | Zscaler + AVD diagnostics + Intune | Web activity, connection events, compliance state |
+| Physical Security | Data wipe notice | Wallpaper notice |
+| Network Segmentation | Re-used Job Seeker VLAN (now APM-KIOSK) <br> | Kiosk devices use the re-purposed Job Seeker VLAN with controlled access to approved Azure, Microsoft, and APM-managed service dependencies only; no general access to corporate systems or personal device connectivity <br> |
+| Patch Management | Nerdio golden image lifecycle | Monthly patch, validate, promote, no in-session updates |
+
+### Web Filtering
+
+| Action | Categories / Sites |
+| --- | --- |
+| Block | Adult, gambling, explicit, violence, illegal content |
+| Block | TikTok, Instagram, X (Twitter) |
+| Allow | Facebook (community job boards), public AI tools (unless high risk) |
+| Whitelist | All URLs in managed bookmarks (section 4.3.7) |
+
+### Azure Runbooks
+Per the per-device credential model described in the Credential Management section, the design is updated:
+Password rotation is now per-device, iterating over members of SG-APM-Kiosk-Users and updating both Entra ID and the device's Key Vault secret
+All runbooks that touch Key Vault execute on a System Hybrid Runbook Worker hosted on a shared-services VM in snet-shared-service so they can reach the Key Vault private endpoint
+The lock screen image generation moves from runbook-driven to device-side Intune Proactive Remediation, reading the password via the Credential Proxy Function App.
+Azure run books are required to support some options of the kiosk, these include the password and wallpaper rotation and the creation of the kiosk user Entra ID accounts.
+
+#### Kiosk User Password Rotation
+This runbook performs the following steps:
+Generates a new password that meets the complexity requirements of APM
+Retrieves the members of the SG-APM-Kiosk-Users group
+Runs the Update-MgUser for each member of the group ensure ForceChangePasswordNextSignIn is set to $false
+For each user, updates corresponding Key Vault Secret kiosk-[serialnumber] in kv-apm-kiosk with the new password. Soft delete retails the previous version for 90 days as rollback cover. Autologon and lock screen on the device are updated by the kiosk-site Proactive Remediation on its next 60-minute cycle..
+Log the password rotation even in Azure Log Analytics for auditing
+Send notification email to APM service desk
+
+#### Entra ID User Account Creation
+This runbook performs the following steps:
+Monitors the APM kiosk device user group for changes
+When a change is detected, queries MSGraph for the serial number of the new device
+Creates an F3 user with the specific UPN format (kiosk-[serialnumber]@apm.net.au.)
+Assigned it an F3 licence
+Generates a 16-character random password (upper, lower, digit, special) and stores it in the Key Vault kv-apm-kiosk as a secret kiosk-[serialnumber]
+Adds the newly created user to the SG-APM-Kiosk-Users group
+
+## Service Availability and Disaster Recovery
+
+### Business Service Tiering
+The kiosk solution supports job seeker access to employment services. The service availability directly affects APM’s ability to meet Workforce Australia service deed obligations. The solution is classified as a Tier 3 service – important but not mission-critical, where an outage is disruptive but does not immediately stop core business operations.
+
+### Service Availability
+
+| Component | Availability Target | Dependency |
+| --- | --- | --- |
+| Azure Virtual Desktop | 99.9% (Microsoft SLA) | Azure region availability |
+| Nerdio Manager | 99.9% (Nerdio SLA) | Azure platform |
+| Microsoft Entra ID | 99.99% (Microsoft SLA) | Microsoft cloud services |
+| Microsoft Intune | 99.9% (Microsoft SLA) | Microsoft cloud services |
+| Physical kiosk device | Hardware-dependent | Dell hardware warranty; Wi-Fi connectivity at site |
+| Zscaler web filtering | Per existing APM SLA | Zscaler cloud platform |
+If AVD is unavailable, the physical kiosk device displays the Windows App connection screen but cannot establish a session. Job seekers would need to be directed to alternative facilities. There is no local fallback mode, the thin client runs only the AVD client.
+
+### Disaster recovery & Resilience
+The kiosk architecture is inherently resilient due to its stateless design:
+No persistent data: There is nothing to recover. Every session starts from a clean golden image.
+Golden image redundancy: The image is stored in Azure Compute Gallery with versioning. Rollback to a previous image version is a Nerdio operation.
+Host pool scaling: If individual session hosts fail, Nerdio auto-scaling provisions replacements from the golden image.
+Physical device failure: Replace the device, register the hardware hash in Autopilot, and it self-provisions. No data migration required.
+Azure region failure: AVD can be deployed to a secondary Azure region. This is an infrastructure decision outside the scope of this design but should be considered for the broader AVD deployment.
+
+## Service Management
+
+### Service Management principles
+All changes to the kiosk solution follow APM’s existing change management process
+Golden image changes are tested in a validation host pool before production promotion
+Intune policy changes are deployed to a pilot device group before broad rollout
+Operational runbooks are maintained for routine tasks (password rotation, image patching)
+
+### Monitoring, Logging, Reporting and Alerting
+
+| Platform | Metrics | Alerting |
+| --- | --- | --- |
+| AVD Diagnostics | Session connection rates, duration, disconnect reasons, latency | Alert on connection failure rate exceeding threshold |
+| Intune | Device compliance state, policy sync, app install status | Alert on compliance drift or policy failure |
+| Nerdio | Host pool health, reimaging success/failure, auto-scaling events | Alert on reimaging failure or scaling failure |
+| Zscaler | Web activity logs per existing APM standard | Per existing APM alerting policy sending logs to Microsoft Sentinel |
+
+### Patching Lifecyle
+Golden image patched monthly (OS updates, Edge, Defender, M365 Apps)
+Patched image deployed to validation host pool
+Validation confirms session lifecycle, bookmarks, printing, and policy application
+Image promoted to production via Nerdio
+All production session hosts reimaged from updated golden image
+No in-session patching. All updates applied at the image level.
+
+### Implementation Sequence
+The implementation is structured in five phases:
+
+#### Phase 1 – Thin Client Foundation
+Register hardware in Autopilot
+Create Entra ID groups and kiosk user accounts
+Configure Autopilot self-deploying profile
+Configure compliance policy and conditional access policies
+
+#### Phase 2 – AVD Infrastructure
+Deploy Nerdio Manager for Enterprise
+Create host pool HP-APM-Kiosk
+Build golden image and apply Intune configuration profiles
+Configure auto-scaling and reimaging in Nerdio
+Test full session lifecycle
+
+#### Phase 3 – Physical Device Provisioning
+Deploy Shell Launcher and Windows App profiles
+Provision 5-10 pilot devices across 2-3 sites
+Validate end-to-end flow, printing, USB, bookmarks, accessibility
+
+#### Phase 4 - Penetration Testing
+Conduct pre-production penetration testing on thin client
+Conduct pre-production penetration testing on the ES AVD image
+
+#### Phase 5 – National Rollout
+Deploy all 517 devices site-by-site with priority sites first
+Monitor auto-scaling and reimaging under production load
+Resolve site-specific issues
+
+#### Phase 6 – Operational Handover
+Document operational runbooks
+Hand over to APM
+Establish monitoring and alerting
+Conduct RFFR alignment review

@@ -1,0 +1,311 @@
+H1 |1. Introduction
+GD |What this section must contain - the purpose of the document, what decision it is asking the reader to make, and who needs to read it. Keep it to one page. If a reader cannot tell from this section whether the document concerns them, rewrite it.
+H2 |1.1 Purpose
+GD |State what the document designs, what it will be used for once approved, and what it explicitly does not cover. Name the downstream artefacts that depend on it.
+P |**Example.** The purpose of this document is to provide the detailed logical and physical architecture for <<Solution Name>>, and to define the application, technology, information and cyber security components required to deliver it into production.
+P |The aim of this document is to:
+NUM |Outline the business requirements the solution must satisfy.
+NUM |Describe the logical architecture that meets those requirements.
+NUM |Describe the physical architecture, at a level of detail sufficient for the solution to be built from this document without further design work.
+NUM |Describe the design decisions taken, the options considered, and their implications.
+NUM |Outline the data and cyber security controls adopted to meet APM cyber security standards and applicable compliance obligations.
+P |This document forms the basis on which the Technical Design Document and the supporting operational runbooks for each solution component will be prepared. It is submitted to <<approving group>> for approval.
+H2 |1.2 Audience
+GD |List the groups who must read or approve the document, and say what each is being asked for - approval, endorsement, input or awareness. Do not list individuals.
+P |**Example.** The primary audience is APM's Digital Delivery, Digital Operations, Cyber Security, Information Architecture and project teams responsible for build, integration, support and maintenance. Business owners and business operations staff are included because the requirements driving this design originate with them.
+B |Business Sponsor - endorsement of the business outcomes
+B |Digital Transformation &amp; Architecture - design authority and approval
+B |Cyber Security - approval of the security architecture and residual risk
+B |Digital Operations and Digital Delivery - build, transition and operate
+B |Project Management Office - schedule, dependency and risk tracking
+H1 |2. Overview
+GD |Describe the solution in business language, in no more than four paragraphs. A reader who knows APM but not this project should finish this section able to explain the solution to someone else. Avoid product names until section 4.
+P |**Example.** <<Business area>> currently <<describe the present state and the problem it creates>>. This creates <<the business consequence - cost, risk, delay, compliance exposure>>.
+P |<<Solution Name>> addresses this by <<describe the change in plain language>>. The solution is delivered on existing APM platform capability, with <<name any genuinely new component>> as the only new component introduced.
+P |For the people who use it, the change is <<describe the day-to-day experience after the change>>.
+H2 |2.1 Scope
+GD |Two lists - in scope and out of scope. Be specific enough that a disagreement about scope can be settled by reading this section. Anything deliberately deferred belongs in the out-of-scope list with a pointer to where it will be handled, not left unstated.
+P |**In scope**
+B |<<Capability, environment or population included - one line each>>
+B |<<Interfaces and integrations included>>
+B |<<Environments included: production, non-production, DR>>
+P |**Out of scope**
+B |<<Explicitly excluded item>> - handled by <<other workstream or deferred to phase 2>>
+B |<<Explicitly excluded item>>
+H2 |2.2 Guiding Principles
+GD |Between five and eight statements that govern the design decisions in this document. Each principle must be capable of ruling an option out - if it cannot, it is a slogan, not a principle. Write the implication, not just the heading.
+TBL |2400,6960
+TH |Principle||What it means in this design
+TR |<<Principle name>>||<<The design consequence - what this principle causes the design to do, and what it rules out>>
+TR |Reuse before buy before build||Existing licensed platform capability is used wherever it meets the requirement. Any new component must be justified against the reuse option in section 4.2
+TR |Secure by design||Controls are part of the architecture, not added after it. Any control deferred to a later phase is recorded as a risk in section 7
+TR |Operable from day one||Nothing is delivered without monitoring, alerting, a support model and a runbook. Section 9 is a delivery requirement, not documentation
+END
+H2 |2.3 Assumptions
+GD |Every assumption is something that, if wrong, changes the design. Give each an ID so it can be referenced from the risk register and tracked to closure.
+TBL |1000,8360
+TH |ID||Assumption
+TR |A-01||<<Assumption about licensing, capacity, dependency or availability>>
+TR |A-02||<<Assumption about another workstream's delivery>>
+TR |A-03||<<Assumption about environment or data availability>>
+END
+H1 |3. Business Architecture
+GD |Explain how the solution supports APM's business architecture. At minimum: which business capabilities are impacted, how they must change, and the clear line from that change to the solution. Reuse the APM Business Capability Model rather than inventing capability names.
+P |**Example.** <<Solution Name>> is a response to <<the target business outcome>>. The capabilities it touches, and the degree of change each experiences, are set out below.
+H2 |3.2 Business Reference architecture
+GD |Insert the capability overlay. Heat-map the impact so reviewers can see at a glance which parts of the business must be engaged. Then describe, in prose, what changes for the high-impact capabilities.
+FIG |t1.png|Figure 1. Business reference architecture - capability impact heatmap|3040|1460
+P |**Example.** Two capabilities are uplifted directly. <<Capability A>> changes because <<reason>>. <<Capability B>> changes because <<reason>>. Four further capabilities change operationally rather than architecturally - process and runbook updates only - and the remainder require awareness so that dependent teams are not surprised.
+H2 |3.3 Business Requirements
+GD |Include the architecturally significant requirements only, with traceability. Separate functional from non-functional. Every requirement needs a visible answer to "where in this document is that met?" - a section reference, not a restatement. Link to the full requirements document rather than reproducing it.
+TBL |900,4260,4200
+TH |ID||Requirement||Met by
+TR |BR-01||<<Functional requirement, stated as an outcome the business needs>>||<<Component or control, with the section reference (§x.y)>>
+TR |BR-02||<<Functional requirement>>||<<Section reference>>
+TR |NFR-01||<<Non-functional: availability target driven by service tiering>>||<<Section reference - usually §8>>
+TR |NFR-02||<<Non-functional: performance, capacity or response target>>||<<Section reference>>
+TR |NFR-03||<<Non-functional: security or compliance obligation>>||<<Section reference - usually §7>>
+END
+H2 |3.4 Gap treatment
+GD |For every requirement not fully met, state the gap plainly, the impact of leaving it, the treatment agreed with the business, and who agreed it. A gap disclosed here is a design decision; the same gap discovered in testing is a defect.
+P |**Example.** <<Requirement ID>> is met with a limitation: <<describe precisely what does not work>>. The business impact is <<impact>>. The agreed treatment is <<manual process, phase 2 delivery, or accepted limitation>>, agreed with <<role>> on <<date>>. The residual risk is recorded as <<risk ID>> in section 7.
+H1 |4. Application Architecture
+GD |Describe the applications and services that make up the solution, and everything they integrate with. Identify clearly what is new, what changes, and what is reused unchanged - a reader should be able to derive the build backlog from this section.
+P |**Example.** The solution is composed of <<n>> components, of which <<n>> are existing licensed platform services reused unchanged, <<n>> require configuration change, and <<n>> are new. The rationale for each new component is given in section 4.2.
+H2 |4.1 System Context Diagram
+GD |One logical diagram showing the solution boundary, its users and every system it touches. No internal components, no infrastructure. If the diagram needs a key to be understood, it is too detailed for this section.
+FIG |t7.png|Figure 2. System context - solution boundary, consumers and external systems|3040|1640
+H2 |4.2 Solution/Product Component Inventory
+GD |Every component in scope, with its role, its version or licensing position, and its status - new, changed, or unchanged. Where a component is new, state why an existing one was not used. This table is what procurement, licensing and security assurance will each read first.
+TBL |2300,3760,3300
+TH |Component||Role in the solution||Version / licensing / status
+TR |<<Product name>>||<<What it does in this solution, in one line>>||<<Version, licence held or required, and status: new / changed / unchanged>>
+TR |<<Product name>>||<<Role>>||Existing licensing. Configuration change only
+TR |<<Product name>>||<<Role>>||New purchase - reuse option considered and rejected because <<reason>>
+END
+H2 |4.3 Solution Interface Diagram
+GD |Show every interface between components, using the naming and IDs from the inventory above and the catalogue below. The diagram and the catalogue must agree - if an arrow has no catalogue row, one of the two is wrong.
+FIG |t8.png|Figure 3. Solution interface diagram - interaction sequence|3040|1520
+H2 |4.4 Solution/Product Interface catalogue
+GD |One row per interface, with a stable ID. State the pattern, the protocol, the authentication model, the direction, the data carried, and the frequency or volume. This is the section integration engineers build from.
+TBL |1000,2200,2760,3400
+TH |ID||Interface||Pattern / protocol||Notes - authentication, data, frequency
+TR |INT-01||<<Source>> to <<Target>>||<<REST / file / event / RDP / etc. over which transport>>||<<Auth model, payload, frequency or volume, error handling>>
+TR |INT-02||<<Source>> to <<Target>>||<<Pattern>>||<<Detail>>
+TR |INT-03||<<Source>> to <<Target>>||<<Pattern>>||<<Detail>>
+END
+H1 |5. Technology Architecture
+GD |Describe the technology components required to deploy and run the solution, and where they sit in the APM technology reference model. Sections 5.1 to 5.4 are the build specification - the level of detail must be sufficient for an engineer to construct the environment without returning to the designer.
+FIG |t2.png|Figure 4. Technology reference model - solution placement|3040|1400
+H2 |5.1 Technology Component Standards
+GD |An inventory of technology components by TRM domain, naming the vendor product and its approval status. Flag anything that is new or under review, because each one becomes an approval this document must carry.
+TBL |1900,2400,2400,2660
+TH |TRM domain||Component||Product / version||Approval status
+TR |Compute||<<Component>>||<<Product and version>>||Approved / Under review / New
+TR |Network||<<Component>>||<<Product and version>>||Approved
+TR |Identity||<<Component>>||<<Product and version>>||Approved
+TR |Data||<<Component>>||<<Product and version>>||Approved
+TR |Monitoring||<<Component>>||<<Product and version>>||Approved
+END
+H2 |5.2 Integration standards and patterns
+GD |Name the integration patterns the solution uses and the standards that govern each. For every pattern: the product, the authentication model, error and retry behaviour, and expected throughput.
+FIG |t3.png|Figure 5. Integration standards and patterns|3040|1280
+TBL |2200,3560,3600
+TH |Pattern||Where used||Standard applied
+TR |Synchronous request / response||<<Which interfaces>>||OAuth 2.0 client credentials, mutual TLS, 30-second timeout, three retries with exponential backoff, circuit breaker at <<threshold>>
+TR |Asynchronous event||<<Which interfaces>>||At-least-once delivery, idempotent consumers, dead-letter after <<n>> attempts, replay supported for <<n>> days
+TR |Bulk / file transfer||<<Which interfaces>>||<<Schedule, encryption in transit and at rest, checksum validation, failure notification>>
+END
+H2 |5.3 Network &amp; Infrastructure Standards &amp; Patterns
+GD |This is the most commonly under-specified section in a design document, and the most expensive to get wrong. It must be detailed enough that the network can be built from it. That means: named resources, actual address space, subnet allocation with masks, routing with next-hop addresses, DNS resolvers and zones, the specific outbound destinations permitted, NSG rule intent per subnet, and the peering topology. If a build engineer would have to ask a question, the section is not finished.
+FIG |t4.png|Figure 6. Network and infrastructure - build-level logical design|3040|2240
+H3 |5.3.1 Naming convention
+P |All network resources follow the APM Azure naming standard: <<type>>-<<workload>>-<<environment>>-<<region>>, lower case, hyphen separated. Example: vnet-hub-prod-ae, snet-app-prod-ae, nsg-app-prod-ae, rt-spoke-prod-ae, pe-sql-prod-ae.
+H3 |5.3.2 Address plan
+GD |State the whole allocation, including reserved and unused ranges. Overlapping or undocumented address space is the single most common cause of integration failure late in a build.
+TBL |2400,1800,2400,2760
+TH |Virtual network||Address space||Region||Purpose
+TR |vnet-hub-prod-ae||10.100.0.0/20||Australia East||Shared services, gateways, firewall, DNS, monitoring
+TR |vnet-prod-ae||10.101.0.0/20||Australia East||Production workload spoke
+TR |vnet-nonprod-ae||10.102.0.0/20||Australia East||Development and test spoke
+TR |vnet-avd-ae||10.103.0.0/20||Australia East||Session host spoke
+TR |Reserved||10.104.0.0/14||Australia East||Held for future spokes - do not allocate without architecture approval
+TR |On-premises||10.20.0.0/16||APM sites||Advertised to Azure over ExpressRoute via BGP
+END
+H3 |5.3.3 Subnet allocation
+TBL |2400,1700,1700,3560
+TH |Subnet||Prefix||NSG||Purpose and notes
+TR |GatewaySubnet||10.100.0.0/27||n/a||ExpressRoute and VPN gateways. No NSG permitted by platform
+TR |AzureFirewallSubnet||10.100.0.64/26||n/a||Azure Firewall Premium. Private IP 10.100.0.68 is the next hop for all spoke egress
+TR |AzureBastionSubnet||10.100.0.128/26||nsg-bastion||Brokered administrative access to virtual machines
+TR |snet-hub-dns||10.100.1.0/24||nsg-dns||Private DNS resolver inbound endpoint at 10.100.1.4
+TR |snet-hub-shared||10.100.2.0/24||nsg-shared||Key Vault private endpoint, management hosts
+TR |snet-hub-monitor||10.100.3.0/24||nsg-monitor||Log Analytics private link scope
+TR |snet-app-prod||10.101.0.0/24||nsg-app-prod||Application tier. No public IP permitted
+TR |snet-data-prod||10.101.1.0/24||nsg-data-prod||Data tier. Reachable only from the application subnet
+TR |snet-pe-prod||10.101.2.0/24||nsg-pe-prod||Private endpoints. Network policies disabled on the subnet
+TR |snet-avd-hosts||10.103.0.0/23||nsg-avd-hosts||Session hosts. Sized for <<n>> hosts plus 20 per cent growth
+END
+H3 |5.3.4 Routing
+TBL |2200,2400,2200,2560
+TH |Route table||Route||Next hop||Applied to
+TR |rt-spoke-prod-ae||0.0.0.0/0||Virtual appliance - 10.100.0.68||snet-app-prod, snet-data-prod
+TR |rt-spoke-prod-ae||10.20.0.0/16||Virtual appliance - 10.100.0.68||Forces on-premises traffic through inspection
+TR |rt-avd-ae||0.0.0.0/0||Virtual appliance - 10.100.0.68||snet-avd-hosts
+P |BGP route propagation is disabled on all spoke route tables so that the default route cannot be overridden by an advertised route. Peerings do not use gateway transit between spokes; there is no spoke-to-spoke path.
+H3 |5.3.5 DNS
+TBL |2800,2600,3960
+TH |Setting||Value||Notes
+TR |VNet DNS servers||10.100.1.4||Private DNS resolver inbound endpoint, hub-hosted
+TR |Private DNS zones||privatelink.blob.core.windows.net, privatelink.vaultcore.azure.net, privatelink.database.windows.net, privatelink.wvd.microsoft.com||Linked to the hub VNet; auto-registration disabled
+TR |On-premises forwarding||Conditional forwarder for <<apm.internal>> to <<on-premises resolver IP>>||Reverse forwarder configured for the 10.100.0.0/14 range
+END
+H3 |5.3.6 Egress control - Azure Firewall rules
+GD |List the actual destinations permitted, not "required Microsoft endpoints". A named FQDN list is what gets built and what gets audited.
+TBL |1600,3000,2100,2660
+TH |Rule||Destination||Port / protocol||Action
+TR |AVD control plane||*.wvd.microsoft.com, rdweb.wvd.microsoft.com||443/TCP||Allow
+TR |Identity||login.microsoftonline.com, *.msftauth.net, *.msauth.net||443/TCP||Allow
+TR |Platform services||*.servicebus.windows.net, mcr.microsoft.com, *.blob.core.windows.net||443/TCP||Allow
+TR |Update services||<<named update endpoints>>||443/TCP||Allow
+TR |Default||Any||Any||Deny. Threat intelligence mode set to Alert and deny
+END
+H3 |5.3.7 Network security group baseline
+TBL |2200,3560,3600
+TH |NSG||Inbound||Outbound
+TR |nsg-app-prod||Allow 443/TCP from snet-avd-hosts. Allow 443/TCP from AzureLoadBalancer. Deny VirtualNetwork||Allow 1433/TCP to snet-data-prod. Allow 443/TCP to AzureCloud.AustraliaEast. Deny Internet
+TR |nsg-data-prod||Allow 1433/TCP from snet-app-prod only. Deny VirtualNetwork||Allow 443/TCP to AzureCloud.AustraliaEast. Deny Internet
+TR |nsg-avd-hosts||Deny inbound Internet. Allow AzureLoadBalancer health probes||Allow 443/TCP to WindowsVirtualDesktop and AzureCloud.AustraliaEast service tags. Deny Internet
+P |Flow logs are enabled on every network security group with 30-day retention and traffic analytics on, at a 10-minute processing interval, writing to the central Log Analytics workspace.
+H3 |5.3.8 Connectivity and resilience
+TBL |2400,6960
+TH |Element||Specification
+TR |ExpressRoute||<<Bandwidth>>, private peering, <<provider>>, dual circuits terminating in separate peering locations. BGP ASN <<n>>
+TR |VPN backup||Site-to-site VPN as failover, <<throughput>>, active only on ExpressRoute failure
+TR |Peering||Each spoke peered to the hub only. Allow forwarded traffic enabled; gateway transit enabled on the hub side
+TR |Bandwidth and latency budget||<<Expected steady-state throughput>>, <<peak>>, latency target <<n>> ms to the Australia East region
+END
+H2 |5.4 Technology component Deployment Patterns
+GD |State how the solution is deployed and how a change reaches production - the environments, the promotion path, what gates each hop, who approves it, and how it is rolled back. If something cannot be rolled back, say so; that is a risk, not a footnote.
+FIG |t5.png|Figure 7. Technology component deployment pattern|3040|1320
+TBL |1600,2600,2600,2560
+TH |Environment||Purpose||Deployment method||Promotion gate
+TR |Development||Build and unit test||Infrastructure as code from the feature branch||Automated tests pass
+TR |Test / UAT||Integration and user acceptance||Same code, environment-specific parameters||Test exit report signed by <<role>>
+TR |Pre-production||Performance and failover validation||Identical to production||Performance targets met, DR test passed
+TR |Production||Live service||Approved change record, deployed from the main branch||Change Advisory Board approval
+END
+H1 |6. Information &amp; Data Architecture
+H2 |6.1 Information Model
+GD |The conceptual entities the solution creates or consumes, where each is mastered, and how it flows. If the solution stores no new data, state that explicitly - it is the strongest statement available in this section.
+FIG |t6.png|Figure 8. Conceptual information model and data flow|3040|1320
+TBL |2400,2760,4200
+TH |Entity||Custodian / system of record||Notes
+TR |<<Entity name>>||<<Where it is mastered after this change>>||<<What it contains, volume, retention>>
+TR |<<Entity name>>||<<Custodian>>||<<Notes>>
+END
+H2 |6.2 Information Classification
+GD |Classify every entity from the model above against the APM data classification standard, and state the protection that follows from each classification. Classification without a corresponding control is not classification.
+TBL |2600,2000,4760
+TH |Entity||Classification||Protection applied
+TR |<<Entity name>>||OFFICIAL||Encryption in transit and at rest, role-based access, audit logging
+TR |<<Entity name>>||OFFICIAL: Sensitive||As above plus restricted access group, access review <<frequency>>, retention <<period>>
+TR |<<Entity name>>||<<Classification>>||<<Controls>>
+END
+P |Data sovereignty: all data is stored and processed in <<region>>. <<State any circumstance in which data leaves the region, including support access, or state explicitly that none exists.>>
+H2 |6.3 Analytics and reporting Patterns
+GD |What reporting the solution must support, from which source, delivered how and to whom. Name the existing platform being used; a new reporting tool is a component and belongs in section 4.2.
+TBL |2400,2760,4200
+TH |Report||Source||Audience and frequency
+TR |<<Report name>>||<<System and dataset>>||<<Audience>>, <<frequency>>
+TR |<<Operational dashboard>>||<<Source>>||<<Audience>>, real time
+END
+H1 |7. Cyber &amp; Security Architecture
+GD |State the controls the solution implements, mapped to the applicable APM standard and compliance obligation. Cover, at minimum: identity for users, applications and integrations; data and network policy; user access and controls; device protection; data sovereignty; and encryption. Where a control cannot be met, propose the compensating control and record the residual risk - do not omit it.
+FIG |t9.png|Figure 9. Cyber and security architecture - trust zones and controls|3040|1640
+H2 |7.1 Control mapping
+TBL |1900,3400,4060
+TH |Domain||Control implemented||Standard / obligation met
+TR |Identity - users||<<MFA method, Conditional Access policy, privileged access model>>||<<APM standard, Essential Eight control, ISM guidance>>
+TR |Identity - applications and integrations||<<Managed identity, certificate or secret handling, rotation>>||<<Standard>>
+TR |Network||<<Segmentation, egress control, private connectivity>>||<<Standard>>
+TR |Data||<<Encryption at rest and in transit, key management, DLP>>||<<Standard>>
+TR |Device||<<Compliance policy, EDR, hardening baseline>>||<<Standard>>
+TR |Logging and detection||<<What is logged, where it goes, what alerts on it>>||<<Standard>>
+END
+H2 |7.2 Trust boundaries and access model
+P |**Example.** The trust boundary is <<where it sits>>. Everything outside it is treated as untrusted, including <<state what specifically>>. Access across the boundary is permitted only <<by what mechanism>>, and is subject to <<which policy>>.
+GD |Be explicit about anything a reviewer would otherwise challenge - unmanaged devices, external access, shared accounts, standing privilege. State the position, the compensating controls, and the residual risk. An argument made openly here is far more likely to be approved than one a reviewer has to uncover.
+H2 |7.3 Risk register
+GD |Every risk arising from this design, with likelihood, impact and treatment. "ACCEPT" is a legitimate treatment when the acceptance is explicit and the approver is named - an unstated acceptance is not.
+TBL |700,2600,900,900,4260
+TH |ID||Risk||Likelihood||Impact||Treatment
+TR |R-01||<<Risk statement - cause, event, consequence>>||Low / Medium / High||Low / Medium / High||<<Controls applied and the residual position. MITIGATE / ACCEPT / TRANSFER / AVOID>>
+TR |R-02||<<Risk statement>>||<<L>>||<<I>>||<<Treatment>>
+TR |R-03||<<Risk statement>>||<<L>>||<<I>>||<<Treatment>>
+END
+H2 |7.4 Compliance alignment
+TBL |2800,6560
+TH |Obligation||How this design satisfies it
+TR |<<Essential Eight control>>||<<Which design element delivers it and to what maturity>>
+TR |<<ISM guidance>>||<<How it is met>>
+TR |<<Contractual or regulatory obligation>>||<<The evidence artefact an assessor can read, and where it lives>>
+END
+H1 |8. Service Availability and Disaster Recovery
+H2 |8.1 Business Service Tiering
+GD |State the service tier and the targets that follow from it. The tier is driven by the non-functional requirements in section 3.3 - if they disagree, one of them is wrong.
+TBL |2400,2200,4760
+TH |Attribute||Target||Basis
+TR |Service tier||Tier <<n>>||<<Business impact of loss>>
+TR |Availability target||<<99.x per cent>>||<<Which NFR>>
+TR |Recovery time objective||<<n hours>>||<<Which NFR>>
+TR |Recovery point objective||<<n minutes>>||<<Which NFR>>
+TR |Supported hours||<<hours and days>>||<<Business requirement>>
+END
+H2 |8.2 Service Availability
+GD |Describe how the availability target is achieved, component by component. Name the single points of failure honestly - a design with none is usually a design that has not been examined.
+B |<<Component>> - <<redundancy model, failover behaviour, expected impact of loss>>
+B |<<Component>> - <<redundancy model>>
+B |Single points of failure: <<name them, and state the accepted impact or the treatment>>
+H2 |8.3 Disaster recovery &amp; Resilience
+GD |State what is recovered, in what order, by whom, and how the plan is proven. An untested DR plan is an assumption, not a control.
+TBL |2400,3160,3800
+TH |Scenario||Response||Validation
+TR |<<Component failure>>||<<Automatic or manual failover, expected duration>>||<<How and how often this is tested>>
+TR |<<Region failure>>||<<Recovery approach and sequence>>||<<Test schedule>>
+TR |<<Data loss or corruption>>||<<Backup source, restore procedure, expected duration>>||<<Restore test frequency>>
+END
+H1 |9. Service Management
+H2 |9.1 Service Management principles
+GD |How the solution is supported once it is live: the support tiers and what each one owns, the runbooks required at go-live, and the transition point at which the project hands the service to Digital Operations. Name the knowledge articles as deliverables, because they will not be written otherwise.
+TBL |2000,7360
+TH |Tier||Responsibility
+TR |Tier 1 - Service Desk||<<Which requests and incidents are resolved at first contact, and under which script or runbook>>
+TR |Tier 2 - <<team>>||<<Which issues escalate here and what they are authorised to change>>
+TR |Tier 3 - <<team>>||<<Configuration and design changes, under change control>>
+TR |Knowledge management||<<Named knowledge articles delivered with the build and validated through the APM KB workflow before go-live>>
+END
+H2 |9.2 Monitoring, Logging, Reporting and Alerting
+GD |One row per event that matters, with its source and the action it triggers. If an event has no action, it is logging, not monitoring - and if an alert has no owner, it will be ignored.
+TBL |2900,2860,3600
+TH |Event||Source||Action and owner
+TR |<<Event that indicates failure>>||<<Log source>>||<<Alert severity, destination, expected response>>
+TR |<<Event that indicates compromise>>||<<Log source>>||<<Incident severity and escalation path>>
+TR |<<Capacity or performance threshold>>||<<Metric source>>||<<Threshold, alert, and remediation>>
+TR |<<Configuration change to a controlled resource>>||<<Audit log>>||<<Alert, and the change record it must map to>>
+END
+H2 |9.3 Validation and test plan
+GD |The tests that prove the design works as documented. Give each an ID and a pass criterion that is objectively true or false. These become the acceptance criteria for the build.
+TBL |900,4860,3600
+TH |ID||Test||Pass criterion
+TR |T-01||<<Test the primary success path>>||<<Objectively verifiable outcome>>
+TR |T-02||<<Test a security control by attempting to defeat it>>||<<The attempt is blocked and logged>>
+TR |T-03||<<Test the failure and recovery path>>||<<Recovery within the stated RTO>>
+TR |T-04||<<Test the support runbook by executing it>>||<<Tier 1 completes it unaided>>
+END
+H1 |Appendix A: Terms &amp; Abbreviations
+GD |Define every acronym used in the document, including the ones you consider obvious. The approver may not share your assumptions.
+TBL |2000,7360
+TH |Term||Definition
+TR |<<Acronym>>||<<Expansion and one-line explanation of what it means in this context>>
+END

@@ -1,0 +1,15 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Kiosk Network Components Pending Deletion</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt}h1{font-size:16pt}table{border-collapse:collapse;width:100%;margin-bottom:16pt}td,th{border:1px solid #999;padding:6px;text-align:left;vertical-align:top}th{background:#eee}</style></head><body>
+<h1>Kiosk Decommissioning - Azure Network Components Pending Deletion</h1>
+<p>Source: CR-Kiosk-Decommissioning.md, section 2b</p>
+<table><tr><th>Component</th><th>What it is</th><th>Action</th></tr>
+<tr><td>Log Analytics workspace (kiosk)</td><td>Telemetry sink for the credential pipeline</td><td>Export evidence, then delete. Build a fresh, schema-named workspace for AVD rather than renaming this one</td></tr>
+<tr><td>NSG nsg-avd-session-hosts</td><td>Session host subnet NSG, kiosk ruleset</td><td>Delete. Build a fresh NSG with rules written for Standard User AVD SOE's traffic pattern</td></tr>
+<tr><td>NSG nsg-avd-pe</td><td>Private endpoint subnet NSG, kiosk ruleset</td><td>Delete. Build fresh</td></tr>
+<tr><td>Kiosk-specific route table</td><td>Forces kiosk subnet traffic through the credential-pipeline path</td><td>Delete. Build fresh for the new subnet design</td></tr>
+<tr><td>NAT gateway (if provisioned)</td><td>Stable egress IP for the credential pipeline</td><td>Delete if no AVD spoke wants it. Confirm first</td></tr>
+</table>
+<h2>Kept, not deleted</h2>
+<table><tr><th>Component</th><th>Action</th></tr>
+<tr><td>Hub/spoke VNet and subnet allocation (Australia East)</td><td>Keep. Audit every rule and route inside it, rename to schema</td></tr>
+</table>
+</body></html>

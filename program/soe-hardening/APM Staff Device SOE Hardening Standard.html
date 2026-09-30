@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" lang="en-AU">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Staff SOE Hardening Standard</title>
+<meta name="ProgId" content="Word.Document" />
+<meta name="Generator" content="Microsoft Word" />
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap');
+  @page Section1 { size:21cm 29.7cm; margin:2.1cm 2.0cm 2.0cm 2.0cm;
+    mso-header-margin:1.1cm; mso-footer-margin:1.0cm; mso-footer:f1; mso-paper-source:0; }
+  div.Section1 { page:Section1; }
+
+  :root{
+    --ink:#26292e; --strong:#1F2D58; --muted:#5b6470; --line:#BFC4CD; --line-soft:#DEE2E8;
+    --hdr:#1F2D58; --hdr-text:#ffffff; --shade:#EEF1F6; --shade2:#F6F8FA;
+    --amber:#9a6a00; --red:#b3261e; --green:#1E7A4E;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:#fff; font-family:Calibri,Carlito,'Segoe UI',sans-serif;
+    font-size:11pt; line-height:1.34; color:var(--ink); }
+  .sheet{ background:#fff; }
+  @media screen{
+    body{ background:#9aa0a8; }
+    .sheet{ width:21cm; min-height:29.7cm; margin:22px auto; padding:2.1cm 2.0cm 2.0cm; box-shadow:0 6px 26px rgba(0,0,0,.28); }
+  }
+  @media screen and (max-width:760px){ .sheet{ width:auto; padding:20px; margin:0; } }
+
+  p{ margin:7px 0; }
+  .small{ font-size:9.5pt; color:var(--muted); }
+  em{ font-style:italic; }
+  a{ color:#1F2D58; }
+
+  h1.title{ font-size:25pt; line-height:1.1; color:var(--strong); font-weight:700; margin:6px 0 2px; }
+  .subtitle{ font-size:12.5pt; color:var(--muted); margin:0 0 18px; }
+
+  h2.h1{ font-size:15.5pt; color:var(--strong); font-weight:700; margin:26px 0 8px; padding-bottom:4px; border-bottom:1.5px solid var(--hdr); }
+  h3.h2{ font-size:12.5pt; color:var(--strong); font-weight:700; margin:18px 0 4px; }
+
+  ul,ol{ margin:6px 0; padding-left:20px; } li{ margin:3px 0; }
+
+  table{ width:100%; border-collapse:collapse; margin:9px 0 13px; font-size:10pt; }
+  th,td{ border:0.75pt solid var(--line); padding:5px 8px; vertical-align:top; text-align:left; line-height:1.3; }
+  thead th{ background:var(--hdr); color:var(--hdr-text); font-weight:700; font-size:9.5pt; }
+  tbody tr:nth-child(even) td{ background:var(--shade2); }
+  td .setting{ font-weight:700; color:var(--strong); }
+  caption{ caption-side:top; text-align:left; font-size:9pt; color:var(--muted); padding:0 0 4px; }
+  caption b{ color:var(--strong); }
+
+  table.meta td{ font-size:10pt; }
+  table.meta td.k{ width:32%; background:var(--shade); font-weight:700; color:var(--strong); }
+
+  .rk{ font-weight:700; } .rkL{ color:var(--green);} .rkM{ color:var(--amber);} .rkH{ color:var(--red);}
+
+  .toc{ margin:8px 0 4px; }
+  .toc .row{ display:flex; align-items:baseline; gap:6px; padding:2.5px 0; font-size:10.5pt; }
+  .toc .row .t{ white-space:nowrap; } .toc .row .ld{ flex:1; border-bottom:1px dotted #9aa3b0; transform:translateY(-3px); }
+
+  .note{ border:0.75pt solid var(--line-soft); border-left:3px solid var(--hdr); background:var(--shade2); padding:8px 12px; margin:11px 0; font-size:10pt; }
+  .note b{ color:var(--strong); }
+  .divg{ font-size:9.5pt; color:var(--amber); margin:4px 0 0; }
+
+  .wordftr{ display:none; }
+  p.MsoFooter{ font-size:8.5pt; color:#5b6470; margin:0; }
+</style>
+</head>
+<body>
+<div class="Section1">
+<div class="sheet">
+
+  <!-- ============ TITLE ============ -->
+  <h1 class="title">Staff SOE Hardening Standard</h1>
+  <p class="subtitle">Security hardening for the APM Windows&nbsp;11 Standard Operating Environment</p>
+
+  <table class="meta">
+    <tbody>
+      <tr><td class="k">Document ID</td><td>09.03.018</td><td class="k">Classification</td><td>Internal</td></tr>
+      <tr><td class="k">Version</td><td>3.0 (Draft)</td><td class="k">Platform</td><td>Windows&nbsp;11 (24H2), Microsoft Intune &amp; Microsoft Entra ID</td></tr>
+      <tr><td class="k">Content owner</td><td>End User Computer Manager</td><td class="k">Responsible executive</td><td>ANZ Chief Information Officer</td></tr>
+      <tr><td class="k">Approver</td><td>Head of Digital Operations</td><td class="k">Review cycle</td><td>At least annually</td></tr>
+      <tr><td class="k">Companion evidence</td><td colspan="3">Intune Compliance Worksheet (line-by-line control assessment)</td></tr>
+    </tbody>
+  </table>
+  <p class="small">Working draft for APM review. Fields shown as <b>[confirm]</b> require APM sign-off before publication.</p>
+
+  <!-- ============ CONTENTS ============ -->
+  <h2 class="h1">Contents</h2>
+  <div class="toc">
+    <div class="row"><span class="t">Introduction</span><span class="ld"></span><span>1</span></div>
+    <div class="row"><span class="t">High Priority Controls</span><span class="ld"></span><span>2</span></div>
+    <div class="row"><span class="t">Medium Priority Controls</span><span class="ld"></span><span>4</span></div>
+    <div class="row"><span class="t">Compliance summary</span><span class="ld"></span><span>7</span></div>
+    <div class="row"><span class="t">Gap remediation plan</span><span class="ld"></span><span>8</span></div>
+    <div class="row"><span class="t">Controls not currently implemented</span><span class="ld"></span><span>9</span></div>
+    <div class="row"><span class="t">Approval and Implementation</span><span class="ld"></span><span>9</span></div>
+    <div class="row"><span class="t">Review</span><span class="ld"></span><span>9</span></div>
+    <div class="row"><span class="t">Version Control</span><span class="ld"></span><span>9</span></div>
+  </div>
+
+  <!-- ============ INTRODUCTION ============ -->
+  <h2 class="h1">Introduction</h2>
+  <p>This document details the security hardening implemented on APM's Windows&nbsp;11 Standard Operating Environment (SOE) for staff devices. The standard is based on the Australian Signals Directorate (ASD) <em>Hardening Microsoft Windows 11 workstations</em> guidance and the corresponding Microsoft security baselines, and is intended to be read in conjunction with them.</p>
+  <p>APM has chosen to assess the recommended High and Medium priority controls and implement them unless there is an impact to business operations by doing so. These controls are referenced by their control area below and mapped to the relevant ASD Information Security Manual (ISM) controls. Where APM has chosen not to implement, or to vary from, a control in the ASD guidance, this has been noted in this standard.</p>
+  <p>Hardening is delivered and continuously enforced through <b>Microsoft Intune</b> configuration and compliance policies, with identity controls in <b>Microsoft Entra ID</b> and threat protection through <b>Microsoft Defender for Endpoint</b>. The compliance driver is APM's obligation under the Right Fit For Risk (RFFR) accreditation (ISO&nbsp;27001 aligned, mapped to the ASD ISM). This standard applies to all APM-managed Windows&nbsp;11 staff devices that make up the SOE; server operating systems and directory infrastructure are out of scope and are addressed under separate server standards.</p>
+  <p>The current assessed compliance position against ASD and Microsoft guidance, the Intune policies that deliver this baseline, and the outstanding items requiring action are set out in <em>Compliance summary</em> and <em>Gap remediation plan</em>.</p>
+
+  <!-- ============ HIGH PRIORITY ============ -->
+  <h2 class="h1">High Priority Controls</h2>
+
+  <h3 class="h2">SOE hardening</h3>
+  <p>The SOE is reviewed and updated at least annually. SOE images provided by third parties are scanned for malicious content and configurations before being used.</p>
+
+  <h3 class="h2">Authentication hardening</h3>
+  <p>Passphrases used for single-factor authentication are a minimum of 20 characters with complexity, ideally six random words, and cannot be used to authenticate to multiple different systems. Multi-factor authentication is enforced through Microsoft Entra ID Conditional Access. Service accounts are managed and are not used for interactive sign-in.</p>
+
+  <h3 class="h2">Application hardening</h3>
+  <p>Application control is implemented on all staff workstations to restrict the execution of executables, software libraries, scripts and installers to an approved set, using cryptographic hash, publisher certificate and path rules. Microsoft's latest recommended block rules are applied to prevent application-control bypasses. Other than privileged users performing specific administrative activities, users cannot disable, bypass or be exempted from application control, and failed execution attempts are logged with the file name, timestamp and user. Applications that allow macros, such as Microsoft Office, are configured to disable all macros with notification. Applications installed onto an SOE device must pass the Software Approval process, which validates the security posture of the vendor and the configuration of the application.</p>
+
+  <h3 class="h2">Application versions and patches</h3>
+  <p>All SOE devices are onboarded to Microsoft Intune and scanned by Microsoft Defender for Endpoint to confirm application and operating-system versions are current and patched. Vulnerabilities are addressed in a timeframe appropriate to the severity of the vulnerability.</p>
+
+  <h3 class="h2">Application Whitelisting</h3>
+  <p>Application control is implemented through Application Control for Business.</p>
+  <table>
+    <caption><b>ISM-1409, 1544, 1659.</b> Enforced by APM-WIN-SEC-ACfB Enforced Baseline, ACfB Enforced MS App Block, Trusted Publishers and Digital Signing.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Enforced base policy</td><td>Publisher, hash and path rules restrict execution to an approved set; supplemental linked policies extend coverage</td></tr>
+      <tr><td class="setting">Microsoft recommended block rules</td><td>Applied</td></tr>
+      <tr><td class="setting">Vulnerable driver blocklist</td><td>Enabled</td></tr>
+      <tr><td class="setting">Trusted publishers</td><td>Defined publisher allowlist; code-signing enforced via the digital signing policy</td></tr>
+      <tr><td class="setting">User bypass</td><td>Not permitted; failed execution attempts logged</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">Credential Caching</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Cached sign-in count</td><td>Minimised</td></tr>
+      <tr><td class="setting">Storage of network credentials</td><td>Not allowed</td></tr>
+      <tr><td class="setting">WDigest authentication</td><td>Disabled</td></tr>
+      <tr><td class="setting">Virtualisation-based security</td><td>Enabled</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">Credential Entry</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Password reveal button</td><td>Disabled</td></tr>
+      <tr><td class="setting">Enumerate administrator accounts on elevation</td><td>Disabled</td></tr>
+      <tr><td class="setting">Enumerate local users</td><td>Disabled</td></tr>
+      <tr><td class="setting">Require CTRL+ALT+DEL</td><td>Required</td></tr>
+    </tbody>
+  </table>
+  <p class="divg">Variation: a trusted path for credential entry is not yet enabled — see <em>Gap remediation plan</em>.</p>
+
+  <h3 class="h2">Early Launch Antimalware</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Boot-start driver initialisation</td><td>Good and unknown drivers initialised</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">Elevating Privileges</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline (User Account Control).</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Admin Approval Mode</td><td>Enabled (including for the built-in administrator)</td></tr>
+      <tr><td class="setting">Elevation prompt (administrators)</td><td>Prompt for credentials on the secure desktop</td></tr>
+      <tr><td class="setting">Detect application installations</td><td>Prompt for elevation</td></tr>
+      <tr><td class="setting">Run all administrators in Admin Approval Mode</td><td>Enabled</td></tr>
+      <tr><td class="setting">Switch to the secure desktop on prompt</td><td>Enabled</td></tr>
+      <tr><td class="setting">Virtualise write failures to per-user locations</td><td>Enabled</td></tr>
+    </tbody>
+  </table>
+  <p class="divg">Variation: automatic denial of standard-user elevation is not implemented — see <em>Controls not currently implemented</em>.</p>
+
+  <h3 class="h2">Local Administrator Accounts</h3>
+  <p>The built-in local administrator account is managed by Windows LAPS, with passwords automatically rotated and escrowed to Microsoft Entra ID. UAC restrictions are applied to local accounts on network sign-in. Local administrator access is restricted to accounts required for device management.</p>
+
+  <h3 class="h2">Microsoft Edge</h3>
+  <table>
+    <caption><b>ISM-1412.</b> Enforced by APM-W11-SEC-Edge Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Microsoft Defender SmartScreen</td><td>Enabled; bypassing SmartScreen prompts for sites and files prevented</td></tr>
+      <tr><td class="setting">Password manager</td><td>Disabled</td></tr>
+      <tr><td class="setting">Pop-up blocker</td><td>Enabled</td></tr>
+      <tr><td class="setting">Developer tools</td><td>Controlled</td></tr>
+    </tbody>
+  </table>
+  <p class="divg">Variations: a curated extension allowlist and a SmartScreen domain allowlist are in place — see <em>Gap remediation plan</em>.</p>
+
+  <h3 class="h2">Operating System Patching</h3>
+  <p>Windows Update for Business manages quality and feature updates centrally through update rings configured in Microsoft Intune.</p>
+
+  <h3 class="h2">Password Policy</h3>
+  <p>APM enforces a password policy through Microsoft Entra ID password protection; the policy settings exceed those specified in the ASD guidance.</p>
+
+  <h3 class="h2">Operating System Architecture</h3>
+  <p>APM's entire fleet is built on x64 system architecture on Windows&nbsp;11 (24H2); no device images are based on an alternative architecture. The latest or N-1 version of the operating system is used.</p>
+
+  <h3 class="h2">Secure Boot</h3>
+  <p>Secure Boot is set by the hardware vendor at the factory and applied as a step during the build process, and is verified by Intune compliance policy.</p>
+
+  <!-- ============ MEDIUM PRIORITY ============ -->
+  <h2 class="h1">Medium Priority Controls</h2>
+
+  <h3 class="h2">Account Lockout Policy</h3>
+  <p>Account lockout is configured through Microsoft Entra ID smart lockout; the lockout settings exceed those specified in the ASD guidance.</p>
+
+  <h3 class="h2">Anonymous Connections</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Anonymous enumeration of accounts and shares</td><td>Disabled</td></tr>
+      <tr><td class="setting">Insecure guest logons</td><td>Disabled</td></tr>
+      <tr><td class="setting">Remote calls to the account database</td><td>Restricted to administrators</td></tr>
+      <tr><td class="setting">LocalSystem NULL session fallback</td><td>Disabled</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">Audit Event Management</h3>
+  <p>Advanced audit policy is configured to capture account management, sign-in and sign-out, process creation (including the command line), policy change, system integrity and object-access events. Event-log sizes are set appropriately and events are forwarded to Microsoft Defender for Endpoint for central retention and analysis.</p>
+
+  <h3 class="h2">AutoPlay and AutoRun</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">AutoPlay</td><td>Turned off on all drives</td></tr>
+      <tr><td class="setting">Default AutoRun behaviour</td><td>Do not execute any AutoRun commands</td></tr>
+      <tr><td class="setting">AutoPlay for non-volume devices</td><td>Disallowed</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">BIOS and UEFI passwords</h3>
+  <p>BIOS and UEFI passwords are set by the hardware vendor at the factory, and Intune compliance checks verify that the password has been set.</p>
+
+  <h3 class="h2">Bridging Networks</h3>
+  <p>Installation and configuration of a network bridge is prohibited, and connection to non-authenticated networks while connected to a managed network is restricted.</p>
+  <p class="divg">Variation: the minimise-simultaneous-connections value differs from ASD guidance — see <em>Gap remediation plan</em>.</p>
+
+  <h3 class="h2">File and Print Sharing</h3>
+  <p>Ad-hoc peer file and print sharing is restricted.</p>
+
+  <h3 class="h2">Hard Drive Encryption</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Bitlocker; USB mass storage blocked by APM-Win11-USB Storage-Block.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Encryption method (OS and fixed drives)</td><td>BitLocker XTS-AES 256-bit</td></tr>
+      <tr><td class="setting">Recovery information</td><td>Escrowed to Microsoft Entra ID</td></tr>
+      <tr><td class="setting">Removable drives</td><td>Write access denied to drives not protected by BitLocker; USB mass storage blocked by baseline</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">Installing Applications</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">User control over installs</td><td>Disabled</td></tr>
+      <tr><td class="setting">Always install with elevated privileges</td><td>Disabled</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">Internet Printing</h3>
+  <p>Printing over HTTP and the downloading of print drivers over HTTP are turned off.</p>
+
+  <h3 class="h2">Microsoft Accounts</h3>
+  <p>Consumer Microsoft account authentication is blocked; users cannot add or sign in with consumer Microsoft accounts.</p>
+
+  <h3 class="h2">Network Authentication</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Kerberos encryption types</td><td>AES128 and AES256 only</td></tr>
+      <tr><td class="setting">LAN Manager authentication level</td><td>Send NTLMv2 response only; refuse LM and NTLM</td></tr>
+      <tr><td class="setting">Minimum NTLM SSP session security</td><td>NTLMv2 with 128-bit encryption</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">NoLMHash policy</h3>
+  <p>The LAN Manager hash value is not stored on the next password change.</p>
+
+  <h3 class="h2">PowerShell</h3>
+  <p>PowerShell is configured to use module logging, script-block logging and transcription, and script-block logs are protected by Protected Event Logging.</p>
+
+  <h3 class="h2">Remote Procedure Call</h3>
+  <p>Unauthenticated RPC clients are restricted to authenticated access.</p>
+
+  <h3 class="h2">Reporting System Information</h3>
+  <p>Microsoft Support Diagnostic Tool interactive communication is disabled, and the Inventory Collector and Steps Recorder are turned off.</p>
+  <p class="divg">Variation: the telemetry level is set as required for update management — see <em>Controls not currently implemented</em>.</p>
+
+  <h3 class="h2">Safe Mode</h3>
+  <p>Non-administrators are restricted from using Safe Mode, which is protected by BitLocker.</p>
+
+  <h3 class="h2">Security Policies</h3>
+  <p>Microsoft consumer experiences are turned off; shell-protocol protected mode is enabled; game recording and broadcasting is disabled; downloading of RSS enclosures is prevented; and default permissions of internal system objects are strengthened.</p>
+
+  <h3 class="h2">Server Message Block sessions</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">SMB signing (client and server)</td><td>Required</td></tr>
+      <tr><td class="setting">SMB v1</td><td>Client and server disabled</td></tr>
+      <tr><td class="setting">Unencrypted password to third-party SMB servers</td><td>Disabled</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">Session Locking</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Screen lock</td><td>Password-protected, with a configured inactivity timeout</td></tr>
+      <tr><td class="setting">Lock-screen camera and slideshow</td><td>Disabled</td></tr>
+      <tr><td class="setting">Lock-screen app and toast notifications</td><td>Turned off</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">Sound Recorder</h3>
+  <p>Sound Recorder is prevented from running.</p>
+
+  <h3 class="h2">System cryptography</h3>
+  <p>Strong key protection is enforced for user keys stored on the device.</p>
+  <p class="divg">Variation: enforcement of FIPS-compliant algorithms is an APM-determined divergence — see <em>Controls not currently implemented</em>.</p>
+
+  <h3 class="h2">Windows Remote Management</h3>
+  <table>
+    <caption><b>ISM-1409.</b> Enforced by APM-W11-SEC-Baseline.</caption>
+    <thead><tr><th style="width:46%">Setting</th><th>Configuration</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Basic authentication (client and service)</td><td>Disabled</td></tr>
+      <tr><td class="setting">Unencrypted traffic</td><td>Disabled</td></tr>
+      <tr><td class="setting">Digest authentication</td><td>Disallowed</td></tr>
+      <tr><td class="setting">Storing RunAs credentials</td><td>Disallowed</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h2">Windows Search and Cortana</h3>
+  <p>Cortana is disabled and web results are not returned in Windows Search.</p>
+
+  <h3 class="h2">Boot Devices</h3>
+  <p>Booting from an alternative device other than the primary drive is prohibited, with administrative access set by the hardware vendor at the factory and validated as a step during the build process.</p>
+
+  <!-- ============ COMPLIANCE SUMMARY ============ -->
+  <h2 class="h1">Compliance summary</h2>
+  <p>The hardening configuration has been reassessed against current ASD and Microsoft guidance, with the result recorded setting-by-setting in the companion Intune Compliance Worksheet. Approximately <b>700+ recommended settings</b> were validated against APM's applied Intune policies and platform defaults, using the ASD <em>Hardening Microsoft Windows 11 workstations</em> guidance, the Microsoft Windows security baseline for Intune (Windows&nbsp;24H2), the ASD Office and macro hardening guidance, the Microsoft Office baseline (December&nbsp;2025), and the ASD Microsoft Edge hardening guidance.</p>
+  <p>Of the <b>708 settings</b> assessed, the position against ASD-specific guidance is:</p>
+  <table>
+    <thead><tr><th>Assessment outcome (ASD guidance)</th><th style="width:18%">Settings</th><th style="width:18%">Share</th></tr></thead>
+    <tbody>
+      <tr><td>Compliant with ASD guidance</td><td>477</td><td>67%</td></tr>
+      <tr><td>Non-compliant — decision pending</td><td>39</td><td>6%</td></tr>
+      <tr><td>No ASD guidance / not applicable</td><td>191</td><td>27%</td></tr>
+      <tr><td>Planned</td><td>1</td><td>&lt;1%</td></tr>
+    </tbody>
+  </table>
+  <p>After reconciliation against Microsoft guidance where ASD offers none, the overall position is <b>591 compliant</b>, <b>7 residual non-compliances</b> escalated for decision, 98 settings with no specific guidance (informational or secure-by-default), and 12 not applicable. All 39 ASD non-compliances are assessed at <b>Low residual risk</b>; 28 of the 39 carry a High business-impact rating, which is why they have not yet been remediated.</p>
+
+  <p>The assessment maps to the following ASD ISM controls. Non-compliances concentrate in four control areas; the remaining controls are fully compliant.</p>
+  <table>
+    <thead><tr><th style="width:18%">ISM control</th><th>Control intent</th><th style="width:14%">Assessed</th><th style="width:16%">Non-compliant</th></tr></thead>
+    <tbody>
+      <tr><td>ISM-1409 / 1861</td><td>Operating systems hardened using ASD and vendor guidance</td><td>519</td><td>22</td></tr>
+      <tr><td>ISM-1859</td><td>Office productivity suites hardened</td><td>94</td><td>12</td></tr>
+      <tr><td>ISM-1412</td><td>Web browsers hardened</td><td>50</td><td>3</td></tr>
+      <tr><td>ISM-1544</td><td>Microsoft recommended application blocklist</td><td>2</td><td>2</td></tr>
+      <tr><td>ISM-1487 / 1542 / 1659 / 1675 / 1891 / 1926</td><td>Office macro, OLE, driver-blocklist and identity-infrastructure controls</td><td>43</td><td>0</td></tr>
+    </tbody>
+  </table>
+
+  <p>The staff SOE hardening baseline is delivered by the following Microsoft Intune policies:</p>
+  <table>
+    <thead><tr><th style="width:42%">Policy</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">APM-W11-SEC-Baseline-P-1.0</td><td>Windows&nbsp;11 base hardening policy</td></tr>
+      <tr><td class="setting">APM-W11-SEC-Edge Baseline-P-1.1</td><td>Microsoft Edge base hardening policy</td></tr>
+      <tr><td class="setting">APM-WIN-MDE-Onboard-P-1.0</td><td>Microsoft Defender for Endpoint onboarding</td></tr>
+      <tr><td class="setting">APM-W11-SEC-Bitlocker-P-1.0</td><td>BitLocker base policy</td></tr>
+      <tr><td class="setting">APM-Win11-USB Storage-Block</td><td>USB storage base restriction</td></tr>
+      <tr><td class="setting">APM-WIN-SEC-ASR-P-1.0</td><td>Attack Surface Reduction rules</td></tr>
+      <tr><td class="setting">APM-WIN-SEC-ACfB Enforced Baseline-P-1.0</td><td>Application Control for Business base policy</td></tr>
+      <tr><td class="setting">APM-WIN-SEC-ACfB Enforced MS App Block-P-1.0</td><td>Microsoft recommended application blocklist</td></tr>
+      <tr><td class="setting">APM-WIN-SEC-Digital Signing-P-1.0</td><td>Digital signing policy</td></tr>
+      <tr><td class="setting">APM-WIN-SEC-Trusted Publishers-P-1.0</td><td>Trusted publisher list</td></tr>
+      <tr><td class="setting">APM-Win11-Windows LAPS</td><td>Local administrator account password management</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>Companion evidence.</b> The line-by-line assessment of all 708 settings — ISM control, setting, Intune setting name, APM configuration, CSP, value and per-setting compliance — is held in the <b>Intune Compliance Worksheet</b>. This standard summarises; the worksheet is the evidence. Work the two in tandem. <b>[confirm ISM version in force for the audit]</b></div>
+
+  <!-- ============ GAP REMEDIATION ============ -->
+  <h2 class="h1">Gap remediation plan</h2>
+  <p>The items below are the current non-compliances and in-flight remediation activities — what remains to be done. Each is assessed at <b>Low residual risk</b>; the implementation-impact column explains why it has not yet been applied. These are the items escalated for APM decision.</p>
+  <table>
+    <thead><tr><th style="width:19%">Item</th><th style="width:8%">ISM</th><th>APM position vs ASD guidance</th><th style="width:7%">Risk</th><th style="width:8%">Impact</th><th style="width:17%">Remediation</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Allow Location</td><td>1409</td><td>APM forces Location On (user cannot change); ASD guidance is to force it Off.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkH">High</span></td><td>Business-required for location services. Retain with risk acceptance.</td></tr>
+      <tr><td class="setting">UAC — standard-user elevation</td><td>1409</td><td>APM prompts for credentials; ASD guidance is to automatically deny.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkH">High</span></td><td>Auto-deny removes Service Desk remote elevation. Risk-accepted.</td></tr>
+      <tr><td class="setting">Edge — allowed extensions</td><td>1412</td><td>APM allows uBlock Origin and Dark Reader; ASD guidance is to block all extensions.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkH">High</span></td><td>Retain curated allowlist; review at each annual review.</td></tr>
+      <tr><td class="setting">Edge — SmartScreen domain allowlist</td><td>1412</td><td>APM enables an allowlist of business domains; ASD guidance is to disable.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkH">High</span></td><td>Required for line-of-business apps; retain with documented domain list.</td></tr>
+      <tr><td class="setting">Excel — disable application add-ins</td><td>1859</td><td>Not configured; ASD guidance is Enabled.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkH">High</span></td><td>Requires add-in usage analysis to avoid breaking business workbooks. To evaluate.</td></tr>
+      <tr><td class="setting">Excel — external data connections</td><td>1859</td><td>Vulnerable legacy connections already blocked; ASD recommends blocking external data connections outright.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkH">High</span></td><td>Requires data-connection usage analysis. To evaluate.</td></tr>
+      <tr><td class="setting">Office macro / format hardening</td><td>1859</td><td>Stricter ASD macro hardening held back due to widespread legacy Office file-format use.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkH">High</span></td><td>Dependent on the legacy-format remediation programme.</td></tr>
+      <tr><td class="setting">Minimise simultaneous connections</td><td>1409</td><td>APM minimises connections; ASD guidance also prevents Wi-Fi when on a wired connection.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkM">Medium</span></td><td>Assess impact on roaming and docking, then tighten.</td></tr>
+      <tr><td class="setting">Trusted path for credential entry</td><td>1409</td><td>Disabled; ASD guidance is Enabled.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkL">Low</span></td><td>Low impact — candidate for near-term enablement.</td></tr>
+      <tr><td class="setting">Application Control for Business</td><td>1409, 1544</td><td>Workstation enforcement completing; ASD also recommends extending to core servers.</td><td><span class="rk rkL">Low</span></td><td><span class="rk rkM">Medium</span></td><td>Workstation enforcement scheduled April–May&nbsp;2026; server profiles tracked under server standards.</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>Conditional Access dependency.</b> Seven settings depend on the Conditional Access policy assessment and require that review to complete before tightening; track them alongside the Conditional Access remediation.</div>
+
+  <!-- ============ NOT IMPLEMENTED ============ -->
+  <h2 class="h1">Controls not currently implemented</h2>
+  <p>The following ASD-recommended controls are deliberately not implemented. Each carries a documented business justification and is reviewed at least annually.</p>
+  <table>
+    <thead><tr><th style="width:26%">Control</th><th>Justification</th><th style="width:14%">Risk accepted by</th><th style="width:13%">Date</th><th style="width:13%">Next review</th></tr></thead>
+    <tbody>
+      <tr><td class="setting">Block OneDrive for file storage</td><td>OneDrive is used organisation-wide for storage and backup of files.</td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td></tr>
+      <tr><td class="setting">UAC — automatically deny standard-user elevation</td><td>Would remove the Service Desk's ability to achieve elevation when troubleshooting staff devices.</td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td></tr>
+      <tr><td class="setting">Telemetry set to Security only</td><td>Telemetry at the required level is needed for update management; it cannot be set to Security-only.</td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td></tr>
+      <tr><td class="setting">Corporate error reporting</td><td>APM does not operate a corporate error-reporting server, so the control cannot be implemented.</td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td></tr>
+      <tr><td class="setting">Enforce FIPS-compliant algorithms</td><td>APM-determined divergence; enabling FIPS mode has known application-compatibility impact.</td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td><td><span class="small">[confirm]</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============ APPROVAL ============ -->
+  <h2 class="h1">Approval and Implementation</h2>
+  <table class="meta">
+    <tbody>
+      <tr><td class="k">Content expert</td><td>End User Computer Manager</td></tr>
+      <tr><td class="k">Responsible executive team member</td><td>ANZ Chief Information Officer</td></tr>
+      <tr><td class="k">Approval</td><td>Head of Digital Operations</td></tr>
+      <tr><td class="k">Approval date</td><td><span class="small">[on approval]</span></td></tr>
+      <tr><td class="k">Effective from</td><td><span class="small">[on approval]</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="h1">Review</h2>
+  <p>Update this document whenever requirements change and review it at least every year.</p>
+
+  <h2 class="h1">Version Control</h2>
+  <table>
+    <thead><tr><th style="width:10%">Version</th><th style="width:16%">Date</th><th style="width:28%">Prepared by</th><th>Comments</th></tr></thead>
+    <tbody>
+      <tr><td>0.1</td><td>27/09/2019</td><td>IT Operations Manager</td><td>Initial draft.</td></tr>
+      <tr><td>1.0</td><td>11/08/2021</td><td>IT Business Analyst</td><td>Controls added per ISO&nbsp;27001 and the ASD ISM to harden APM's staff SOE.</td></tr>
+      <tr><td>1.1</td><td>20/08/2023</td><td>IT End-User Computing Engineer</td><td>SOE hardening controls reviewed and updated; wording revised to reflect changes in systems.</td></tr>
+      <tr><td>2.0</td><td>14/07/2025</td><td>IT Infrastructure &amp; Accreditation Manager</td><td>Reviewed and titles updated.</td></tr>
+      <tr><td><b>3.0</b></td><td>June&nbsp;2026</td><td>Project team, with APM End User Computing</td><td><b>Rebased to the Windows&nbsp;11 Standard Operating Environment managed by Microsoft Intune and Microsoft Entra ID. Control areas mapped to ASD ISM controls; compliance summary and gap remediation plan added.</b></td></tr>
+    </tbody>
+  </table>
+
+  <div class="wordftr">
+    <div style='mso-element:footer' id="f1">
+      <p class="MsoFooter">09.03.018-3.0&nbsp;&nbsp;|&nbsp;&nbsp;Owner: ANZ CIO&nbsp;&nbsp;|&nbsp;&nbsp;Classification: Internal&nbsp;&nbsp;|&nbsp;&nbsp;Page <span style='mso-field-code:PAGE'></span> of <span style='mso-field-code:NUMPAGES'></span></p>
+    </div>
+  </div>
+
+</div>
+</div>
+</body>
+</html>

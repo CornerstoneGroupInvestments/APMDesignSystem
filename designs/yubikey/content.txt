@@ -1,0 +1,412 @@
+H1 |1. Introduction
+H2 |1.1 Purpose
+P |The purpose of this document is to provide the detailed logical and physical architecture for the deployment of **YubiKey 5C NFC FIPS hardware security keys** as the phishing-resistant authentication method for privileged access across APM, and to define the identity, endpoint, session and service-management components required to implement it.
+P |The design enables the project team and APM administrators to authenticate to high-privileged (xy) and privileged (zz) accounts, jump boxes, virtual machines, the privileged Azure Virtual Desktop (AVD) image, Windows App, the Azure Portal and Microsoft 365 admin portals using a FIPS-validated, hardware-bound passkey - from both APM-managed and personal devices - with no password used or exposed at any point in the flow.
+P |The aim of this document is to:
+NUM |Outline the business and security requirements currently identified for privileged authentication.
+NUM |Describe the logical architecture that meets those requirements, including the identity control plane and the trust boundary.
+NUM |Describe the physical and configuration architecture - Microsoft Entra ID settings, Conditional Access policies, Privileged Identity Management (PIM) role settings, endpoint policy and AVD session configuration.
+NUM |Describe the design decisions made, their rationale and their implications - in particular the decision to permit privileged access from personal devices.
+NUM |Outline the cyber security controls, policies and procedures adopted to meet APM cyber security guidelines and the Right Fit For Risk (RFFR) obligations that flow from APM's DEWR contracts.
+P |This document forms the basis on which the Technical Design Document (TDD) and the supporting knowledge-base runbooks for each distinct solution component will be prepared. It is submitted to APM Cyber Security for review and approval.
+H2 |1.2 Audience
+P |The primary audience for this document is APM's Cyber Security, Digital Transformation &amp; Architecture, Digital Operations and Digital Delivery teams, together with the project team responsible for build, integration, support and maintenance. Because privileged authentication changes how people work, the design also requires input from the business owners of the affected services.
+P |This includes:
+B |Cyber Security - approver of the privileged access and authentication model
+B |Digital Transformation &amp; Architecture - design authority and endorsement
+B |Digital Operations and End User Compute - build, transition and operate
+B |Digital Delivery - implementation and change management
+B |IT Service Lead and Service Desk - issuance, identity verification and support processes
+B |Project Management Office - schedule, dependency and risk tracking
+B |Twiki Corp project team - design and build delivery
+H1 |2. Overview
+P |APM is standardising end-user computing on Azure Virtual Desktop, orchestrated through Nerdio Manager for Enterprise and managed by Microsoft Intune and Microsoft Entra ID. The Privileged Access use case within that program introduces a hardened, Privileged Access Workstation (PAW)-style AVD image as the **only path to production systems**, operated at two tiers: Priv (account prefix zz) and High-Priv (account prefix xy).
+P |Passwords - even when combined with app-based multi-factor authentication - remain phishable. A proxied, adversary-in-the-middle sign-in page captures the password and the approval together, and the attacker inherits the session. For accounts that can change tenant configuration or reach production data, APM requires an authenticator that cannot be phished, replayed or exported.
+P |The **YubiKey 5C NFC FIPS** provides exactly that. It is a FIPS 140-2 and FIPS 140-3 validated hardware authenticator implementing FIDO2 / WebAuthn, in which the private key is generated inside a tamper-resistant secure element, is cryptographically bound to the legitimate sign-in origin, and can only be used with the holder's PIN plus a physical touch. There is no shared secret, no seed, no certificate file and no password hash for an attacker to steal.
+P |The solution is deliberately simple for the user. The key arrives, the user completes a short identity verification call, they sign in once using a Temporary Access Pass, and Microsoft Entra ID prompts them to register the key as part of that sign-in. They set a PIN and touch the key. From that moment, signing in means inserting the key (or tapping it over NFC), entering the PIN and touching it. Registration uses native Entra ID functionality only - no third-party software, agents, middleware or portals are introduced anywhere in the design.
+H2 |2.1 Scope
+P |**In scope**
+B |Passkey (FIDO2) authentication in Microsoft Entra ID for privileged (zz) and high-privileged (xy) accounts, restricted by attestation and AAGUID allow-list to YubiKey 5C NFC FIPS hardware only
+B |Sign-in surfaces: Windows App and the AVD web client into the privileged AVD image; the Azure Portal, Microsoft 365 and Entra admin centres; Nerdio Manager; Windows 11 device sign-in at the lock screen on APM-managed devices; and in-session WebAuthn redirection to jump boxes and virtual machines from within an AVD session
+B |Access from APM-managed devices and from personal (unmanaged) devices, with the Entra ID and AVD boundary acting as the trust boundary for personal devices
+B |macOS endpoints, managed and personal, via browser and Windows App WebAuthn
+B |Configuration of the Entra ID authentication methods policy, custom authentication strength, Conditional Access policies, Temporary Access Pass and PIM role settings
+B |Endpoint configuration: Intune policy for FIDO2 Windows sign-in, and AVD host pool RDP properties for WebAuthn redirection
+B |Key lifecycle: procurement, issuance including postal delivery, identity verification, registration, operation, rotation, revocation and destruction
+B |Monitoring, alerting and reporting for registration, authentication and elevation events
+B |The extension path for a later, staged rollout of passkeys to standard user accounts
+P |**Out of scope**
+B |Smart card (PIV) certificate authentication, and macOS local login-window authentication using the key - recorded as future options in section 5.1.6
+B |The build of the privileged AVD image itself, which is delivered by the Privileged Access use case design; this document specifies only its authentication and session-entry controls
+B |FIDO2 SSH authentication for Linux workloads
+B |Third-party application federation - applications that authenticate through Entra ID single sign-on inherit this design without change
+B |Replacement of the existing break-glass emergency access account procedure, which is unchanged and referenced only for completeness
+H2 |2.2 Guiding Principles
+P |The following principles drive how this solution is designed, implemented and operated.
+TBL |2400,6960
+TH |Principle||What it means in this design
+TR |Phishing-resistant by default||Privileged accounts never use a password or a phishable second factor. The credential is origin-bound and hardware-bound, so there is nothing a user can be persuaded to type, approve or forward.
+TR |Assume endpoint compromise||The design must remain safe when the endpoint is untrusted. Neither the credential nor the production environment may depend on the integrity of the device in the user's hands.
+TR |The trust boundary is Entra ID and the PAW, not the network or the endpoint||Personal devices gain no standing trust. Access is brokered, data never lands on the endpoint, and network location confers no privilege.
+TR |Least privilege, just in time||No standing administrative rights. Privilege is activated per tier, time-boxed, justified and audited.
+TR |Native platform capability only||Registration and enforcement use built-in Entra ID features. No third-party middleware is introduced, so there is no additional supply chain, agent or attack surface to assure.
+TR |Operable at APM scale||Privileged staff are distributed nationally. Postal issuance is supported as a first-class path, with identity verification controls that make interception worthless.
+TR |Evidence by design||Every control produces an artefact an assessor can read - policy export, key register, PIM audit history, monthly reporting - to support RFFR and ISO 27001 assessment.
+END
+H2 |2.3 Assumptions
+TBL |1000,8360
+TH |ID||Assumption
+TR |A-01||Microsoft Entra ID P2 licensing is in place for all privileged users, providing PIM, Identity Protection and Conditional Access authentication strengths.
+TR |A-02||YubiKey 5C NFC FIPS stock procured through SoftwareOne is firmware 5.7.4 (FIPS 140-3 certified). Existing firmware 5.4.3 (FIPS 140-2) keys remain acceptable during the transition period.
+TR |A-03||The privileged AVD image and host pool are delivered by the parallel Privileged Access workstream. This design supplies the authentication and session-entry controls that apply to it.
+TR |A-04||zz and xy accounts are cloud-native Entra ID accounts with no Active Directory Domain Services dependency, consistent with APM's modern-management-only posture.
+TR |A-05||Endpoints support USB-C or NFC. Users whose devices have neither are issued a USB-C to USB-A adapter with the key.
+TR |A-06||The APM ServiceNow instance is available to host the issuance workflow, identity verification records and the key register.
+TR |A-07||Two break-glass emergency access accounts exist, are excluded from Conditional Access, and are governed by existing Cyber Security procedures.
+TR |A-08||Microsoft Sentinel and the existing Log Analytics workspace are available to receive Entra ID sign-in, audit and PIM logs.
+TR |A-09||The non-production test environment (FVE) is available for policy validation before any change is applied to the production tenant.
+END
+H1 |3. Business Architecture
+P |This solution is a response to a specific business outcome: APM must be able to administer its production environment without holding a credential that can be stolen. The business architecture below identifies the capabilities affected, the requirements the solution must satisfy, and the treatment for the one requirement that cannot be fully met.
+H2 |3.2 Business Reference architecture
+P |Figure 1 overlays the affected APM business capabilities with the degree of change each experiences, and traces the value stream from granting privileged access through to revoking it.
+FIG |business-capability-impact.png|Figure 1. Business reference architecture - capability impact and value stream|3040|1480
+P |Three capabilities are uplifted directly. **Identity &amp; Access Management** gains a phishing-resistant authenticator as the privileged standard, replacing password plus app-based MFA. **Cyber Security Operations** gains new detections, alerting and audit evidence covering registration, authentication and elevation. **Privileged Access Management** gains just-in-time elevation cryptographically bound to a hardware key rather than to a memorised secret.
+P |Three further capabilities change operationally rather than architecturally: Service Desk and Support absorb issuance, verification and lost-key handling; End User Compute absorb endpoint sign-in and AVD session settings; and Asset &amp; Licence Management absorb the key register and replacement cycle. Records &amp; Compliance, Procurement and People &amp; Onboarding require awareness and minor process updates only.
+H2 |3.3 Business Requirements
+P |The architecturally significant requirements and their traceability are set out below. All are met by the recommended solution; BR-09 is met with a documented limitation described in section 3.4.
+TBL |900,4260,4200
+TH |ID||Requirement||Met by
+TR |BR-01||Privileged (zz) and high-privileged (xy) accounts must authenticate with phishing-resistant MFA for all access, from any location||Passkey (FIDO2) on YubiKey 5C NFC FIPS, enforced by a custom Conditional Access authentication strength (§7.2)
+TR |BR-02||Only APM-issued, FIPS-validated authenticators may be registered against a privileged account||Attestation enforcement and AAGUID allow-list in the authentication methods policy (§5.1.2)
+TR |BR-03||The team must be able to work from APM-managed devices and from personal devices without weakening the production boundary||Entra ID and privileged AVD trust boundary, with BYOD constrained by Conditional Access to the AVD entry point only (§7.4)
+TR |BR-04||Authentication must work across Windows App, the AVD web client, admin portals, the Windows lock screen, and in-session to jump boxes and virtual machines||WebAuthn support matrix and RDP WebAuthn redirection (§5.2)
+TR |BR-05||No standing privileged access; elevation must be just in time, approved where warranted, and audited||Entra ID PIM configured per tier (§7.3)
+TR |BR-06||Registration must be simple enough for a user to complete unassisted after receiving a key by post||Temporary Access Pass plus the native Entra ID registration prompt at sign-in (§5.1.4)
+TR |BR-07||The loss of a key must not lock out an administrator, nor force a fallback to a phishable method||Spare-key policy for xy holders, 24/7 TAP re-issuance, break-glass accounts (§8.3)
+TR |BR-08||Every privileged authentication and elevation must be attributable and auditable||Entra ID sign-in, audit and PIM logs streamed to Microsoft Sentinel with defined analytics (§9.2)
+TR |BR-09||Privileged users on macOS must have the same authentication assurance as Windows users||Met for all Entra ID, AVD and portal access. Local macOS login-window sign-in is a platform limitation - see §3.4
+TR |BR-10||The pattern must be extensible to standard user accounts for a future move to passwordless||Phase 2 rollout path using the same policy pattern with separate group scoping (§5.1.7)
+END
+H2 |3.4 Gap treatment
+P |One capability gap is carried. **macOS local (login-window) sign-in cannot use FIDO2 natively.** macOS users authenticate to Entra ID, AVD and all administrative portals with the YubiKey through WebAuthn in the browser and in Windows App, but the local Mac login continues to use the local account credential.
+P |This does not weaken the production path. Privileged work occurs inside the AVD boundary, and the AVD session is entered with the hardware key regardless of how the Mac itself was unlocked. A compromised local Mac account confers no privileged access, because the zz and xy accounts are separate from the local account and cannot be used without the key.
+P |Two treatment options are available and are recorded as future work rather than being adopted now, to keep the approval scope tight: PIV smart-card login using the same key's PIV applet, and Microsoft Entra Platform SSO for macOS. Either can be added later without changing this design.
+H1 |4. Application Architecture
+P |The application architecture for this solution is built entirely from existing, licensed Microsoft platform components plus one hardware component. No new software is purchased, no application is built, and no component is deployed into APM's own infrastructure. This is a deliberate design decision: the assurance case is simpler and stronger when the authentication path introduces no new code, no new agent and no new supply chain.
+H2 |4.1 System Context Diagram
+P |Figure 2 shows the solution in context - users and their endpoints, the identity control plane that mediates every request, and the target resources reached only after successful authentication.
+FIG |system-context.png|Figure 2. System context - YubiKey authenticated privileged access|3040|1640
+P |Two aspects of the context are important to the security case. First, the YubiKey sits with the user, not with the endpoint: the same key authenticates from a corporate laptop, a personal desktop or a Mac, and the assurance level does not vary with the device. Second, every arrow into the target resources passes through the identity control plane; there is no path from an endpoint to a production system that bypasses Entra ID and Conditional Access.
+H2 |4.2 Solution/Product Component Inventory
+P |All components are existing, licensed platform services except the YubiKey hardware, which is a one-time capital purchase. No component requires a change to its licensing tier.
+TBL |2300,3760,3300
+TH |Component||Role in the solution||Version / licensing / status
+TR |YubiKey 5C NFC FIPS||Hardware-bound FIDO2 passkey. PIN plus touch user verification. USB-C and NFC interfaces||New purchase via SoftwareOne. Firmware 5.7.4 (FIPS 140-3, certified 22 May 2026) preferred; firmware 5.4.3 (FIPS 140-2) accepted during transition
+TR |Microsoft Entra ID||Identity provider - passkey registration, attestation validation, AAGUID restriction, token issuance, sign-in and audit logging||Entra ID P2, existing. No change
+TR |Entra ID Conditional Access||Enforces phishing-resistant authentication strength, session controls and the BYOD access constraint||Included in existing licensing. New policies required
+TR |Entra ID Privileged Identity Management||Just-in-time role activation for the zz and xy tiers, with approval and audit||Entra ID P2, existing. New role settings required
+TR |Temporary Access Pass||Time-limited, single-use bootstrap credential for first registration and for recovery||Native Entra ID feature, no additional licence. Policy to be enabled
+TR |Windows App / AVD web client||Client entry point to the privileged AVD image from managed and personal devices; performs the WebAuthn ceremony||Current evergreen releases for Windows, macOS and web. No change
+TR |Azure Virtual Desktop - privileged image||Hardened PAW-style session host pool; the only path to production systems||Delivered by the Privileged Access use case. RDP property change required
+TR |Microsoft Intune||Device compliance for managed endpoints; FIDO2 Windows sign-in policy; AVD session host configuration||Existing licensing. New Settings Catalog policy required
+TR |Nerdio Manager for Enterprise||Applies and maintains AVD host pool RDP properties, including WebAuthn redirection||Existing. Configuration change only
+TR |Microsoft Sentinel / Defender for Endpoint||Monitoring, detection and alerting for registration, sign-in and elevation events||Existing platform. New analytics rules required
+TR |ServiceNow||Issuance workflow, identity verification records, key register, support runbooks and knowledge articles||Existing platform. New catalogue item and register required
+END
+H2 |4.3 Solution Interface Diagram
+P |Figure 3 traces a single privileged sign-in from the key through to production, including the in-session WebAuthn redirection that satisfies authentication prompts raised on jump boxes and virtual machines from inside the AVD session.
+FIG |authentication-sequence.png|Figure 3. Solution interface - authentication sequence from key to production|3040|1760
+P |The critical property of this sequence is what is absent from it. At no step is a password transmitted, stored, cached or typed. At no step does a secret leave the YubiKey - only a signature over a challenge that is valid once, for one origin. An attacker who observes the entire exchange gains nothing reusable.
+H2 |4.4 Solution/Product Interface catalogue
+TBL |2200,3160,4000
+TH |Interface||Pattern / protocol||Notes
+TR |INT-01 YubiKey to client device||CTAP2 over USB-C or NFC||PIN provides user verification, touch provides user presence. The private key never leaves the secure element
+TR |INT-02 Client to Entra ID||FIDO2 / WebAuthn over TLS 1.2+ to login.microsoftonline.com||Origin binding defeats adversary-in-the-middle proxies. Supported in Edge, Chrome, Safari and Windows App
+TR |INT-03 Client to AVD control plane||Windows App or HTML5 web client, reverse connect over TLS 443 outbound||The Entra ID token carries the phishing-resistant authentication claim consumed by Conditional Access
+TR |INT-04 AVD session to YubiKey||RDP WebAuthn redirection (redirectwebauthn:i:1)||In-session passkey prompts - Azure Portal, PIM activation, jump box sign-in - are redirected to the key physically attached to the local endpoint
+TR |INT-05 AVD session to jump boxes and virtual machines||RDP and SSH inside the production network||Reached only from the privileged AVD image with a PIM-activated role
+TR |INT-06 Entra ID to Microsoft Sentinel||Diagnostic settings, continuous log export||Sign-in, audit, provisioning and PIM logs streamed for analytics, alerting and retention
+TR |INT-07 ServiceNow to Service Desk process||Manual, workflow-driven||Issuance request, verification record, TAP issuance approval, key register update
+END
+H1 |5. Technology Architecture
+P |This section specifies the technology components and their configuration, in the order in which they should be built: the authentication method standards first, then the integration patterns that carry authentication into sessions, then the network position of the solution, then the deployment pattern that governs how the configuration is released.
+H2 |5.1 Technology Component Standards
+H3 |5.1.1 Authenticator hardware standard
+P |The approved authenticator for privileged access is the **YubiKey 5C NFC FIPS**. No other authenticator model is approved for zz or xy accounts.
+TBL |2600,6760
+TH |Property||Standard
+TR |Validation||Firmware 5.7.4 - FIPS 140-3, Overall Level 2 with Physical Security Level 3, NIST-certified 22 May 2026. Firmware 5.4.3 - FIPS 140-2, Overall Level 1/2 with Physical Security Level 3
+TR |Assurance level||Meets NIST SP 800-63B Authenticator Assurance Level 3 (hardware-based, verifier-impersonation-resistant)
+TR |Interfaces||USB-C and NFC. A USB-C to USB-A adapter is supplied where the user's device requires it
+TR |PIN policy||Minimum 8 characters, complexity enforced in firmware. Simple and commonly used PINs are rejected by the key itself, not by policy
+TR |PIN attempt limit||Eight consecutive failures permanently blocks the FIDO2 application. Credentials are destroyed and the key must be reset and re-registered
+TR |User presence||A physical touch is required for every authentication. Malware cannot invoke the key silently
+TR |Credential capacity||Up to 100 discoverable credentials on firmware 5.7.4 (25 on 5.4.3)
+TR |U2F application||Permanently disabled on firmware 5.7.4, which does not meet FIPS 140-3. FIDO2 is the only WebAuthn application present - as this design requires
+TR |Procurement note||NIST moved FIPS 140-2 certificates to its sunset list during 2026. New stock is therefore ordered as firmware 5.7.4; existing 5.4.3 keys are rotated at natural replacement
+END
+H3 |5.1.2 Entra ID passkey (FIDO2) authentication methods policy
+P |Configured at: Entra admin centre → Protection → Authentication methods → Passkey (FIDO2).
+TBL |2700,3060,3600
+TH |Setting||Value||Rationale
+TR |Enable||Yes||Enables passkey registration and sign-in in the tenant
+TR |Target||Group SEC-MFA-FIDO2-Privileged, containing all zz and xy accounts. Phase 2 adds SEC-MFA-FIDO2-Staff||Group-driven scoping, so rollout and rollback require no per-user administration
+TR |Allow self-service set up||Yes||Permits registration from My Security Info and, critically, from the registration prompt presented during sign-in - the mechanism that makes unassisted enrolment possible
+TR |Enforce attestation||Yes||Entra ID validates the Yubico attestation certificate presented at registration. A software authenticator, an emulator or a counterfeit device cannot register
+TR |Enforce key restrictions||Yes||Activates the AAGUID allow-list below
+TR |Restrict specific keys||Allow (allow-list mode)||Only the listed authenticator models may register. All other passkeys - phone-held, platform, software or non-FIPS hardware - are refused
+TR |Microsoft Authenticator passkeys||Not targeted for privileged groups||Privileged tiers use hardware keys exclusively; phone-held passkeys are excluded by scoping
+END
+P |**AAGUID allow-list.** The Authenticator Attestation GUID identifies the exact authenticator model presented at registration. The allow-list is restricted to the YubiKey 5 FIPS Series with NFC, the series to which the YubiKey 5C NFC FIPS belongs.
+TBL |3600,2760,3000
+TH |Authenticator model||Firmware and validation||AAGUID
+TR |YubiKey 5 FIPS Series with NFC - includes YubiKey 5C NFC FIPS||5.4.3 - FIPS 140-2||c1f9a0bc-1dd2-404a-b27f-8e29047a43fd
+TR |YubiKey 5 FIPS Series with NFC - includes YubiKey 5C NFC FIPS||5.7.4 - FIPS 140-3||To be confirmed from the Yubico AAGUID register and the FIDO Metadata Service at build time - verification task V-01
+END
+BQ |Verification task V-01. Yubico publishes authenticator AAGUIDs in its hardware FIDO2 AAGUID register and through the FIDO Metadata Service. The firmware 5.7.4 FIPS AAGUID must be read from that register when the first 5.7.4 key is enrolled during the pilot, and this table updated before enforcement. Registration of a pilot key is itself the definitive test: a key whose AAGUID is not on the list cannot register, so an incorrect value fails safe.
+H3 |5.1.3 Temporary Access Pass standard
+P |Configured at: Entra admin centre → Protection → Authentication methods → Temporary Access Pass.
+TBL |2700,2460,4200
+TH |Setting||Value||Rationale
+TR |Enable and target||Yes - SEC-MFA-FIDO2-Privileged, later the staff group||A TAP is issued only when a key is being registered or recovered
+TR |Minimum lifetime||1 hour||Sufficient to complete registration immediately after the verification call
+TR |Maximum lifetime||8 hours||Caps exposure if a pass is issued and not used promptly
+TR |Default lifetime||1 hour||The pass is issued during the verification call and expires shortly afterwards
+TR |One-time use||Yes||A pass cannot be replayed after the registration sign-in has consumed it
+TR |Length||12 characters||Default strength retained
+END
+H3 |5.1.4 Registration standard - the native Entra ID prompt at sign-in
+P |Registration deliberately uses only built-in Entra ID behaviour, because it is both the simplest flow for the user and the easiest for Cyber Security to assure. When a user who is targeted by the passkey policy signs in with a Temporary Access Pass and has no passkey registered, **Entra ID interrupts the sign-in and guides them through registering the key**: insert or tap the key, set a PIN, touch the key, confirm. The user never visits a separate portal and installs nothing. The TAP is consumed by that same sign-in.
+P |Three properties make this acceptable to a security reviewer. The registration session can only be established with a Temporary Access Pass issued after live identity verification, or with an existing registered passkey. The authenticator presented must pass attestation and match the AAGUID allow-list. And every registration writes an audit event that is alerted on and reconciled against the key register. The full operational procedure is specified in section 9.1.
+H3 |5.1.5 Managed Windows endpoint standard
+P |An Intune Settings Catalog policy is assigned to APM-managed Windows 11 devices used by privileged staff.
+TBL |3600,5760
+TH |Setting (Settings Catalog / CSP)||Value and effect
+TR |Authentication → Use security key for sign-in (SecurityKey/UseSecurityKeyForSignin)||Enabled. Adds the FIDO2 credential provider to the Windows lock screen so the user signs in to the device with the key - PIN and touch, no password
+TR |Excluded credential providers||The password provider is retained during the pilot to avoid lockout while the flow is proven. Its removal is assessed at steady state and handled as a separate change
+TR |Device compliance||Existing APM compliance policy applies unchanged and is consumed by Conditional Access as a signal, not as a substitute for the key
+END
+H3 |5.1.6 macOS endpoint standard
+P |macOS endpoints, managed and personal, use the YubiKey through WebAuthn in Safari, Chrome and Edge, and through Windows App for macOS. This covers all Entra ID sign-in, AVD access and administrative portals over both USB-C and NFC.
+P |Native macOS login-window FIDO2 authentication is not supported by the platform, so local Mac login remains a local credential. As set out in section 3.4, this does not affect the production path. PIV smart-card login and Entra Platform SSO are recorded as future options and are out of scope for this approval.
+H3 |5.1.7 Standard user extension standard (Phase 2)
+P |The same policy pattern extends to standard staff accounts by adding the staff group to the passkey policy target and enabling a registration campaign under Authentication methods → Registration campaign, which prompts registration at sign-in. Standard users may be permitted non-FIPS YubiKeys or Microsoft Authenticator passkeys at APM's discretion; that decision belongs to the Standard User workstream. It does not alter the privileged design, which remains hardware-FIPS-only through its own group scoping and its own authentication strength.
+H2 |5.2 Integration standards and patterns
+P |Authentication must reach beyond the initial sign-in and into the session, because a privileged administrator working inside the AVD image will be prompted again - by the Azure Portal, by PIM activation, and by jump boxes. The integration pattern that makes this work without weakening the boundary is **WebAuthn redirection**.
+TBL |2800,6560
+TH |Pattern||Standard
+TR |Browser and client WebAuthn||All privileged sign-in is performed by the platform WebAuthn implementation against the login.microsoftonline.com origin. No custom authentication code exists anywhere in the solution
+TR |In-session WebAuthn redirection||Enabled on the privileged host pool. A passkey prompt raised inside the AVD session is redirected over the RDP channel to the key attached to the local endpoint, so the same physical key satisfies both the session sign-in and the in-session prompt
+TR |Nested administrative hops||A prompt raised on a jump box reached from the AVD session carries through the same redirection channel. Where a target cannot present a WebAuthn prompt - a legacy console, for example - it is reached from the jump box, which can
+TR |Token and session handling||Tokens are bounded by an 8-hour sign-in frequency with persistent browser sessions disabled, and are subject to continuous access evaluation. No token is written to a personal device beyond its bounded life
+TR |Legacy authentication||Blocked outright for privileged accounts. Protocols that cannot perform WebAuthn have no legitimate privileged use case
+END
+P |The AVD host pool RDP properties for the privileged pool are configured in Nerdio Manager as follows.
+TBL |3200,6160
+TH |RDP property||Value and rationale
+TR |redirectwebauthn:i:1||Enabled. Carries in-session WebAuthn prompts to the local key. This is the only endpoint capability the privileged session trusts
+TR |redirectsmartcards:i:0||Disabled. PIV smart-card authentication is out of scope
+TR |drivestoredirect / redirectclipboard / redirectprinters / usbdevicestoredirect||All disabled on the privileged pool, per the PAW design. No data path exists between the session and the endpoint
+TR |Watermarking and screen capture protection||Enabled, to deter and attribute observation of a privileged session on an unmanaged screen
+END
+H2 |5.3 Network &amp; Infrastructure Standards &amp; Patterns
+P |Figure 4 shows where the solution sits relative to APM's networks and the Azure Australia East hub-and-spoke landing zone.
+FIG |network-authentication-paths.png|Figure 4. Network and infrastructure - authentication paths|3040|1600
+P |The authentication path has **no dependency on APM's corporate network**. Both the identity endpoint and the AVD gateway are internet-facing Microsoft services reached over outbound TLS 443. No inbound port is opened on any APM network, no VPN is required, and no site-to-site tunnel is a prerequisite for privileged sign-in.
+P |This is a deliberate architectural choice with a direct security benefit: trust is established by the hardware key and by Conditional Access, not by network location. It also removes a class of availability risk, because an administrator responding to an incident can authenticate and reach the PAW from any transport, including a mobile hotspot, without first restoring corporate connectivity.
+P |Inside Azure, the privileged AVD host pool attaches to the landing zone as a peered spoke. Administrative hops to production jump boxes and virtual machines occur wholly within Azure private networking, subject to the network security group and private endpoint standards defined by the landing zone design. Telemetry from every layer flows to the Log Analytics workspace and Microsoft Sentinel.
+H2 |5.4 Technology component Deployment Patterns
+P |Every configuration change in this design is a tenant-level policy change, which means a mistake has a wide blast radius. The deployment pattern is therefore ring-based, report-only first, with a documented rollback at each stage. Figure 5 shows the pattern.
+FIG |deployment-rings.png|Figure 5. Deployment pattern - configuration rollout rings|3040|1480
+TBL |1500,3160,4700
+TH |Ring||Population||Gate to proceed
+TR |Ring 0 - FVE||Non-production test environment, two test accounts||Policies authored and proven. Tests T-01 to T-04 pass, including proof that a non-FIPS key and a phone passkey are both refused
+TR |Ring 1 - Project team||Three project users, Conditional Access in report-only mode||Minimum one week of sign-in log review with no unexpected blocks. Tests T-05 to T-08 pass
+TR |Ring 2 - Priv (zz)||All zz account holders, Conditional Access enforced||Tests T-09 and T-10 pass. Service Desk runbooks validated. Rollback to report-only remains available
+TR |Ring 3 - High-Priv (xy)||All xy account holders, enforced with PIM approval||Tests T-11 and T-12 pass. Break-glass verified before cutover. Cyber Security sign-off on the enforced state
+END
+P |No policy is enabled in enforced mode without a passing exit criterion and a documented rollback. Conditional Access changes are raised as changes under the existing governance already agreed with APM Cyber Security for the AVD program, and every change to a CA-APM-PRIV policy raises an alert that must map to an approved change record.
+H1 |6. Information &amp; Data Architecture
+H2 |6.1 Information Model
+P |Figure 6 shows the information entities the solution creates, their custodians and how they relate.
+FIG |information-model.png|Figure 6. Information model - entities, custodians and flow|3040|1480
+TBL |2400,2760,4200
+TH |Data element||Custodian / location||Notes
+TR |FIDO2 private key material||YubiKey secure element only||Generated on the key. Not exportable, not backed up, not escrowed. No copy exists anywhere in APM
+TR |FIDO2 public key and credential metadata||Entra ID user object, authentication methods||Public material only - the public key, credential ID, AAGUID, attestation result and registration timestamp. Useless without the physical key
+TR |Key register - serial, user, issue date, status||ServiceNow asset register||Operational record supporting issuance, audit, reconciliation and revocation
+TR |Identity verification record||ServiceNow ticket||Who verified the user, by what method, and when. Retained per the APM records policy
+TR |Sign-in, registration, TAP and PIM audit events||Entra ID logs, exported to the Microsoft Sentinel workspace||Retention per the APM logging standard
+END
+H2 |6.2 Information Classification
+P |No APM business data is introduced, stored or processed by this solution. The only new information assets are operational records.
+B |Key register and identity verification records - **OFFICIAL: Sensitive**, as personnel-related operational records. Access is restricted to Cyber Security and authorised Service Desk roles
+B |Authentication and audit logs - inherit the classification and retention of the existing Entra ID and Sentinel logging platform
+B |The YubiKey itself holds no personal or business data. This has a direct operational consequence recorded in the risk register: **the loss of a key is not a data breach**, and the incident response is a credential revocation, not a privacy assessment
+H2 |6.3 Analytics and reporting Patterns
+P |Reporting uses existing platforms only; no new analytics component is introduced. Three sources are used together.
+B |**Entra ID authentication methods activity** - registration coverage by group, showing progress to full enrolment and any privileged account still without a registered key
+B |**Entra ID sign-in logs** - method used, client surface, failure reasons and any privileged sign-in that did not use a passkey, which should be structurally impossible once enforced
+B |**PIM audit history** - activations by tier, approval outcomes, duration used against duration requested, and justification quality
+P |These are consolidated into a **monthly privileged authentication report** to Cyber Security covering registration coverage, TAP issuance volume with reconciliation exceptions, PIM activations by tier, and any anomalies raised by the Sentinel analytics defined in section 9.2. The same report is the standing evidence pack for RFFR and ISO 27001 assessment.
+H1 |7. Cyber &amp; Security Architecture
+H2 |7.1 Why FIDO2 on FIPS-validated hardware
+B |**Phishing-resistant by protocol.** The WebAuthn assertion is cryptographically bound to the origin and to a per-authentication nonce. A proxied fake sign-in page receives an assertion that is invalid for the real origin. There is nothing the user can be tricked into typing, approving or forwarding
+B |**Hardware-bound.** Private keys are generated inside, and never leave, the FIPS-validated secure element. Malware on any endpoint can neither read nor clone the credential
+B |**User verification and user presence.** Every use requires the PIN (something you know) and a physical touch (presence). A stolen key alone is useless, and malware cannot invoke the key silently
+B |**Validated cryptography.** Firmware 5.7.4 is FIPS 140-3 certified at Overall Level 2 with Physical Security Level 3; firmware 5.4.3 is FIPS 140-2 certified. Both meet NIST SP 800-63B AAL3
+B |**Replay- and export-proof.** Assertions are single-use. There is no OTP seed, no certificate file, no password hash and no recovery code for an attacker to obtain
+H2 |7.2 Conditional Access design
+H3 |7.2.1 Authentication strength
+P |A custom authentication strength restricts privileged sign-in to hardware passkeys only. The built-in "Phishing-resistant MFA" strength is not used, because it also admits Windows Hello for Business and certificate-based authentication, neither of which is part of this design.
+TBL |3000,6360
+TH |Authentication strength||Definition
+TR |APM Phishing-Resistant Hardware Key (custom)||Allowed method: Passkey (FIDO2) only. Advanced options: restrict by AAGUID to the allow-list defined in §5.1.2. Applied by every privileged Conditional Access policy
+END
+H3 |7.2.2 Conditional Access policies
+TBL |2400,3560,3400
+TH |Policy||Configuration||Effect
+TR |CA-APM-PRIV-01 Require hardware key||Users: SEC-MFA-FIDO2-Privileged (zz, xy). Cloud apps: all. Exclusions: break-glass accounts only. Grant: require authentication strength "APM Phishing-Resistant Hardware Key"||Every privileged sign-in, from any device and any location, requires the YubiKey. A known password and an approved app prompt cease to grant access
+TR |CA-APM-PRIV-02 Session controls||Same scope. Session: sign-in frequency 8 hours; persistent browser session disabled||Bounds token lifetime on shared and personal endpoints. Re-authentication requires the key again
+TR |CA-APM-PRIV-03 Secure registration||User action: register security information. Scope: privileged groups. Grant: permit only from a session established with a Temporary Access Pass or an existing passkey||Prevents an attacker holding only a password from registering their own authenticator
+TR |CA-APM-PRIV-04 Constrain the BYOD path||Users: privileged groups. Device filter: not compliant and not Entra-joined. Cloud apps: all except Azure Virtual Desktop / Windows App, and My Security Info for registration||From a personal device a privileged account can reach only the AVD entry point. No direct Exchange, SharePoint, Teams or Graph access from an unmanaged endpoint
+TR |CA-APM-PRIV-05 Block legacy authentication||Users: privileged groups. Condition: legacy authentication clients||Protocols that cannot perform WebAuthn are blocked outright
+END
+BQ |Deployment note. All five policies are built in report-only mode, validated against pilot sign-in logs for a minimum of one week, then enabled ring by ring in line with section 5.4. This is consistent with the Conditional Access change governance already agreed with APM Cyber Security for the AVD program, under which policies remain report-only until Cyber Security re-approves enforcement.
+H2 |7.3 Privileged Identity Management
+P |Conditional Access establishes who the person is with high assurance. PIM governs what they may do and for how long. Figure 7 shows the elevation flow.
+FIG |pim-elevation.png|Figure 7. Privileged Identity Management - just-in-time elevation|3040|1200
+TBL |2600,3360,3400
+TH |Role setting||Priv tier (zz)||High-Priv tier (xy)
+TR |Assignment||Eligible only - no permanent active assignments||Eligible only. Assignments reviewed monthly
+TR |Activation maximum||8 hours||4 hours
+TR |On activation||Authentication context bound to "APM Phishing-Resistant Hardware Key" - the key is re-asserted. Justification required||As zz, plus a mandatory ticket reference
+TR |Approval||Not required (auto-approve)||Required - Cyber Security Lead or delegate
+TR |Notifications||Activation alerts to the security mailbox||Activation and approval alerts to the Cyber Security Lead
+TR |Access reviews||Quarterly||Monthly
+END
+H2 |7.4 The personal device question - why BYOD access is safe in this design
+P |Permitting privileged sign-in from personal devices is the aspect of this design most likely to attract challenge, so the argument is made explicitly rather than left implicit. The design's position is that **the endpoint is not trusted and does not need to be trusted**, because the credential and the environment are each protected independently of it. Figure 8 shows the resulting boundary.
+FIG |trust-boundary-byod.png|Figure 8. Cyber architecture - trust boundary and device posture|3040|1600
+B |**The credential cannot be stolen from the device.** There is no password to keylog, no seed to extract and no exportable key. The private key is in the YubiKey, not in the device, and no software path exists to retrieve it
+B |**An attacker present on the device cannot authenticate.** PIN entry plus a physical touch defeat remote invocation, and origin binding defeats any phishing page presented to the user
+B |**The device never touches APM data.** CA-APM-PRIV-04 restricts personal devices to the AVD entry point. Within the session, drive, clipboard, print and USB redirection are disabled, watermarking and screen capture protection are enabled, and nothing is written to the endpoint
+B |**Session tokens are bounded.** An 8-hour sign-in frequency with no persistent browser session, plus continuous access evaluation, limits the value of any token that could be captured
+B |**What remains is session observation.** A fully compromised personal device could capture what the administrator sees on screen. This residual risk is recorded as R-02: it is time-boxed by PIM, watermarked for attribution, monitored in Sentinel, and materially smaller than the risk it replaces - a phishable credential usable by anyone, from anywhere, invisibly
+B |**Consistency with existing posture.** This is the same boundary argument APM already accepts for BYOD access to the Standard User AVD channel, strengthened here by hardware-only authentication, just-in-time elevation and the PAW image's egress controls
+H2 |7.5 Threats and controls
+TBL |2400,3560,3400
+TH |Threat||Control||Residual position
+TR |Phishing or adversary-in-the-middle attack on a privileged account||FIDO2 origin binding. Passwords do not grant access (CA-APM-PRIV-01)||Effectively eliminated for targeted accounts
+TR |Credential theft from an endpoint - malware, infostealer||Private key held in hardware. No stored secret. Touch required for every use||Eliminated
+TR |Rogue authenticator registered by an attacker||Attestation enforcement, AAGUID allow-list, and TAP-gated registration (CA-APM-PRIV-03)||Registration requires both a verified TAP session and a genuine FIPS YubiKey
+TR |Interception of a key in the post||The key ships with no credential on it. Registration requires a TAP issued only after live identity verification, with the serial checked during that call||Interception yields inert hardware
+TR |Stolen key with PIN coercion or observation||Eight-attempt hardware lockout destroys credentials. Immediate revocation path. PIM approval still gates xy actions||Low, bounded by a one-hour revocation service level
+TR |Service desk social engineering to obtain a TAP||Mandatory verification script - video plus manager confirmation for privileged accounts. Alert on every privileged TAP creation. One-time, one-hour pass||Low. Every issuance is logged, alerted and reconciled
+TR |Compromised personal endpoint||Controls in §7.4. Session observation is the only residual||Accepted and monitored (R-02)
+TR |Break-glass account abuse||Two accounts excluded from these policies, keys held in safes at two sites, any sign-in raises an incident||Existing control, unchanged
+END
+H2 |7.6 Risk register
+TBL |700,2600,900,900,4260
+TH |ID||Risk||Likelihood||Impact||Treatment
+TR |R-01||A mailed YubiKey is intercepted in transit||Low||Low||The key carries no credential. A TAP is issued only after identity verification, with the serial confirmed during the call, and delivery is tracked. ACCEPT with controls
+TR |R-02||A compromised personal device observes a privileged AVD session||Low||Medium||PAW egress controls, watermarking, 8-hour session bound, PIM time-boxing and Sentinel analytics. Users are obliged by the Privileged Access agreement to use a managed device where one is available. ACCEPT - approval sought
+TR |R-03||A key is lost or stolen||Medium||Low||The credential is useless without the PIN, and eight failed attempts destroy it. Revocation within one hour of report. Spare-key policy for xy holders. MITIGATE
+TR |R-04||A user is locked out and cannot respond to a production incident||Medium||Medium||Spare registered key for xy holders, 24/7 TAP re-issuance through the on-call process, and break-glass accounts for tenant-level emergencies. MITIGATE
+TR |R-05||The Service Desk is deceived into issuing a TAP to an attacker||Low||High||Mandatory video verification plus manager confirmation for privileged passes, alerting on every privileged TAP creation, and a one-time one-hour lifetime. MITIGATE
+TR |R-06||FIPS 140-2 certification sunset reduces APM's compliance standing||Medium||Low||Procure firmware 5.7.4 (FIPS 140-3) stock. Rotate existing 5.4.3 keys at natural replacement. MITIGATE
+TR |R-07||A client surface lacks WebAuthn support in an edge case||Low||Medium||Support matrix proven in the pilot (T-05 to T-08). The AVD web client is the universal fallback. No password fallback is introduced. MITIGATE
+TR |R-08||User friction or forgotten PINs drive avoidable support load||Medium||Low||PIN reset is possible while the user holds the key. Knowledge articles and a guided issuance walkthrough are delivered with the build, with a pilot feedback loop. MITIGATE
+TR |R-09||An AAGUID gap blocks legitimate new key stock after a firmware change||Low||Low||An AAGUID register check is added to the procurement runbook, repeating the V-01 pattern for every firmware change. MITIGATE
+TR |R-10||A Microsoft attestation service outage blocks new registrations||Low||Low||Registrations are infrequent and schedulable. Sign-in is unaffected. ACCEPT
+END
+H2 |7.7 Compliance alignment - RFFR, Essential Eight and the ISM
+TBL |2800,6560
+TH |Obligation||How this design satisfies it
+TR |Essential Eight - Multi-factor authentication, Maturity Level 3 characteristics||Phishing-resistant MFA is enforced for privileged users on every access to systems and data repositories. The authenticator is unphishable by protocol rather than by user vigilance
+TR |Essential Eight - Restrict administrative privileges||No standing privilege. Just-in-time activation with approval at the xy tier. Privileged accounts are structurally prevented from mail and browsing paths by the PAW model, and privileged actions occur only from a hardened, dedicated environment
+TR |ISM - authentication hardening||Memorised secrets are removed from the privileged flow entirely. Authenticators are hardware-bound and FIPS-validated at AAL3. All authentication events are centrally logged and retained
+TR |RFFR (DEWR)||The uplift is evidenced by configuration export of the policies in sections 5 and 7, the key register, PIM audit history and the monthly privileged authentication report - all auditable artefacts available to an ISO 27001 or RFFR assessor without additional preparation
+END
+H1 |8. Service Availability and Disaster Recovery
+H2 |8.1 Business Service Tiering
+P |Privileged authentication is a **Tier 1** capability. Its loss does not stop business operations directly, but it delays incident response and blocks production change, which makes it business-critical in exactly the circumstances where it matters most.
+P |The dependency chain is deliberately short: Microsoft Entra ID, subject to the Microsoft service level agreement, plus the physical key in the user's possession. No new APM-operated infrastructure is introduced, so the solution adds no new availability liability beyond the key itself and the processes that replace it.
+H2 |8.2 Service Availability
+B |Entra ID authentication availability and AVD availability are inherited from the existing platform design in Australia East, and are unchanged by this solution
+B |Each High-Priv (xy) holder registers **two keys** - a primary and a spare. The spare is stored under the holder's site security arrangement. Priv (zz) holders may hold a single key, with the 24/7 Temporary Access Pass path as their fallback
+B |Temporary Access Pass re-issuance is available 24/7 through the existing on-call process, using the same identity verification controls as first issuance
+B |Revocation is available 24/7 and takes effect within one hour of report, independent of whether the physical key is recovered
+H2 |8.3 Disaster recovery &amp; Resilience
+B |**Break-glass.** Two cloud-only emergency access accounts are excluded from CA-APM-PRIV-01 to 05. Each has two registered FIDO2 keys held in safes at separate sites. Any sign-in raises a Microsoft Sentinel incident to Cyber Security. The accounts are tested and reviewed quarterly
+B |**Tenant-level Entra ID outage.** Privileged authentication is unavailable along with the rest of the tenant, and recovery follows the Microsoft major incident process. No APM-side credential fallback is created - deliberately - because any such fallback would re-introduce the phishable path this design exists to remove
+B |**Key fleet failure, such as a batch defect.** Dual-firmware acceptance (5.4.3 and 5.7.4) means a replacement batch can be sourced and registered within days through the standard lifecycle. Break-glass covers the interim for tenant-critical action
+B |**Loss of the key register.** The register is an operational convenience, not a control of last resort: revocation is performed in Entra ID against the user object and does not depend on knowing the serial number
+H1 |9. Service Management
+H2 |9.1 Service Management principles
+P |The service is operated on four principles: issuance is never faster than identity verification; revocation is always faster than investigation; the register must reconcile to the platform, not the other way round; and no support path may ever restore access by weakening authentication. Figure 9 shows the resulting lifecycle.
+FIG |key-lifecycle.png|Figure 9. Service management - key lifecycle|3040|1440
+P |The issuance procedure, including the postal path, is as follows.
+NUM |The requester's manager raises the ServiceNow request. Cyber Security approves privileged issuance. A key serial is assigned from stock and recorded in the register against the user.
+NUM |The key is issued in person where the user is co-located with IT; otherwise it is sent by tracked post to the user's verified address. The key carries no credential in transit, so interception yields inert hardware.
+NUM |On receipt the user books the verification call. The Service Desk verifies identity against the privileged verification script - video call with photo identification, or manager attestation - and confirms that the key serial matches the register.
+NUM |The Service Desk issues a one-time Temporary Access Pass with a one-hour lifetime. The user signs in at any Entra ID sign-in surface using the pass, and Entra ID prompts passkey registration as part of that sign-in. The user sets a PIN of at least eight characters, with complexity enforced by the key hardware, and touches the key.
+NUM |Entra ID validates the attestation certificate and the AAGUID. Only a genuine YubiKey 5 FIPS Series key completes registration. The register is updated to Active. From the next sign-in, Conditional Access enforces key-only authentication for that account.
+NUM |On loss, theft or departure, the report triggers deletion of the passkey in Entra ID within one hour. This deletion is the authoritative revocation - the key becomes inert whether or not it is recovered. The register is updated and a replacement follows steps 1 to 5. Returned keys are FIDO2-reset before restocking.
+H3 |9.1.1 Support model
+TBL |2000,7360
+TH |Tier||Responsibility
+TR |Tier 1 - Service Desk||Issuance verification calls, Temporary Access Pass issuance under the verification script, lost-key intake and revocation trigger, knowledge-article-guided registration support
+TR |Tier 2 - End User Compute / Digital Operations||Conditional Access exclusion investigation, device-side FIDO2 faults, Windows credential provider issues, AVD redirection faults
+TR |Tier 3 - Project team, transitioning to Digital Operations||Changes to Conditional Access, PIM and authentication methods policy, all under change control. AAGUID register maintenance at each firmware change
+TR |Knowledge management||Articles for issuance, registration, lost key, PIN reset and BYOD access are delivered with the build and validated through the APM knowledge-base workflow before go-live
+END
+H2 |9.2 Monitoring, Logging, Reporting and Alerting
+TBL |2900,2860,3600
+TH |Event||Source||Action
+TR |Privileged Temporary Access Pass created||Entra ID audit log → Sentinel||Near-real-time alert to Cyber Security. Reconciled weekly against ServiceNow verification tickets
+TR |Passkey registered or deleted on a privileged account||Entra ID audit log → Sentinel||Alert, and reconciliation against the key register
+TR |Privileged sign-in that did not use FIDO2||Sign-in logs → Sentinel analytic||High-severity incident. Structurally impossible once enforced, so any occurrence indicates policy tampering or exclusion drift
+TR |Break-glass account sign-in||Sign-in logs → Sentinel||Immediate incident to the Cyber Security Lead
+TR |PIM activation and approval outcomes (xy)||PIM audit → Sentinel||Daily digest, with anomaly rules for out-of-hours activation and repeated maximum-duration requests
+TR |Change to any CA-APM-PRIV policy||Entra ID audit log → Sentinel||Alert to Cyber Security. The change must map to an approved change record
+TR |Eight-failure PIN lockout reported||Service Desk ticket||Treated as a potential compromise indicator; investigate before re-issuing
+TR |Registration coverage and method usage||Authentication methods activity report||Monthly privileged authentication report to Cyber Security
+END
+H2 |9.3 Validation and test plan
+P |The following tests constitute the pilot exit criteria referenced by the deployment rings in section 5.4.
+TBL |900,4860,3600
+TH |ID||Test||Pass criterion
+TR |T-01||Register a key using a TAP and the sign-in registration prompt on a managed Windows device||Registration completes, attestation is validated, register updated
+TR |T-02||Attempt registration with a non-FIPS YubiKey and with a phone passkey||Both are refused by key restrictions
+TR |T-03||Attempt privileged sign-in with password plus Authenticator app only||Blocked by CA-APM-PRIV-01
+TR |T-04||Windows lock-screen sign-in with the key on a managed device||Succeeds with no password used
+TR |T-05||Windows App to the privileged AVD image from a managed device||Key satisfies sign-in; session established
+TR |T-06||Windows App and web client to the privileged AVD image from a personal Windows device||Key works; CA-APM-PRIV-04 blocks non-AVD applications; no redirections available in session
+TR |T-07||macOS via Safari and Windows App to portals and AVD||Key works over both USB-C and NFC
+TR |T-08||In-session WebAuthn redirection - Azure Portal and a jump box prompt from inside the AVD session||Prompt satisfied by the local key; redirection confirmed
+TR |T-09||PIM activation for zz (auto-approve) and xy (approval required) with key re-assertion||Both flows complete; audit records present and correct
+TR |T-10||Lost-key drill - revoke the passkey and re-issue via TAP||Old key inert within one hour; new key active; register consistent
+TR |T-11||Social engineering drill against the TAP verification script||Request refused without video verification; alert fires on any TAP creation
+TR |T-12||Scheduled break-glass sign-in test||Access succeeds and a Sentinel incident is raised
+END
+H1 |Appendix A: Terms &amp; Abbreviations
+TBL |2000,7360
+TH |Term||Definition
+TR |AAGUID||Authenticator Attestation GUID - a 128-bit identifier that names the exact authenticator model presented during FIDO2 registration
+TR |AAL3||Authenticator Assurance Level 3, the highest level defined in NIST SP 800-63B, requiring a hardware-based, verifier-impersonation-resistant authenticator
+TR |Attestation||A signed statement from the authenticator's manufacturer, verified at registration, proving the device is a genuine model of the type it claims to be
+TR |AVD||Azure Virtual Desktop
+TR |CA||Conditional Access - the Entra ID policy engine that evaluates each sign-in against defined conditions and grant controls
+TR |CTAP2||Client to Authenticator Protocol version 2 - the protocol between the client device and the security key over USB or NFC
+TR |FIDO2||The open authentication standard comprising WebAuthn and CTAP2, providing phishing-resistant public-key authentication
+TR |FIPS 140-2 / 140-3||United States federal standards for cryptographic module validation. 140-3 supersedes 140-2
+TR |PAW||Privileged Access Workstation - a hardened, single-purpose environment used exclusively for administrative work
+TR |PIM||Privileged Identity Management - the Entra ID service providing eligible, time-boxed, approved role activation
+TR |RFFR||Right Fit For Risk - the DEWR security assurance framework, drawing on ISO 27001 and the ASD Information Security Manual
+TR |TAP||Temporary Access Pass - a time-limited, optionally single-use passcode used to bootstrap or recover a passwordless credential
+TR |User presence / user verification||Presence is the physical touch proving a human is present. Verification is the PIN proving it is the right human
+TR |WebAuthn||The W3C Web Authentication API, the browser-side half of FIDO2, which binds each assertion to the requesting origin
+TR |xy / zz||APM account prefixes denoting High-Privileged and Privileged administrative accounts respectively
+END

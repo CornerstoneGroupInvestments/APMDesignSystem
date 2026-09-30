@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><title>APM-PK-02 Participant Kiosk - Deployment Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Mulish:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../styles.css">
+<style>
+doc-page:not(:defined){visibility:hidden}
+body{font-family:'Mulish',sans-serif;color:#1F2D58;font-size:12pt;line-height:1.5}
+h1,h2,h3,h4{font-family:'Poppins',sans-serif;color:#1F2D58;text-wrap:balance;margin:0}
+h1{font-size:20pt;font-weight:600;line-height:1.15}
+h2{font-size:14pt;font-weight:600;margin:20pt 0 7pt;padding-bottom:4pt;border-bottom:2px solid #1F2D58;break-after:avoid}
+h3{font-size:12.5pt;font-weight:600;margin:13pt 0 5pt;break-after:avoid}
+p{margin:0 0 7pt}
+.lede{font-size:11pt;color:#41507F}
+.hdr{background:#1F2D58;color:#fff;padding:15pt 18pt;border-radius:7px;margin-bottom:12pt}
+.hdr h1{color:#fff}
+.hdr .sub{font-family:'Poppins',sans-serif;font-size:9.5pt;letter-spacing:.1em;text-transform:uppercase;color:#8E9BC4;margin-bottom:5pt}
+.hdr .who{font-size:11pt;color:#C2CBE4;margin-top:6pt}
+table{width:100%;border-collapse:collapse;margin:0 0 9pt;font-size:11pt;clear:right}
+th{font-family:'Poppins',sans-serif;font-size:9.5pt;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#1F2D58;text-align:left;padding:5pt 8pt}
+td{padding:5pt 8pt;border-bottom:1px solid #D8DEEC;vertical-align:top}
+tr:nth-child(even) td{background:#F5F7FB}
+table,tr,td,th{break-inside:avoid}
+ol,ul{margin:0 0 8pt;padding-left:19pt}
+li{margin-bottom:5pt}
+kbd{font-family:'JetBrains Mono',monospace;font-size:10pt;font-weight:700;color:#1F2D58;background:#fff;border:1.5px solid #1F2D58;border-bottom-width:3px;border-radius:4px;padding:1pt 5pt;white-space:nowrap}
+.cmd{font-family:'JetBrains Mono',monospace;font-size:11pt;background:#101a33;color:#fff;border-radius:6px;padding:9pt 12pt;margin:6pt 0 8pt;line-height:1.75;break-inside:avoid;clear:right}
+.cmd .ent{color:#F89728;font-weight:700;font-size:9.5pt}
+.see{border-left:3px solid #7B87AD;background:#F5F7FB;padding:6pt 11pt;margin:6pt 0 8pt;font-size:11pt;break-inside:avoid;clear:right}
+.see>b:first-child{font-family:'Poppins',sans-serif;font-size:9.5pt;letter-spacing:.06em;text-transform:uppercase;color:#5A6796;display:block;margin-bottom:2pt}
+.stop{border-left:4px solid #C0392B;background:#FCEEF0;padding:8pt 12pt;margin:8pt 0;font-size:11pt;break-inside:avoid;clear:right}
+.stop b{font-family:'Poppins',sans-serif;color:#8C2130}
+.tbc{background:#FFF6EA;border:1px dashed #D89A3C;border-radius:5px;padding:7pt 11pt;margin:7pt 0;font-size:11pt;break-inside:avoid;clear:right}
+.tbc>b:first-child{font-family:'Poppins',sans-serif;font-size:9.5pt;letter-spacing:.06em;text-transform:uppercase;color:#8A5200;display:block;margin-bottom:2pt}
+.rule{background:#1F2D58;color:#fff;border-radius:7px;padding:12pt 16pt;margin:10pt 0 14pt;break-inside:avoid;clear:right}
+.rule h3{color:#fff;margin:0 0 7pt}
+.rule ol{margin:0;padding-left:17pt;font-size:11.5pt}
+.rule li{margin-bottom:6pt;color:#E4E9F5}
+.rule b{color:#F89728}
+.time{float:right;font-family:'Poppins',sans-serif;font-size:9.5pt;font-weight:600;color:#5A6796;background:#EDEFF4;border-radius:20px;padding:2pt 10pt}
+.tick td{height:20pt}
+.tick .bx{width:34pt;text-align:center}
+.tick .bx span{display:inline-block;width:13pt;height:13pt;border:1.5pt solid #1F2D58;border-radius:2px;vertical-align:middle}
+code{font-family:'JetBrains Mono',monospace;font-size:10.5pt;background:#EDEFF4;border-radius:3px;padding:1pt 4pt}
+.ftr{display:flex;justify-content:space-between;font-family:'Poppins',sans-serif;font-size:8.5pt;color:#41507F;border-top:1px solid #D8DEEC;padding-top:4pt}
+.lane{display:grid;grid-template-columns:max-content 1fr;gap:0 10pt;font-size:11pt;margin:0 0 10pt}
+.lane div{padding:5pt 8pt;border-bottom:1px solid #D8DEEC}
+.lane .t{font-family:'JetBrains Mono',monospace;font-weight:700;color:#5A6796;background:#F5F7FB}
+a{color:#8A5200;text-decoration:none;border-bottom:1px solid #E8C89A}
+a:hover{color:#B36A00;border-bottom-color:#B36A00}
+</style>
+</head><body>
+<doc-page margin="0.7in">
+
+<div class="ftr" slot="footer"><span>APM-PK-02 &middot; APM ES Participant Kiosk &middot; Deployment Guide V1.0</span><span>FOR INTERNAL USE ONLY &middot; Commercial in confidence</span></div>
+
+<div class="hdr">
+<div class="sub">APM-PK-02 &middot; Deployment guide &middot; V1.0</div>
+<h1>ES Participant Kiosk<br>Efficient Deployment Guide</h1>
+<div class="who">For APM Digital Operations and build technicians &middot; APM Standard Operating Environment Program</div>
+</div>
+
+<h2>What this guide is for</h2>
+<p>Ten steps build one ES Participant Kiosk. Eight of the ten take a few minutes of technician time; the other two, the Windows installation and the automatic provisioning that follows it, run for 25 to 40 minutes each with nobody watching. A batch built one device at a time therefore spends most of its day idle.</p>
+<p>This guide sets out the ten steps in order, and the bench layout and sequencing that let one technician hold four to six devices in flight at once. The detailed per-step procedure, with every on-screen confirmation and escalation path, is <a href="CN-PK-01-Participant-Kiosk-Build-Procedure.html">CN-PK-01 Device Build Procedure</a>. Use this guide to plan and run a batch; use CN-PK-01 when a step does not behave as described.</p>
+
+<div class="rule">
+<h3>The six things that stop a build</h3>
+<ol>
+<li>The device is <b>registered in Windows Autopilot</b> and tagged <b>PARTICIPANT</b> in upper case before anything else is done to it. The tag is the sole mechanism that assigns the kiosk deployment profile: an absent, lower-case or misspelt tag produces a standard Windows desktop with no lockdown, and the device has to be rebuilt.</li>
+<li><b>Ethernet stays disconnected</b> through installation and the out-of-box experience, and is connected immediately before the registry key script is run at step 6. A cable connected earlier changes what the device does at the out-of-box experience.</li>
+<li>The registry key script is run <b>at the out-of-box experience</b>, from the command prompt opened with <kbd>Shift</kbd> + <kbd>F10</kbd>, before anything else is done to the device. OOBE is never worked through and no account is ever created.</li>
+<li>The image is installed from a <b>UEFI</b> USB entry in the <kbd>F12</kbd> boot menu. A legacy entry produces a device that cannot provision.</li>
+<li><b>Zscaler, TeamViewer and LibreOffice</b> must all three be present before the device is packed.</li>
+<li>The Wi-Fi configuration profile <b>AU-W11-SEC-Kiosk Device Wi-Fi-P-1.0</b> must show as applied in Intune. Sites have no ethernet ports, so it is the device's only path to the network, and the fault is only discovered at the site.</li>
+</ol>
+</div>
+
+<h2>Bench setup, done once per batch</h2>
+<p>Set up once, then every device in the batch runs the same path.</p>
+<table>
+<colgroup><col style="width:31%"><col></colgroup>
+<thead><tr><th>Item</th><th>Quantity and detail</th></tr></thead>
+<tbody>
+<tr><td><b>Build USB drives</b></td><td>One per concurrent build station, plus one spare. Four stations means five drives. Each drive is identical: the APM Windows 11 25H2 image with the APM wallpaper and current updates injected, plus the build scripts at the top level.</td></tr>
+<tr><td>Build stations</td><td>Four to six. Each needs power, a monitor, a keyboard and a mouse.</td></tr>
+<tr><td>Network</td><td>Available at the bench but <b>not connected to any device</b> during installation. See the step 3 note.</td></tr>
+<tr><td>Intune access</td><td>A workstation signed in to <code>intune.microsoft.com</code>, left open on the device list all day. Steps 7 and 9 both use it.</td></tr>
+<tr><td>Allocation list</td><td>Quantity per site and destination site code, issued by APM.</td></tr>
+<tr><td>Record sheets</td><td>One per device, from the end of this guide.</td></tr>
+</tbody>
+</table>
+
+<h3>Writing the build USB drives</h3>
+<span class="time">15 minutes per drive</span>
+<p>Write the APM Windows 11 25H2 image to a USB drive of 16 GB or larger, as a <b>GPT</b> / <b>UEFI (non CSM)</b> / <b>FAT32</b> drive so that it boots with Secure Boot enabled. Accept the offer to split the install file where the tool warns it exceeds the FAT32 limit. Then copy the build scripts to the top level of the drive, not into a folder. Full keystrokes: CN-PK-01, Prerequisites.</p>
+<p>APM supplies the image. Write it with <b>Rufus</b>, or an equivalent bootable-USB tool the build facility already carries. Prepare every drive for the batch in one sitting, from the same image file. A drive is then reused for every device it builds.</p>
+
+<h3>What is on the build USB drive</h3>
+<table>
+<colgroup><col style="width:38%"><col></colgroup>
+<thead><tr><th>File at the top level</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>sources</code>, <code>boot</code>, <code>efi</code>, <code>bootmgr</code>, <code>setup.exe</code></td><td>The Windows 11 25H2 installation media, written by Rufus from the APM image. The wallpaper and the updates are already inside it.</td></tr>
+<tr><td><code>Run-CreateMIRegKey.bat</code></td><td>Run at the out-of-box experience at step 6. Invokes the PowerShell script below.</td></tr>
+<tr><td><code>Create_MI_RegKey.ps1</code></td><td>Invoked by the batch file. Progresses the device through OOBE into Autopilot provisioning. Not run directly.</td></tr>
+<tr><td><code>Get-AutopilotHash.bat</code></td><td>Captures the hardware hash on the device. The manual fallback at step 1, used only where a device was not uploaded to Autopilot ahead of time. See CN-PK-01 Stage 4.</td></tr>
+<tr><td><code>support</code>, <code>AutoRun.inf</code></td><td>Supplied with the media. No technician action.</td></tr>
+<tr><td><code>test.odp</code></td><td>Test file for the LibreOffice check at step 8.</td></tr>
+</tbody>
+</table>
+<div class="see"><b>Preferred path</b>Upload every device in the batch to Autopilot and tag it <code>PARTICIPANT</code> ahead of time, from the supplier's serial number list. Per-device hash capture with <code>Get-AutopilotHash.bat</code> at the out-of-box experience is the manual fallback, used where a device is not already registered.</div>
+
+<h2>The ten steps</h2>
+
+<h3>1 &middot; Register the device in Autopilot and tag it PARTICIPANT</h3>
+<span class="time">5 to 20 minutes</span>
+<p>Nothing is done to the device until it is registered in Windows Autopilot and carries the group tag <code>PARTICIPANT</code>. The tag determines the configuration the device receives, and no configuration, application or lockdown reaches an unregistered device.</p>
+<ol>
+<li>In Intune, choose <b>Devices</b>, then <b>Enrolment</b>, then <b>Devices</b> under the Windows Autopilot heading.</li>
+<li>Find the device in the list by serial number. Registering and tagging the whole batch ahead of time is the preferred path, so the device should already be listed. Where it is not, capture the hardware hash on the device with <code>Get-AutopilotHash.bat</code> at the out-of-box experience and import it, per CN-PK-01 Stages 4 and 5. That is the manual fallback, one device at a time.</li>
+<li>Read the <b>Group Tag</b> column. It must read <code>PARTICIPANT</code> in upper case.</li>
+<li>Where it is empty, lower case or any other value, select the device, choose <b>Edit</b> on the right-hand panel, enter <code>PARTICIPANT</code> in upper case, then <b>Save</b>.</li>
+<li>Read the <b>Userless enrolment status</b> column, scrolling right if it is not visible. It must read <b>Allowed</b>. Where it reads <b>Blocked</b>, select the device and choose <b>Unblock</b>. Blocked is expected on any device that has previously completed a kiosk build, including returned units.</li>
+</ol>
+<div class="see"><b>Ready to build</b>The device is listed in Autopilot, Group Tag reads <code>PARTICIPANT</code>, and Userless enrolment status reads <b>Allowed</b>.</div>
+<div class="stop"><b>Do not start step 2 until all three are true.</b> A device built without the tag provisions to a standard Windows desktop and has to be rebuilt from step 2, and a device left at Blocked fails during the account setup phase of provisioning, forfeiting the whole run.</div>
+<p>Register and tag the whole batch in one sitting at the start of the day, checking each serial number off the allocation list. That takes the check off the critical path for every device that follows.</p>
+
+<h3>2 &middot; Boot the Dell thin client from USB</h3>
+<span class="time">2 minutes</span>
+<ol>
+<li>With the device off, connect the build USB drive, the monitor, the keyboard, the mouse and power.</li>
+<li>Press the power button, then immediately start tapping <kbd>F12</kbd> about once a second until the boot menu opens.</li>
+<li>Select the USB device listed under <b>UEFI Boot</b>.</li>
+</ol>
+<div class="see"><b>On screen</b>Windows Setup, beginning with a language and keyboard screen.</div>
+<p>Record the serial number on the record sheet while the device boots. It is on the carton label and on the device.</p>
+
+<h3>3 &middot; Confirm ethernet is not connected</h3>
+<span class="time">Immediate</span>
+<div class="stop"><b>No network cable is connected to the device at this point.</b> Check the port physically before continuing. A connected cable changes what the device does at the out-of-box experience and the build cannot be recovered by unplugging it later. The cable goes in at step 6, not before.</div>
+
+<h3>4 &middot; Install Windows 11 from the image</h3>
+<span class="time">25 to 40 minutes, unattended</span>
+<p>Work through the language and keyboard screens, choose <b>Custom: Install Windows only (advanced)</b>, delete every partition on the internal drive until it reads a single <b>Unallocated Space</b> entry, then continue. The device restarts one or more times without input.</p>
+<div class="stop"><b>This erases the internal drive,</b> including the factory operating system. That is intended. <b>Delete partitions on the internal drive only.</b> The build USB drive is also listed on this screen: deleting a partition on it destroys the build media, and the drive has to be written again before any further device can be built. Identify the internal drive by its capacity before deleting anything.</div>
+<p><b>Start the next device at step 2 now.</b> This is the longest unattended wait in the build and the largest single throughput gain available.</p>
+
+<h3>5 &middot; Stop at the out-of-box experience</h3>
+<span class="time">Immediate</span>
+<p>Wait for the device to restart into the out-of-box experience, the first screen after installation, which asks for a language or region.</p>
+<div class="stop"><b>Stop there. Do not work through OOBE and do not create an account.</b> A device that has completed OOBE, or that has an account on it, cannot be recovered by restarting. It must be rebuilt from step 2.</div>
+
+<h3>6 &middot; Run the registry key script</h3>
+<span class="time">3 minutes</span>
+<ol>
+<li>At the language prompt, press <kbd>Shift</kbd> + <kbd>F10</kbd> together to open a command prompt. On some keyboards this needs <kbd>Fn</kbd> held as well: <kbd>Shift</kbd> + <kbd>Fn</kbd> + <kbd>F10</kbd>.</li>
+<li><b>Connect the ethernet cable now</b>, just before running the script. The device restarts and provisions itself as soon as the script runs, and provisioning needs the network.</li>
+<li>Type the following and press <kbd>Enter</kbd>.</li>
+</ol>
+<div class="cmd">d:\Run-CreateMIRegKey.bat <span class="ent">[Enter]</span></div>
+<p>The script progresses the device through the out-of-box experience automatically and hands it to Autopilot. There is no completion message and no prompt: the device restarts itself and provisioning begins.</p>
+<div class="see"><b>On screen</b>PowerShell text scrolling past, then the device restarts on its own and starts provisioning. No further input.</div>
+<p>Where the response is <code>The system cannot find the path specified</code>, the USB drive holds a different letter. Type <code>e:</code> then <kbd>Enter</kbd>, then <code>dir</code>, and repeat with <code>f:</code> and so on until the build files are listed, then run the batch file from that letter.</p>
+
+<h3>7 &middot; Wait for automatic sign-in, and sync Intune</h3>
+<span class="time">20 to 60 minutes, unattended</span>
+<p>The device restarts, provisions itself, and signs in automatically to the restricted session. No keyboard or mouse input, and no sign-in prompt: there is no participant identity and no password on this build.</p>
+<p>To shorten the wait, find the device in Intune by serial number and choose <b>Sync</b>. Repeat every few minutes rather than waiting on the device's own check-in schedule. This is the difference between a 20 minute step and a 60 minute one.</p>
+<div class="see"><b>On screen at the end</b>A desktop showing the APM wallpaper and a taskbar, reached with no input.</div>
+<p>Work the bench in a loop while this runs: start a new device at step 2, run step 6 on any device sitting at OOBE, and press Sync on every device in flight.</p>
+<div class="stop"><b>Where the device sits on the same screen beyond 90 minutes,</b> or shows an error code, stop. Photograph the screen, record the serial number and the start time, and escalate. Do not restart or wipe it.</div>
+
+<h3>8 &middot; Confirm the applications are installed</h3>
+<span class="time">5 minutes</span>
+<p>All three must be present on the device before it is packed.</p>
+<table>
+<colgroup><col style="width:31%"><col></colgroup>
+<thead><tr><th>Application</th><th>How to confirm</th></tr></thead>
+<tbody>
+<tr><td><b>Zscaler</b></td><td>The Zscaler icon is in the notification area at the right of the taskbar, and hovering over it does not report a disconnected or error state.</td></tr>
+<tr><td><b>TeamViewer</b></td><td>Present and running. This is the remote support path once the device is at site, so a device without it cannot be supported.</td></tr>
+<tr><td><b>LibreOffice</b></td><td>Writer, Calc and Impress each open. Each is a separate application in the restricted session's allowed list, so one opening does not prove another will. Open <code>test.odp</code> from the USB drive in Impress if a file is wanted for the check.</td></tr>
+</tbody>
+</table>
+<div class="stop"><b>Any one of the three absent stops the device.</b> Do not pack it and do not attempt a fix. Report the serial number and which application is missing.</div>
+<p>Where the batch is being accepted formally rather than spot-checked, run the seven acceptance tests in CN-PK-01 Stage 8 instead of this step. They cover the restricted application set, the File Explorer restriction and the restart session purge as well as the three applications above.</p>
+
+<h3>9 &middot; Verify the Wi-Fi profile in Intune</h3>
+<span class="time">3 minutes</span>
+<div class="stop"><b>This is the step that most often prevents a device working at site,</b> and the only one whose failure is invisible on the device itself. <b>APM sites have no ethernet ports,</b> so this profile is the device's only path to the network. Without it the kiosk cannot connect at all, and there is no local way for site staff to fix it.</div>
+<ol>
+<li>In Intune, choose <b>Devices</b>, then find the device by serial number or by its name, which begins <code>APM-PK-</code>.</li>
+<li>Open the device and choose <b>Device configuration</b>.</li>
+<li>Find <b>AU-W11-SEC-Kiosk Device Wi-Fi-P-1.0</b> in the profile list.</li>
+<li>Confirm the profile state reads <b>Succeeded</b>.</li>
+</ol>
+<div class="see"><b>Pass</b>The profile is listed and reads Succeeded.</div>
+<div class="stop"><b>Fail if</b> the profile is absent from the list, or reads Error, Conflict or Pending. Choose <b>Sync</b> and allow 15 minutes. Where syncing does not resolve it, <b>rebuild the device from step 2</b>. Report the serial number and the state shown. Do not dispatch the device.</div>
+<p>While the device page is open, confirm the device name begins <code>APM-PK-</code>. A name in any other form means the device did not receive the kiosk configuration, which is almost always an Autopilot group tag other than <code>PARTICIPANT</code>. See CN-PK-01 Stage 5.</p>
+
+<h3>10 &middot; Pack and dispatch</h3>
+<span class="time">5 minutes</span>
+<ol>
+<li>Shut the device down through Windows: <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Delete</kbd>, the power icon, then <b>Shut down</b>.</li>
+<li>Disconnect the build monitor, keyboard, mouse and cables. These stay at the bench unless the allocation list says otherwise.</li>
+<li>Repack the device into its original carton with its power supply and all supplied accessories.</li>
+<li>Label the carton exterior with the <b>device name</b> and the <b>destination site address</b>.</li>
+<li>Place the APM site instruction sheet inside the carton, uppermost, so it is the first thing site staff see.</li>
+<li>Update the asset register: device name, serial number, destination site, status <b>Dispatched</b>, date.</li>
+<li>Release to the courier and record the consignment number.</li>
+</ol>
+<h2>Running a batch efficiently</h2>
+<p>The two long steps, the Windows installation at step 4 and the provisioning at step 7, need no attention. Everything else is minutes. So the technician's day is a loop across the bench rather than a device followed end to end.</p>
+
+<h3>The loop</h3>
+<p>Walk the bench in this order and repeat. Each pass takes a few minutes.</p>
+<div class="lane">
+<div class="t">Look for</div><div><b>Action</b></div>
+<div class="t">Empty bay</div><div>Start the next device off the batch list, already registered and tagged at step 1: steps 2, 3, 4. Then leave it.</div>
+<div class="t">At OOBE</div><div>Run step 6, the registry key script. Then leave it.</div>
+<div class="t">Provisioning</div><div>Press <b>Sync</b> in Intune. Nothing else.</div>
+<div class="t">Signed in</div><div>Steps 8, 9, 10. This frees the bay.</div>
+</div>
+<p>The bench holds one device per bay. Four bays is the point at which one technician is busy without queueing; six is workable where the Intune workstation sits at the bench rather than across the room.</p>
+
+<h3>Throughput</h3>
+<table>
+<colgroup><col style="width:31%"><col style="width:22%"><col></colgroup>
+<thead><tr><th>Bench</th><th>Devices per day</th><th>Constraint</th></tr></thead>
+<tbody>
+<tr><td>1 bay, sequential</td><td>4 to 5</td><td>The technician waits through both long steps on every device.</td></tr>
+<tr><td>4 bays, looped</td><td>12 to 16</td><td>Technician attention. Roughly 20 minutes of hands-on time per device.</td></tr>
+<tr><td>6 bays, looped</td><td>16 to 20</td><td>Bench space and monitors, and the walk to the Intune workstation.</td></tr>
+</tbody>
+</table>
+<p class="lede">Figures assume a prepared bench, drives already written, and no device failing a check. Add contingency for the first batch at a new facility, where the network requirements in CN-PK-01 are being proven for the first time.</p>
+
+<h3>What to fix before scaling up</h3>
+<ol>
+<li><b>Prove one device end to end first,</b> at a new facility or after any image change, before starting a batch. A network or image fault found on device one costs an hour; found on device twelve it costs a day.</li>
+<li><b>Register and tag the whole batch before the first device is booted.</b> The step 1 checks are quick in bulk and slow one at a time, and a missed tag is only discovered at the end of a 90 minute build.</li>
+<li><b>Write every drive from the same image file.</b> The date in the image filename is its version. Confirm it against the most recent APM notification before a batch, and re-write every drive when the image changes.</li>
+<li><b>Keep the Intune device list open all day.</b> Steps 7 and 9 both use it, and the Sync at step 7 is the single largest time saving in the build.</li>
+<li><b>Record as you go, not at the end.</b> The record sheet is the evidence the device was checked. A sheet filled in from memory at dispatch is worth nothing when a device fails at site.</li>
+</ol>
+
+<h2>Common faults</h2>
+<table>
+<colgroup><col style="width:36%"><col></colgroup>
+<thead><tr><th>Symptom</th><th>Cause and action</th></tr></thead>
+<tbody>
+<tr><td>Device boots into the factory Windows instead of Setup</td><td>The <kbd>F12</kbd> boot selection did not register. Switch off and repeat step 2, tapping earlier.</td></tr>
+<tr><td>Secure Boot violation, or the USB drive is refused as untrusted</td><td>The drive was written as NTFS. Re-write it as FAT32, GPT, UEFI (non CSM). Do not disable Secure Boot.</td></tr>
+<tr><td><kbd>Shift</kbd> + <kbd>F10</kbd> does nothing at OOBE</td><td>Try <kbd>Shift</kbd> + <kbd>Fn</kbd> + <kbd>F10</kbd>.</td></tr>
+<tr><td><code>The system cannot find the path specified</code> at step 6</td><td>The USB drive is not <code>D:</code>. Try <code>e:</code>, then <code>f:</code>, running <code>dir</code> at each until the build files are listed.</td></tr>
+<tr><td>OOBE was worked through, or an account was created</td><td>Not recoverable by restarting. Rebuild from step 2. Report the serial number so the Autopilot record can be checked first.</td></tr>
+<tr><td>Device reaches a sign-in prompt asking for a password</td><td>Automatic sign-in did not apply. Allow 30 minutes, restart once, then escalate. Do not attempt to sign in.</td></tr>
+<tr><td>Provisioning finishes to a standard Windows desktop with Settings and full application access</td><td>The Autopilot group tag was not <code>PARTICIPANT</code>. Correct the tag per CN-PK-01 Stage 5, then rebuild from step 2.</td></tr>
+<tr><td>LibreOffice opens and then closes</td><td>Known fault, and it can affect one application without the others. Do not dispatch. Report which of Writer, Calc or Impress failed.</td></tr>
+<tr><td><b>AU-W11-SEC-Kiosk Device Wi-Fi-P-1.0</b> is absent or not Succeeded</td><td>Sync the device and allow 15 minutes. Where syncing does not resolve it, rebuild the device from step 2. Report the serial number and the state shown. Do not dispatch: sites have no ethernet ports, so without this profile the device has no way onto the network.</td></tr>
+<tr><td>Provisioning static on one screen beyond 90 minutes</td><td>Leave the device as it is. Photograph the screen and escalate. Do not restart or wipe.</td></tr>
+</tbody>
+</table>
+<p>Escalate with three things every time: the <b>serial number</b>, the <b>step reached</b>, and a <b>photograph of the screen</b>.</p>
+
+<h2>Device record sheet</h2>
+<p class="lede">One per device. Keep it with the carton until dispatch, then file.</p>
+<table>
+<colgroup><col style="width:23%"><col></colgroup>
+<tbody>
+<tr><td><b>Serial number</b></td><td></td></tr>
+<tr><td><b>Device name</b></td><td><code>APM-PK-</code></td></tr>
+<tr><td><b>Destination site</b></td><td></td></tr>
+<tr><td><b>Image version</b></td><td></td></tr>
+<tr><td><b>Built by</b></td><td></td></tr>
+<tr><td><b>Date</b></td><td></td></tr></tbody>
+</table>
+<table class="tick">
+<colgroup><col style="width:34pt"><col style="width:12%"><col></colgroup>
+<thead><tr><th></th><th>Step</th><th>Verified</th></tr></thead>
+<tbody>
+<tr><td class="bx"><span></span></td><td>1</td><td>Listed in Autopilot, Group Tag reads <b>PARTICIPANT</b>, Userless enrolment status reads <b>Allowed</b></td></tr>
+<tr><td class="bx"><span></span></td><td>2</td><td>Booted from the UEFI USB entry, serial number recorded</td></tr>
+<tr><td class="bx"><span></span></td><td>3</td><td>Ethernet confirmed disconnected before installation</td></tr>
+<tr><td class="bx"><span></span></td><td>4</td><td>Windows 11 25H2 installed, all factory partitions deleted</td></tr>
+<tr><td class="bx"><span></span></td><td>5</td><td>Stopped at the out-of-box experience, no account created</td></tr>
+<tr><td class="bx"><span></span></td><td>6</td><td>Ethernet connected, <code>Run-CreateMIRegKey.bat</code> ran, device restarted itself and began provisioning</td></tr>
+<tr><td class="bx"><span></span></td><td>7</td><td>Automatic sign-in reached unattended, no sign-in prompt</td></tr>
+<tr><td class="bx"><span></span></td><td>8</td><td>Zscaler present, no error state</td></tr>
+<tr><td class="bx"><span></span></td><td>8</td><td>TeamViewer present</td></tr>
+<tr><td class="bx"><span></span></td><td>8</td><td>LibreOffice Writer, Calc and Impress all open</td></tr>
+<tr><td class="bx"><span></span></td><td>9</td><td><b>AU-W11-SEC-Kiosk Device Wi-Fi-P-1.0</b> reads Succeeded in Intune</td></tr>
+<tr><td class="bx"><span></span></td><td>9</td><td>Device name begins <code>APM-PK-</code></td></tr>
+<tr><td class="bx"><span></span></td><td>10</td><td>Packed, labelled, instruction sheet enclosed, asset register updated</td></tr>
+</tbody>
+</table>
+
+<h2>Open items</h2>
+<p class="lede">Three items, each naming the step it affects. The guide is otherwise complete.</p>
+<table>
+<colgroup><col style="width:7%"><col style="width:13%"><col></colgroup>
+<thead><tr><th>#</th><th>Step</th><th>Requirement</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>7</td><td>Expected elapsed time from the automatic restart to the restricted session on the Dell thin client model in use, so a technician knows when a device is genuinely stalled rather than slow.</td></tr>
+<tr><td>2</td><td>1</td><td>The source of the serial number list used to upload a batch to Autopilot ahead of time, and who performs the upload and tagging.</td></tr>
+<tr><td>3</td><td>8</td><td>Whether the three application checks are sufficient for batch acceptance, or the seven acceptance tests in CN-PK-01 Stage 8 are run on every device.</td></tr>
+</tbody>
+</table>
+
+</doc-page>
+<script src="../doc-page.js"></script>
+</body></html>

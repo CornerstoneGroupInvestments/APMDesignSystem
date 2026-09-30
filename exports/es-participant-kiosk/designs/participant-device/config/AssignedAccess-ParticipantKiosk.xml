@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- APM Participant Kiosk - multi-app Assigned Access, per-device local session account.
+
+     THIS FILE IS THE CANONICAL REFERENCE COPY. It is NOT uploaded to Intune.
+
+     The session account name is per device (Kiosk-<SERIAL>), so no single payload can
+     serve the fleet: a custom OMA-URI profile sends one identical value to every device
+     and performs no token substitution. The account is therefore created on the device
+     and this configuration is applied on the device, both by
+     CDG-W11-REM-Kiosk Session Account-P-1.0, which owns
+     ./Vendor/MSFT/AssignedAccess/Configuration outright.
+
+     The remediation carries its own copy of the body below in a here-string, because an
+     Intune remediation is a single pasted script and cannot read a sibling file at
+     runtime. The two copies have drifted apart once already, with different namespace
+     prefixes on the same element. After editing either one, run check-assigned-access.js:
+     it compares them and fails on any structural difference.
+
+     [SERIAL] is the substitution point. It is never uploaded or applied literally: a
+     literal [SERIAL] resolves to no account, and Assigned Access fails the whole
+     configuration when the account does not exist.
+
+     Element order inside Profile is fixed by the schema and must not be reordered:
+     AllAppsList, FileExplorerNamespaceRestrictions, StartLayout, StartPins, Taskbar.
+     Taskbar pinning is not supported in a restricted user experience, so there is
+     deliberately no TaskbarLayout element. -->
+<AssignedAccessConfiguration
+xmlns="http://schemas.microsoft.com/AssignedAccess/2017/config"
+xmlns:rs5="http://schemas.microsoft.com/AssignedAccess/201810/config"
+xmlns:v3="http://schemas.microsoft.com/AssignedAccess/2020/config"
+xmlns:v5="http://schemas.microsoft.com/AssignedAccess/2022/config">
+<Profiles>
+<Profile Id="{4B1E9A0C-6D7F-4A31-9C52-8E0A73B5D411}" Name="APM Participant Kiosk">
+<AllAppsList>
+<AllowedApps>
+<App DesktopAppPath="%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" />
+<App DesktopAppPath="%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge_proxy.exe" />
+<App DesktopAppPath="%ProgramFiles%\LibreOffice\program\swriter.exe" />
+<App DesktopAppPath="%ProgramFiles%\LibreOffice\program\scalc.exe" />
+<App DesktopAppPath="%ProgramFiles%\LibreOffice\program\simpress.exe" />
+<App DesktopAppPath="%ProgramFiles%\LibreOffice\program\soffice.exe" />
+<App DesktopAppPath="%ProgramFiles%\Zscaler\ZSATray\ZSATray.exe" />
+<App DesktopAppPath="%ProgramFiles%\TeamViewer\TeamViewer.exe" />
+<App DesktopAppPath="%SystemRoot%\System32\Narrator.exe" />
+<App DesktopAppPath="%SystemRoot%\System32\Magnify.exe" />
+<App DesktopAppPath="%SystemRoot%\System32\osk.exe" />
+<App DesktopAppPath="%SystemRoot%\System32\VoiceAccess.exe" />
+<App DesktopAppPath="%SystemRoot%\explorer.exe" />
+</AllowedApps>
+</AllAppsList>
+<!-- Downloads is the only named folder the schema accepts (enumeration
+     allowedFileExplorerNamespaceValues_t has exactly one value), and only one
+     AllowedNamespace element is permitted. Desktop cannot be granted here. -->
+<rs5:FileExplorerNamespaceRestrictions>
+<rs5:AllowedNamespace Name="Downloads" />
+<v3:AllowRemovableDrives />
+</rs5:FileExplorerNamespaceRestrictions>
+<v5:StartPins><![CDATA[{"pinnedList":[{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\Microsoft Edge.lnk"},{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\LibreOffice Writer.lnk"},{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\LibreOffice Calc.lnk"},{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\LibreOffice Impress.lnk"},{"desktopAppLink":"%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\File Explorer.lnk"},{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\Accessibility\\Narrator.lnk"},{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\Accessibility\\Magnify.lnk"},{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\Accessibility\\On-Screen Keyboard.lnk"},{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\Accessibility\\Voice Access.lnk"}]}]]></v5:StartPins>
+<Taskbar ShowTaskbar="true" />
+</Profile>
+</Profiles>
+<Configs>
+<Config>
+<!-- .\Name is a documented local-account form (devicename\user, .\user and user are all
+     accepted). The .\ form is used because it depends on neither the computer name nor a
+     prefix. Kiosk- plus a 7-character Dell service tag is 13 characters, inside the
+     20-character SAM limit; the remediation truncates anything longer. -->
+<Account>.\Kiosk-[SERIAL]</Account>
+<DefaultProfile Id="{4B1E9A0C-6D7F-4A31-9C52-8E0A73B5D411}" />
+</Config>
+</Configs>
+</AssignedAccessConfiguration>

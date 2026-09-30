@@ -1,0 +1,33 @@
+Name,Description,OMA-URI,Value
+Kiosk Mode,,./Vendor/MSFT/AssignedAccess/Configuration,"""<?xml version=""""1.0"""" encoding=""""utf-8"""" ?>
+<AssignedAccessConfiguration
+    xmlns=""""http://schemas.microsoft.com/AssignedAccess/2017/config""""
+    xmlns:rs5=""""http://schemas.microsoft.com/AssignedAccess/201810/config""""
+    xmlns:v3=""""http://schemas.microsoft.com/AssignedAccess/2020/config""""
+    xmlns:v5=""""http://schemas.microsoft.com/AssignedAccess/2022/config"""">
+  <Profiles>
+    <Profile Id=""""{9A2A490F-10F6-4764-974A-43B19E722C23}"""">
+      <AllAppsList>
+        <AllowedApps>
+          <App DesktopAppPath=""""%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"""" />
+          <App DesktopAppPath=""""%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge_proxy.exe"""" />
+          <App AppUserModelId=""""Microsoft.MicrosoftEdge.Stable_8wekyb3d8bbwe!App"""" />
+          <App DesktopAppPath=""""%ProgramFiles%\Zscaler\ZSATray\ZSATray.exe"""" />
+          <App DesktopAppPath=""""%SystemRoot%\explorer.exe"""" />
+          <App DesktopAppPath=""""%ProgramFiles%\TeamViewer\TeamViewer.exe"""" />
+        </AllowedApps>
+      </AllAppsList>
+      <v5:StartPins><![CDATA[{""""pinnedList"""":[{""""desktopAppLink"""":""""%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\Microsoft Edge.lnk""""},{""""desktopAppLink"""":""""%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\File Explorer.lnk""""}]}]]></v5:StartPins>
+      <Taskbar ShowTaskbar=""""true"""" />
+    </Profile>
+  </Profiles>
+  <Configs>
+    <v3:GlobalProfile Id=""""{9A2A490F-10F6-4764-974A-43B19E722C23}"""" />
+    <!-- Optional walk-up auto-logon:
+    <Config>
+      <AutoLogonAccount rs5:DisplayName=""""Job Seeker Kiosk"""" />
+      <DefaultProfile Id=""""{9A2A490F-10F6-4764-974A-43B19E722C23}"""" />
+    </Config>
+    -->
+  </Configs>
+</AssignedAccessConfiguration>"""

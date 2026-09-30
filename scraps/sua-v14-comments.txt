@@ -1,0 +1,30 @@
+#8 [Dorbie] {This document is the detail design for the APM Standard User Standard } @Shaun Struik Can you please ensure that the Purpose and Overview sections of this document are updated to include that this has come about to replace the existing Windows 10 AVD environment?
+#14 [Adani] {APM operates a Windows 11 thick client SOE. Devices are hybrid joined:} please include defender AV exclusions to prevent double scanning - regular scans removed except for location scan
+#15 [Struik] {?} Location scans need to be kept on but remove regular AV Scans
+#16 [Struik] {?} @Ugbaad Adani this is corrected
+#20 [Adani] {Golden image build and versioning through Azure Compute Gallery, inclu} current zscaler config exists through flow of information from palos - did we want to have client connector on this design?
+#21 [Struik] {?} The current palo pics up logs and flows to Zscaler - and a Zscaler Connection to Palo via a zslaer service tag, will keep the same
+#22 [Struik] {?} @Ugbaad Adani I have removed the Zscaler Client Connector
+#23 [Dorbie] {?} Is there a newer version of this document that shows the Zscaler Client Connector been removed from being listed as In scope?
+#25 [Dorbie] {Nerdio Manager for Enterprise platform deployment, which is operationa} Why is this out of scope? Nerdio has been setup specifically for this piece of work and has not been handed across to operations.
+#26 [Struik] {?} @Nick Dorbie The enterprise platform is already deployed and in operation, we are using this to deploy
+#27 [Dorbie] {?} Nerdio is the solution that was introduced to be used to deploy the AVD design, it is a product which is not already used by BAU and as such should be included as in scope for this design.
+#39 [Adani] {Print from a session to printers at an APM site} confirming that both are mapped to the local machine?
+#40 [Struik] {?} We need it to be, so will ensure is
+#41 [Struik] {?} @Ugbaad Adani printing and Drive Mapping from Session only, not mapped to local machine, as unmanaged devices
+#45 [Katigbak] {5.3.2 Address plan} Address plan assigned
+#62 [Dorbie] {Approved, existing platform} As mentioned in an earlier comment, as far as I am aware Nerdio has not been approved for use by Operations and would require operations approval as part of transition of this work to BAU. Please provide any documentation if you have evidence to show it has already received endorsement from operations.
+#63 [Struik] {?} @Nick Dorbie I was not aware we were not permitted to use Nerdio? This has been part of the scope from the beginning?
+#67 [Adani] {CA-202 - Org Users - Azure Virtual Desktop - Allow - Require MFA} is there a location based conditional access policy preventing users from accessing outside of Australia
+#68 [Struik] {?} Add existing policy to design
+#69 [Struik] {?} Yes, this is detailed in the design, APM’s standard CA policiy applies for location based access - AllUsers_UnapprovedCountries_Block
+#72 [Katigbak] {?} Vnet space is 10.40.90.0/23. auea-vnet-avd-ctrl-001 name is already taken so need this to be auea-vnet-avd-ctrl-002
+#73 [Struik] {?} Done, diagram updated too
+#70 [Adani] {auea-vnet-avd-ctrl-002} Are these new pools or existing/repurposed? It will need to be new pools isolated from high priv
+#71 [Struik] {?} New pools added
+#82 [Chandra] {Address plan} This should be part of as-built tech config document rather than detail design
+#83 [Chandra] {?} @Suraj Makhija @David Badger 
+#84 [Badger] {?} @Samit Chandra I'm the PM.  This should be assigned to the network team
+#94 [Katigbak] {auea-nsg-avd-ctrl-avdpe-001} Added nsg names
+#101 [Chandra] {Technology component Deployment} Are these standard patterns and have they made way into architecture pattern repository? @Suraj Makhija 
+#155 [Katigbak] {aus-sub-dev-controlled-001} Add 10.40.26.0/23 to vnet space as 10.40.25/0/24 is already used

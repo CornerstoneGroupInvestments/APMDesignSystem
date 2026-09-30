@@ -1,0 +1,169 @@
+<!-- @dsCard group="Participant Kiosk" viewport="1440x1500" name="Solution resource index" subtitle="Every artefact for the ES Participant Kiosk, by kind, with its path and owner" -->
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><title>ES Participant Kiosk - solution resource index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+body{margin:0;background:#EDEFF4;font-family:'Mulish',sans-serif;color:#1F2D58;padding:32px 36px 40px}
+.wrap{max-width:1368px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.hero{background:linear-gradient(100deg,#1F2D58,#2E3F73);border-radius:12px;padding:22px 26px;display:flex;align-items:flex-start;gap:26px}
+.hero h1{margin:0;font-family:'Poppins',sans-serif;font-size:25px;font-weight:600;color:#fff;line-height:1.15}
+.hero p{margin:8px 0 0;font-size:13.5px;line-height:1.5;color:#C2CBE4;max-width:760px;text-wrap:pretty}
+.hero .meta{margin-left:auto;display:grid;gap:7px;flex-shrink:0}
+.hero .meta div{font-size:11px;color:#8E9BC4;font-family:'Poppins',sans-serif;letter-spacing:.05em;text-align:right}
+.hero .meta b{display:block;font-size:13px;color:#fff;font-weight:600;letter-spacing:0;margin-top:1px}
+h2{margin:0;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#41507F;display:flex;align-items:baseline;gap:10px}
+h2 em{font-style:normal;font-size:11.5px;font-weight:400;letter-spacing:0;text-transform:none;color:#7B87AD}
+section{display:flex;flex-direction:column;gap:9px}
+table{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff;border-radius:9px;overflow:hidden;box-shadow:0 2px 8px rgba(31,45,88,.07)}
+th{font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#1F2D58;text-align:left;padding:8px 12px}
+td{font-size:12.5px;line-height:1.42;padding:8px 12px;border-bottom:1px solid #E4E8F2;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:nth-child(even) td{background:#F7F8FC}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:#2E3F73;background:#EEF1F8;padding:1px 5px;border-radius:4px;word-break:break-all}
+.tag{display:inline-block;font-family:'Poppins',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.t-src{color:#1F5B3A;background:#EAF5EE;border:1px solid #B5D6C3}
+.t-art{color:#41507F;background:#EEF1F8;border:1px solid #C8D0E4}
+.t-pol{color:#8A5200;background:#FFF6EA;border:1px solid #F0CE9C}
+.t-cfg{color:#6B2478;background:#F8EEFA;border:1px solid #DDBEE4}
+.t-tool{color:#1F4E6B;background:#EAF3F8;border:1px solid #B3D0E0}
+.rule{border-left:3px solid #F89728;background:#fff;border-radius:0 9px 9px 0;padding:13px 17px;font-size:12.5px;line-height:1.5}
+.rule b{font-family:'Poppins',sans-serif;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kv{background:#fff;border-radius:9px;padding:13px 15px;box-shadow:0 2px 8px rgba(31,45,88,.07)}
+.kv h3{margin:0 0 5px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7B87AD}
+.kv p{margin:0;font-size:12.5px;line-height:1.45}
+.kv p+p{margin-top:5px}
+a{color:#8A5200;text-decoration:none;border-bottom:1px solid #E8C89A}
+a:hover{color:#B36A00;border-bottom-color:#B36A00}
+.foot{font-size:11.5px;color:#7B87AD;line-height:1.5}
+</style>
+</head><body>
+<div class="wrap">
+
+<div class="hero">
+<div>
+<h1>ES Participant Kiosk Solution</h1>
+<p>A physical Dell device in an APM Employment Services site, for participant use. Windows 11 Enterprise under multi-app Assigned Access, signing itself in to a local account no person holds a credential for. Every artefact is listed below by kind, so a resource can be found, cited or lifted out without reading the whole design.</p>
+</div>
+<div class="meta">
+<div>PROGRAMME<b>Standard Operating Environment</b></div>
+<div>USE CASE<b>P1 of 5</b></div>
+<div>FLEET<b>540 devices</b></div>
+</div>
+</div>
+
+<div class="rule"><b>Uses neither Azure Virtual Desktop nor Nerdio.</b> This is a physical device solution. The programme covers five SOE use cases and only some of them are AVD, so no cover field, diagram or narrative here names AVD or Nerdio.</div>
+
+<section>
+<h2>Design documents <em>three design tiers plus the as-built record - each answers a different question</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:196px"><col style="width:74px"><col style="width:300px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Document</th><th>Version</th><th>Source of record</th><th>Question it answers, and who approves</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-src">Source</span></td><td><b>Design Definition</b></td><td>V1.1</td><td><code>designs/participant-device/content-definition.txt</code></td><td>What are we building and why, at concept level. No settings, no object names. Approved by Digital Transformation and Architecture</td></tr>
+<tr><td><span class="tag t-src">Source</span></td><td><b>Detail Design</b></td><td>V1.7</td><td><code>designs/participant-device/content-detail.txt</code></td><td>What the architecture is and which decisions were taken. Carries the Decision Register and risk register. Approved by APM Cyber Security</td></tr>
+<tr><td><span class="tag t-src">Source</span></td><td><b>Technical Configuration</b></td><td>V2.3</td><td><code>designs/participant-device/content-technical.txt</code></td><td>How to build it, click by click, with every setting and every script. Built from by APM Solution Engineer</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Built Word documents</td><td>current</td><td><code>designs/participant-device/output/</code></td><td>Regenerable from the sources above. The <code>.txt</code> is canonical; a <code>.docx</code> is never edited by hand</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>CompNow device build procedure</td><td>CN-PK-01 V1.0</td><td><code>designs/participant-device/runbooks/</code></td><td>Bench procedure for the device build partner: nine stages, every keystroke and click path, a per-device build record sheet. Supersedes CN-JSK-01 in full. <b>Six open items</b> - do not issue until they are closed</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>ES Device Baseline build sheet</td><td>V1.0</td><td><code>designs/participant-device/ES-Device-Baseline-Exceptions.html</code></td><td>One page an engineer works from at the keyboard: duplicate the corporate baseline, adjust ten named rows</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Superseded single-tier DDD</td><td>V1.6</td><td><code>designs/participant-device/history/</code></td><td>Held for its 43 stakeholder review comment threads. Not the design of record</td></tr>
+<tr><td><span class="tag t-src">Source</span></td><td><b>Solution as-built record</b></td><td>V1.9</td><td><code>designs/participant-device/content-asbuilt.txt</code></td><td>What is configured, in which console, what maintenance it needs and what may not be changed without a change record. Carries the script register with the SHA-256 and signed state of all ten scripts. Not a design tier: it is updated in the same change as the configuration it records. Owned by Digital Operations</td></tr>
+<tr><td><span class="tag t-src">Source</span></td><td>Conditional Access as-built record</td><td>V1.0</td><td><code>designs/participant-device/content-asbuilt-ca.txt</code></td><td>CA-107's six build steps, five verification tests, the as-built record table and the policy by policy tenant disposition. Owned by APM Cyber Security</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Diagrams <em>ten figures, one kit, one source file</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:270px"><col style="width:300px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Figure</th><th>File</th><th>Cited by</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-src">Source</span></td><td><b>All figures, one page</b></td><td><code>designs/participant-device/figures.html</code></td><td>Every figure is authored here on the <code>.dgm-*</code> diagram kit and carries <code>qa()</code>. Edit here, never in the PNG</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Solution context</td><td><code>figs/solution-context.png</code></td><td>Definition 3.4, Detail 4.1</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Logical network and security zones</td><td><code>figs/network-zones.png</code></td><td>Detail 5.3</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Session lifecycle</td><td><code>figs/session-lifecycle.png</code></td><td>Detail 6.1</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>SOE hardening inheritance</td><td><code>figs/soe-inheritance.png</code></td><td>Detail 7</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Access control model</td><td><code>figs/access-control-model.png</code></td><td>Detail 7</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Provisioning flow, app delivery chain, wallpaper, Zscaler sequence and tenant overview</td><td><code>figs/</code></td><td>Technical Configuration, build phases</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Configuration and scripts <em>what an engineer uploads to Intune</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:270px"><col style="width:300px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Resource</th><th>Path</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-cfg">Config</span></td><td><b>Upload pack</b>, one folder per Intune object</td><td><code>config/intune-upload/</code></td><td><code>00-UPLOAD-GUIDE.md</code> gives the console path, every field and the assignment for each object</td></tr>
+<tr><td><span class="tag t-cfg">Config</span></td><td>Assigned Access configuration</td><td><code>config/AssignedAccess-ParticipantKiosk.xml</code></td><td><code>[SERIAL]</code> is the substitution point the session-account remediation fills per device</td></tr>
+<tr><td><span class="tag t-cfg">Config</span></td><td>Session account pair</td><td><code>config/Detect-…</code> / <code>Remediate-KioskSessionAccount.ps1</code></td><td>Creates <code>Kiosk-&lt;SERIAL&gt;</code> with a 32-character credential held only in the Winlogon LSA secret</td></tr>
+<tr><td><span class="tag t-cfg">Config</span></td><td>Idle watchdog</td><td><code>config/Install-KioskIdleWatchdog.ps1</code> + <code>Watch-KioskIdle.ps1</code></td><td>Win32 app, two signed files. Not a platform script: the task runs the watchdog with <code>-ExecutionPolicy AllSigned</code></td></tr>
+<tr><td><span class="tag t-cfg">Config</span></td><td>Session purge</td><td><code>config/Install-KioskSessionPurge.ps1</code> + <code>Invoke-KioskSessionPurge.ps1</code></td><td>Win32 app. Not a platform script: needs a shutdown pass, which only a Group Policy shutdown script provides</td></tr>
+<tr><td><span class="tag t-cfg">Config</span></td><td>Wallpaper, favourites, App Control</td><td><code>config/Install-KioskWallpaper.ps1</code>, <code>managed-favorites.json</code>, <code>AppControl-…-Base.xml</code></td><td>The App Control policy is generated on a reference device, so the command sequence ships instead of the XML</td></tr>
+<tr><td><span class="tag t-cfg">Config</span></td><td><b>Intune object register</b></td><td><code>config/intune-object-register.md</code></td><td>Every object this solution creates or excludes, by name. The one place to check a policy name against</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Policy and standards sources <em>facts this design cites but does not own</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:290px"><col style="width:280px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Source</th><th>Path</th><th>What this solution takes from it</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-pol">Policy</span></td><td><b>ES SOE Hardening Standard V1.0</b></td><td><code>policies/APM-Employment-Services-SOE-Hardening-Standard-V1.0.xlsx</code></td><td>The standard this fleet is governed by. 8 tabs; tab 5 is the security baseline with the ten ES changes. Covers <i>customer-facing</i> technology, and the ES take-home device will cite it too</td></tr>
+<tr><td><span class="tag t-pol">Policy</span></td><td>Corporate SOE Hardening Standard V3.0</td><td><code>policies/APM-Windows-SOE-Hardening-Standard-V3.0.xlsx</code></td><td>The staff standard this derives from, held for comparison. Never edited to accommodate an ES device</td></tr>
+<tr><td><span class="tag t-pol">Policy</span></td><td>Security baseline as built</td><td><code>policies/APM-W11-SEC-Baseline-ESKiosk-P-1.0.json</code></td><td>Intune export, 427 settings, 21 Aug 2026. The as-built evidence behind tab 5</td></tr>
+<tr><td><span class="tag t-pol">Policy</span></td><td>Baseline change record</td><td><code>policies/ES-Kiosk-Baseline-Change-Record.xlsx</code></td><td>APM's own record of the ten changes: summary, change log, verification checks</td></tr>
+<tr><td><span class="tag t-pol">Policy</span></td><td>Conditional Access baseline</td><td><code>policies/APM-Conditional-Access-Policies-Export.csv</code>, <code>ca-policies.js</code></td><td>116 tenant policies: 68 enforced, 43 report-only, 5 off. The exclusions this fleet needs are read from here</td></tr>
+<tr><td><span class="tag t-pol">Policy</span></td><td>Intune naming schema addendum</td><td><code>policies/APM_Intune_Naming_Schema_Addendum.md</code></td><td>Proposed schema additions raised by this solution and by the AVD work</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Authoring pipeline <em>shared with every other design in the programme</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:290px"><col style="width:280px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Resource</th><th>Path</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-tool">Tool</span></td><td>Three APM masters and the builder</td><td><code>templates/detailed-design-v2/authoring/</code></td><td><code>docx-builder.js</code> splices generated body into the master and resolves <code>[[5.3.4]]</code> to a live hyperlink carrying the section name</td></tr>
+<tr><td><span class="tag t-tool">Tool</span></td><td>Consistency and figure checks</td><td><code>consistency-check.js</code>, <code>qa-checks.js</code></td><td>Run both before shipping. <code>scan()</code> catches stale cross-references and figure numbering; <code>qa()</code> must return <code>ok: true</code></td></tr>
+<tr><td><span class="tag t-tool">Tool</span></td><td>Authoring standards</td><td><code>guidelines/</code></td><td>One standard per tier plus the craft rules. Read the matching one before editing a document</td></tr>
+<tr><td><span class="tag t-tool">Tool</span></td><td>Interactive kiosk mock-up</td><td><code>ui_kits/participant-kiosk/</code></td><td>The participant experience as a clickable prototype: lock screen, session start, bookmark launcher, session end</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Lifting the solution out</h2>
+<div class="grid">
+<div class="kv"><h3>Standalone bundle</h3><p>A complete, self-contained copy sits at <code>exports/es-participant-kiosk/</code>: 80 files, its own <code>CLAUDE.md</code>, the diagram kit, the pipeline and only the policy sources this solution cites.</p><p>Folder depth mirrors this project so <code>figures.html</code> keeps resolving <code>../../styles.css</code>.</p></div>
+<div class="kv"><h3>What stays behind</h3><p>The wider policy corpus, ESLZ reference material, the programme plan and the other four SOE use cases stay here. The bundle carries only what the Kiosk cites, which is what makes it separable.</p></div>
+<div class="kv"><h3>Naming, as built</h3><p>Most Kiosk Intune objects are <code>CDG-W11-*</code>, but four classes are not, and all four are recorded as built rather than corrected. The Autopilot deployment profile is <code>CDG W11 Autopilot SelfDeploying</code> - spaces, no hyphens - and <b>CA-107's device filter matches that string literally, so it must not be renamed while CA-107 is enforced</b>. The App Control base and supplemental policies carry the estate <code>APM-WIN-SEC-</code> prefix and the exclusion policy <code>APM-W11-SEC-</code>. The profile-deletion and certificate profiles carry <code>CDG-WIN-</code>. The SCEP and Wi-Fi profiles carry the <code>-D-</code> environment suffix on a production fleet.</p></div>
+</div>
+</section>
+
+<section>
+<h2>Open items <em>each has an owner; the first gates the build</em></h2>
+<table>
+<colgroup><col style="width:70px"><col><col style="width:250px"></colgroup>
+<thead><tr><th>Ref</th><th>Item</th><th>Owner</th></tr></thead>
+<tbody>
+<tr><td><b>SOE-02</b></td><td>Code-signing certificate issue. Gates App Control signing and every device script, so it gates the whole build</td><td>APM Cyber Security</td></tr>
+<tr><td><b>OI-01</b></td><td>Inactivity limit set to 0 removes the failsafe lock, leaving the ten-minute watchdog restart as the only session terminator</td><td>APM Cyber Security</td></tr>
+<tr><td><b>OI-02</b></td><td><code>DisableAutomaticRestartSignOn</code> and <code>AutoAdminLogon</code> are separate mechanisms; the interaction is to be confirmed on the reference device</td><td>APM Solution Engineer</td></tr>
+<tr><td><b>OI-03</b></td><td>Hardening standard states its Windows 11 benchmark inconsistently: cover sheet v24H2, Report sheet v23H2. Cited as unreconciled rather than picked</td><td>End User Computing Manager</td></tr>
+<tr><td><b>OI-04</b></td><td>Live security baseline policy renamed to <code>CDG-W11-SEC-Baseline-P-1.0</code></td><td>APM Solution Engineer</td></tr>
+</tbody>
+</table>
+</section>
+
+<p class="foot">Source of record for each resource is the path shown. A value lives in exactly one file; every other mention cross-references it. Built Word documents are regenerable and are never edited by hand.</p>
+
+</div>
+</body></html>

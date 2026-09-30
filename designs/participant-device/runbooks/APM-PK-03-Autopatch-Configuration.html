@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><title>APM-PK-03 Participant Kiosk - Windows Autopatch Configuration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Mulish:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../styles.css">
+<style>
+doc-page:not(:defined){visibility:hidden}
+body{font-family:'Mulish',sans-serif;color:#1F2D58;font-size:12pt;line-height:1.5}
+h1,h2,h3,h4{font-family:'Poppins',sans-serif;color:#1F2D58;text-wrap:balance;margin:0}
+h1{font-size:20pt;font-weight:600;line-height:1.15}
+h2{font-size:14pt;font-weight:600;margin:20pt 0 7pt;padding-bottom:4pt;border-bottom:2px solid #1F2D58;break-after:avoid}
+h3{font-size:12.5pt;font-weight:600;margin:13pt 0 5pt;break-after:avoid}
+p{margin:0 0 7pt}
+.lede{font-size:11pt;color:#41507F}
+.hdr{background:#1F2D58;color:#fff;padding:15pt 18pt;border-radius:7px;margin-bottom:12pt}
+.hdr h1{color:#fff}
+.hdr .sub{font-family:'Poppins',sans-serif;font-size:9.5pt;letter-spacing:.1em;text-transform:uppercase;color:#8E9BC4;margin-bottom:5pt}
+.hdr .who{font-size:11pt;color:#C2CBE4;margin-top:6pt}
+table{width:100%;border-collapse:collapse;margin:0 0 9pt;font-size:11pt;clear:right}
+th{font-family:'Poppins',sans-serif;font-size:9.5pt;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#1F2D58;text-align:left;padding:5pt 8pt}
+td{padding:5pt 8pt;border-bottom:1px solid #D8DEEC;vertical-align:top}
+tr:nth-child(even) td{background:#F5F7FB}
+table,tr,td,th{break-inside:avoid}
+ol,ul{margin:0 0 8pt;padding-left:19pt}
+li{margin-bottom:5pt}
+.path{font-family:'JetBrains Mono',monospace;font-size:10.5pt;background:#EDEFF4;border-radius:3px;padding:1pt 5pt;font-weight:700}
+.cmd{font-family:'JetBrains Mono',monospace;font-size:11pt;background:#101a33;color:#fff;border-radius:6px;padding:9pt 12pt;margin:6pt 0 8pt;line-height:1.75;break-inside:avoid;clear:right}
+.see{border-left:3px solid #7B87AD;background:#F5F7FB;padding:6pt 11pt;margin:6pt 0 8pt;font-size:11pt;break-inside:avoid;clear:right}
+.see>b:first-child{font-family:'Poppins',sans-serif;font-size:9.5pt;letter-spacing:.06em;text-transform:uppercase;color:#5A6796;display:block;margin-bottom:2pt}
+.stop{border-left:4px solid #C0392B;background:#FCEEF0;padding:8pt 12pt;margin:8pt 0;font-size:11pt;break-inside:avoid;clear:right}
+.stop b{font-family:'Poppins',sans-serif;color:#8C2130}
+.tbc{background:#FFF6EA;border:1px dashed #D89A3C;border-radius:5px;padding:7pt 11pt;margin:7pt 0;font-size:11pt;break-inside:avoid;clear:right}
+.tbc>b:first-child{font-family:'Poppins',sans-serif;font-size:9.5pt;letter-spacing:.06em;text-transform:uppercase;color:#8A5200;display:block;margin-bottom:2pt}
+.rule{background:#1F2D58;color:#fff;border-radius:7px;padding:12pt 16pt;margin:10pt 0 14pt;break-inside:avoid;clear:right}
+.rule h3{color:#fff;margin:0 0 7pt}
+.rule ol{margin:0;padding-left:17pt;font-size:11.5pt}
+.rule li{margin-bottom:6pt;color:#E4E9F5}
+.rule b{color:#F89728}
+.step{font-family:'Poppins',sans-serif;font-size:9.5pt;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#5A6796;margin:0 0 2pt}
+.tick td{height:20pt}
+.tick .bx{width:34pt;text-align:center}
+.tick .bx span{display:inline-block;width:13pt;height:13pt;border:1.5pt solid #1F2D58;border-radius:2px;vertical-align:middle}
+code{font-family:'JetBrains Mono',monospace;font-size:10.5pt;background:#EDEFF4;border-radius:3px;padding:1pt 4pt}
+.ftr{display:flex;justify-content:space-between;font-family:'Poppins',sans-serif;font-size:8.5pt;color:#41507F;border-top:1px solid #D8DEEC;padding-top:4pt}
+a{color:#8A5200;text-decoration:none;border-bottom:1px solid #E8C89A}
+a:hover{color:#B36A00;border-bottom-color:#B36A00}
+</style>
+</head><body>
+<doc-page margin="0.7in">
+
+<div class="ftr" slot="footer"><span>APM-PK-03 &middot; APM ES Participant Kiosk &middot; Windows Autopatch Configuration V1.0</span><span>FOR INTERNAL USE ONLY &middot; Commercial in confidence</span></div>
+
+<div class="hdr">
+<div class="sub">APM-PK-03 &middot; Configuration procedure &middot; V1.0</div>
+<h1>ES Participant Kiosk<br>Windows Autopatch Configuration</h1>
+<div class="who">For APM Digital Operations and the APM Solution Engineer &middot; APM Standard Operating Environment Program</div>
+</div>
+
+<p class="lede">Registers the Participant Kiosk fleet with Windows Autopatch and configures the two update-behaviour objects Autopatch does not own. Done once for the fleet, not per device. Allow half a day, most of which is waiting for registration to report.</p>
+
+<div class="rule">
+<h3>Four things to know before you start</h3>
+<ol>
+<li><b>Autopatch owns the update policies, so do not create update rings.</b> Registration hands quality, feature, driver, firmware and Microsoft Edge updates to Autopatch, and it creates and maintains its own underlying Intune policies to deliver them. A hand-made update-ring policy assigned to this fleet fights those and is the usual cause of a device that reports compliant and never patches.</li>
+<li><b>The kiosks need their own Autopatch group, and they must leave the estate one first.</b> A device can belong to only one Autopatch group. The estate already patches through <code>APM-Autopatch-*</code>, so step 1 excludes the kiosks from its source group before step 2 creates theirs. Skip step 1 and the fleet reports Not ready or Not registered rather than patching.</li>
+<li><b>You do not hand-create the three ring groups.</b> Autopatch creates and owns an Entra group per deployment ring and names it after the ring. Create the Autopatch group <code>Kiosk-Autopatch</code> with rings <code>Test</code>, <code>Ring1</code> and <code>Ring2</code>, and the three groups named in the request appear on their own. Hand-built groups of the same name would sit beside the real ones and confuse every later assignment.</li>
+<li><b>The 30/70 split is Autopatch's, not an Entra rule.</b> Entra dynamic membership has no percentage operator. Autopatch dynamic distribution does, so the split is set on the ring and the service allocates devices to satisfy it.</li>
+<li><b>Two objects stay yours.</b> Autopatch decides <i>which</i> update and <i>when it is offered</i>. It does not set what the device does at install time, and it does not manage Delivery Optimization. Those are steps 6 and 7 and they are ordinary Intune profiles.</li>
+<li><b>Two of the settings exist because nobody is standing at the device.</b> A kiosk has no signed-in person to defer an update or dismiss a restart prompt, and the screen faces the public. Pause and check are disabled and notifications are turned off for that reason, not for tidiness.</li>
+</ol>
+</div>
+
+<h2>Before you begin</h2>
+<table>
+<thead><tr><th style="width:22%">Prerequisite</th><th>Confirm</th></tr></thead>
+<tbody>
+<tr><td><b>Tenant onboarding</b></td><td>Windows Autopatch tenant onboarding is complete: readiness assessment passed and licence check clear. This is <b>DEP-003</b> and it gates everything below. <span class="path">Intune admin centre &rsaquo; Tenant administration &rsaquo; Windows Autopatch &rsaquo; Tenant enrolment</span></td></tr>
+<tr><td><b>Licensing</b></td><td>Windows 11 Enterprise E5 and an Intune device licence per device. The fleet is device-licensed only, so there is no user licence to check</td></tr>
+<tr><td><b>Groups exist</b></td><td><code>sg-dyn-dvc-cdg-participant-kiosk</code>, the source group for distribution, and <code>sg-dyn-dvc-cdg-participant-kiosk-autopilot</code>. The three ring groups are <b>not</b> pre-created: Autopatch makes them in step 2</td></tr>
+<tr><td><b>Estate Autopatch group</b></td><td>Identify the source group behind the existing <code>APM-Autopatch-*</code> rings. If it resolves all Windows devices, it already contains the kiosks and <b>must be changed in step 1</b>. A device cannot sit in two Autopatch groups</td></tr>
+<tr><td><b>App-only auth</b></td><td>App-only auth is on in the Autopatch tenant. Autopatch groups do not work without it: the service uses it to read device attributes and to calculate the ring distribution</td></tr>
+<tr><td><b>Test devices identified</b></td><td>The devices that will populate the Test ring: the staging lab plus one or two low-traffic sites, approximately 10 devices. The existing <code>sg-stc-dvc-cdg-participant-kiosk-Autopatch-Test</code> holds that list and is the source for it</td></tr>
+<tr><td><b>Devices enrolled</b></td><td>At least the pilot devices are Entra ID joined, Intune enrolled and named <code>APM-PK-[SERIAL]</code>, set by the Autopilot device name template <code>APM-PK-%SERIAL%</code></td></tr>
+<tr><td><b>Egress open</b></td><td>The Windows Update and Delivery Optimization endpoints are on the Meraki allow-list for VLAN 73 (list in step 8)</td></tr>
+</tbody>
+</table>
+
+<h2>Step 1 &middot; Carve the kiosks out of the estate Autopatch group</h2>
+<p class="step">Entra admin centre &rsaquo; Groups &rsaquo; the source group behind the existing APM-Autopatch rings</p>
+<p>The estate already runs an Autopatch group with rings <code>APM-Autopatch-Test</code>, <code>APM-Autopatch-Ring1</code> at 30% and <code>APM-Autopatch-Ring2</code> at 70%, fed by dynamic group distribution. <b>A device can belong to only one Autopatch group.</b> If its source group resolves all Windows devices, every kiosk is already in it, and creating a second Autopatch group over the same devices puts them in both.</p>
+<div class="stop"><b>Do this before step 2, not after.</b> A device caught in two Autopatch groups reports <b>Not ready</b> until someone picks a group for it, and an overlap that exists before registration leaves the device <b>Not registered</b> and unpatched. Fixing 540 of those by hand afterwards is the failure this step exists to avoid.</p></div>
+<ol>
+<li>Open the Entra group the estate Autopatch group uses for dynamic distribution</li>
+<li>Add an exclusion for the kiosks to its membership rule. Against a rule that currently reads <code>(device.deviceOSType -eq "Windows")</code> or similar, append:
+<div class="cmd">-and -not (device.displayName -startsWith "APM-PK-")</div></li>
+<li>Save and wait for the rule to re-evaluate. Confirm the kiosk count in that group falls to zero</li>
+<li>If any kiosk has already registered under the estate group, check <span class="path">Windows Autopatch &rsaquo; Autopatch groups &rsaquo; Membership</span> and confirm it has left before continuing</li>
+</ol>
+<div class="see"><b>Why exclusion and not a separate estate rule</b>The kiosk fleet is already defined by one condition, the <code>APM-PK-</code> name prefix, and that same condition drives every configuration profile, application and compliance policy it receives. Reusing it here means there is one definition of what a kiosk is, in one place. A hand-maintained exclusion list would be a second definition that drifts.</div>
+
+<h2>Step 2 &middot; Create the kiosk Autopatch group</h2>
+<p class="step">Intune admin centre &rsaquo; Tenant administration &rsaquo; Windows Autopatch &rsaquo; Autopatch groups &rsaquo; Create</p>
+<p>One custom Autopatch group covers the whole fleet. Creating it registers the devices and builds the rings in the same action, so there is no separate registration step.</p>
+<ol>
+<li><b>Name</b> the Autopatch group <code>Kiosk-Autopatch</code>. <b>Get this exactly right:</b> Autopatch names each ring group <code>&lt;Autopatch group&gt; - &lt;ring&gt;</code>, so this name is what produces the three group names in the request. A typo here is a typo in all three</li>
+<li><b>Add the Entra group</b> <code>sg-dyn-dvc-cdg-participant-kiosk</code> as the source group. Every device it contains is registered with Autopatch and becomes available for distribution</li>
+<li><b>Test and Last are already there.</b> Every Autopatch group starts with those two, and neither can be renamed or removed. You are adding rings <b>between</b> them, not building all four</li>
+<li>Select <b>Add deployment ring</b> twice. Each added ring arrives with a sequential placeholder name such as <code>Deployment ring 3</code>. <b>Type over it</b>: name them <code>Ring1</code> and <code>Ring2</code>. The ring name is what names the Entra group, so the placeholder is what you would be stuck with</li>
+</ol>
+<div class="stop"><b>If the placeholder reads <code>Deployment ring 4</code> or higher, you are in the wrong place.</b> The number continues from the rings already in the group you have open, so a high number means you are editing the estate <code>APM-Autopatch</code> group rather than creating a new one. Cancel, go back to <span class="path">Autopatch groups</span>, and use <b>Create</b>. Adding kiosk rings to the estate group patches the whole estate on kiosk timings.</div>
+<table>
+<thead><tr><th style="width:16%">Ring</th><th style="width:14%">Origin</th><th style="width:34%">Entra group Autopatch creates</th><th>Use here</th></tr></thead>
+<tbody>
+<tr><td><b>Test</b></td><td>Built in</td><td><code>Kiosk-Autopatch - Test</code></td><td>Assigned, ~10 devices</td></tr>
+<tr><td><b>Ring1</b></td><td>You add</td><td><code>Kiosk-Autopatch - Ring1</code></td><td>Dynamic, 30%</td></tr>
+<tr><td><b>Ring2</b></td><td>You add</td><td><code>Kiosk-Autopatch - Ring2</code></td><td>Dynamic, 70%</td></tr>
+<tr><td><b>Last</b></td><td>Built in</td><td><code>Kiosk-Autopatch - Last</code></td><td><b>No group assigned.</b> Cannot be removed, so it stays and holds nothing</td></tr>
+</tbody>
+</table>
+<p>Four ring groups therefore appear in Entra, not three. <code>Kiosk-Autopatch - Last</code> is an artefact of the platform: Autopatch requires at least two rings for a gradual rollout, so Test and Last are permanent. Leaving it empty is correct and is not an unfinished step.</p>
+<p>The estate rings are named <code>APM-Autopatch-*</code> and these <code>Kiosk-Autopatch - *</code>, so the two sets never collide in a group picker and it is always clear which fleet a ring belongs to.</p>
+<table>
+<thead><tr><th style="width:30%">Ring</th><th style="width:34%">Entra group Autopatch creates</th><th>Populated by</th></tr></thead>
+<tbody>
+<tr><td><b>Test</b></td><td><code>Kiosk-Autopatch - Test</code></td><td>You, by hand</td></tr>
+<tr><td><b>Ring1</b></td><td><code>Kiosk-Autopatch - Ring1</code></td><td>Autopatch, 30%</td></tr>
+<tr><td><b>Ring2</b></td><td><code>Kiosk-Autopatch - Ring2</code></td><td>Autopatch, 70%</td></tr>
+</tbody>
+</table>
+<div class="stop"><b>Do not create these three groups in Entra yourself.</b> Autopatch creates and owns them. A hand-made group of the same name sits alongside the real one, takes no devices, and is indistinguishable in a group picker, so the next person assigns a policy to the wrong one.</div>
+
+<h2>Step 3 &middot; Set the ring distribution</h2>
+<p class="step">Deployment ring composition page, during the same create wizard</p>
+<table>
+<thead><tr><th style="width:14%">Ring</th><th style="width:20%">Distribution</th><th style="width:14%">Value</th><th>Devices at 540</th></tr></thead>
+<tbody>
+<tr><td><b>Test</b></td><td>Assigned group</td><td><code>sg-stc-dvc-cdg-participant-kiosk-Autopatch-Test</code></td><td>~10, named individually</td></tr>
+<tr><td><b>Ring1</b></td><td>Dynamic</td><td><b>30%</b></td><td>~159</td></tr>
+<tr><td><b>Ring2</b></td><td>Dynamic</td><td><b>70%</b></td><td>~371</td></tr>
+<tr><td><b>Last</b></td><td>No group assigned</td><td>-</td><td>0. Built in and cannot be removed</td></tr>
+</tbody>
+</table>
+<ol>
+<li>Set <b>Test</b> to <b>Assigned</b> distribution and point it at <code>sg-stc-dvc-cdg-participant-kiosk-Autopatch-Test</code>. Test does not support Dynamic distribution, so it takes no percentage and sits outside the split</li>
+<li>Leave <b>Last</b> with no group assigned. It is Assigned-only as well, so with nothing assigned it stays empty and takes no devices</li>
+<li>Set <b>Ring1</b> and <b>Ring2</b> to <b>Dynamic</b> distribution against the source group from step 1</li>
+<li>Enter <b>30</b> and <b>70</b>. The percentages must total exactly 100 or the page will not accept them. Do not use <b>Apply default dynamic group distribution</b>, which overwrites both with the Microsoft defaults</li>
+<li>Complete the wizard: update types, deployment settings, release schedules</li>
+</ol>
+<div class="see"><b>Why 30/70 and not an Entra rule</b>Entra dynamic membership has no percentage operator, so a split like this cannot be expressed as a membership query. Autopatch dynamic distribution is the only mechanism that does it, which is why the rings are built here and not in Entra. It also means the allocation is Autopatch's to calculate: you set the shape, the service picks the devices.</div>
+<div class="stop"><b>An Assigned ring takes exactly one Entra group, and that is a reason to keep the two Autopatch groups apart, not a reason to merge them.</b> The estate <code>APM-Autopatch - Test</code> already holds its one group, so there is no slot to add the kiosks into. Do not replace what is there, and do not nest the kiosk group inside it. <code>Kiosk-Autopatch</code> has its own Test ring with its own empty slot, which is where <code>sg-stc-dvc-cdg-participant-kiosk-Autopatch-Test</code> goes. If you are looking at a Test ring that already has a group in it, you are in the estate Autopatch group rather than the kiosk one.</div>
+<div class="see"><b>A Test device cannot be double-counted</b>The Test devices are also in the source group, so they are eligible for the percentage split as well. Autopatch resolves this in the right direction: within one Autopatch group, Assigned distribution takes precedence over Dynamic. A device in <code>sg-stc-dvc-cdg-participant-kiosk-Autopatch-Test</code> lands in Test and nowhere else, so no exclusion is needed.</div>
+<div class="tbc"><b>Know what the split is and is not</b>Autopatch allocates across Ring1 and Ring2 by count, not by location, so both rings hold devices drawn from sites across the country. That is useful, because a fault reaches 30% of sites rather than 30% of one region. It also means the split cannot be read as "these sites first", and a site with five kiosks will usually have devices in both rings. If a particular site must patch as a unit, that is an Assigned ring, not a percentage.</div>
+
+<h2>Step 4 &middot; Confirm the registration ran</h2>
+<p class="step">Windows Autopatch &rsaquo; Devices, and Autopatch groups &rsaquo; Membership</p>
+<ol>
+<li>Devices read <b>Registered</b>. A device that fails readiness appears under <b>Not registered</b> with a reason</li>
+<li>Open the <b>Autopatch group membership</b> view and confirm the Ring1 and Ring2 counts sit near 30 and 70 per cent of the registered total. Early in the rollout, with few devices registered, the ratio will be coarse and settles as the fleet grows</li>
+<li>Confirm every Test device appears in Test and in neither Ring1 nor Ring2</li>
+</ol>
+<h2>Step 5 &middot; Confirm what Autopatch has taken over</h2>
+<p>Check that no hand-made update policy is still assigned to the fleet.</p>
+<ol>
+<li><span class="path">Intune admin centre &rsaquo; Devices &rsaquo; Windows &rsaquo; Update rings for Windows 10 and later</span></li>
+<li>Confirm that no ring targets <code>sg-dyn-dvc-cdg-participant-kiosk</code>. Policies whose name begins <b>Windows Autopatch</b> are Autopatch's own and are left alone</li>
+<li><span class="path">Devices &rsaquo; Windows &rsaquo; Feature updates</span> and <span class="path">Quality updates</span>: same check</li>
+</ol>
+<div class="see"><b>Edge is not an Intune application on this fleet</b>Autopatch updates Microsoft Edge and the operating system. Only LibreOffice, Zscaler, TeamViewer and the kiosk's own packages are Intune applications. If someone adds Edge as a Win32 application later, it will fight Autopatch for the same binary.</div>
+
+<h2>Step 6 &middot; Create the update behaviour profile</h2>
+<p class="step">Devices &rsaquo; Configuration profiles &rsaquo; Create &rsaquo; Windows 10 and later &rsaquo; Settings catalog</p>
+<p>Name it <code>CDG-W11-CFG-Restart Notification-P-1.0</code>. Add settings from the category <b>Windows Update for Business</b>. Assign to <code>sg-dyn-dvc-cdg-participant-kiosk</code>.</p>
+<table>
+<thead><tr><th style="width:32%">Setting</th><th style="width:28%">Value</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Automatic update behaviour</td><td>Auto install and restart at a scheduled time</td><td>Independent of the day Autopatch delivered the update</td></tr>
+<tr><td>Scheduled install day</td><td>Every day</td><td>Catches the next overnight window</td></tr>
+<tr><td>Scheduled install time</td><td>03:00 local</td><td>Restarts outside business hours</td></tr>
+<tr><td>Restart checks</td><td>Allow</td><td>Safety checks run before the restart</td></tr>
+<tr><td>Option to pause Windows updates</td><td>Disable</td><td>No end user to defer an update</td></tr>
+<tr><td>Option to check for Windows updates</td><td>Disable</td><td>Hides the update interface</td></tr>
+<tr><td>Change notification update level</td><td>Turn off all notifications</td><td>Suppresses update messages on a public display</td></tr>
+</tbody>
+</table>
+<div class="see"><b>03:00 is a backstop, not the usual path</b>A kiosk restarts every ten minutes of inactivity, and the restart is a real restart because the session cleanup remediation sets <code>HiberbootEnabled = 0</code> and turns fast startup off. Most updates therefore finish on an idle restart during the day. The 03:00 window exists for the update that needs a restart the device has not happened to take, and for a site that leaves a device switched on and in use all day.</div>
+
+<h2>Step 7 &middot; Create the Delivery Optimization profile</h2>
+<p class="step">Devices &rsaquo; Configuration profiles &rsaquo; Create &rsaquo; Windows 10 and later &rsaquo; Templates &rsaquo; Delivery Optimization</p>
+<p>Name it <code>CDG-W11-CFG-Delivery Optimization-P-1.0</code>. Assign to <code>sg-dyn-dvc-cdg-participant-kiosk</code>. <b>Autopatch does not manage this.</b> Up to five kiosks share the APM-KIOSK SSID, which is shaped to 20 Mbps, so without peering each one pulls the same update over that link separately.</p>
+<table>
+<thead><tr><th style="width:34%">Setting</th><th style="width:22%">Value</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Download mode (<code>DODownloadMode</code>)</td><td>1, LAN</td><td>Peers within the same subnet</td></tr>
+<tr><td>Restrict peer selection (<code>DORestrictPeerSelectionBy</code>)</td><td>1, subnet mask</td><td>Makes the boundary explicit</td></tr>
+<tr><td>Delay background download from HTTP</td><td>60 seconds</td><td>Waits for a peer before falling back to Microsoft</td></tr>
+<tr><td>Minimum background QoS</td><td>500 KB/s</td><td>Makes Windows prefer the peer on a slow link</td></tr>
+<tr><td>Maximum background bandwidth</td><td>40%</td><td>Caps patch traffic at about 8 Mbps of the 20 Mbps link</td></tr>
+<tr><td>Business-hours limit</td><td>20% between 08:00 and 18:00 local</td><td>Tightens the cap while a site is open</td></tr>
+<tr><td>Maximum foreground bandwidth</td><td>80%</td><td>On-demand installs finish quickly</td></tr>
+<tr><td>Minimum file size to cache</td><td>10 MB</td><td>Includes Edge and Defender platform updates in peering</td></tr>
+<tr><td>Maximum cache age</td><td>259200 seconds, 3 days</td><td>Matches the quality-update deferral</td></tr>
+<tr><td>Absolute maximum cache size</td><td>10 GB</td><td>Bounded on the 128 GB SSD</td></tr>
+<tr><td>Cache server host (<code>DOCacheHost</code>)</td><td>Not configured</td><td>No Connected Cache is deployed</td></tr>
+</tbody>
+</table>
+
+<h2>Step 8 &middot; Confirm the network prerequisites</h2>
+<p>Two of these are outside Intune and are the usual reason peering silently does nothing. Raise with APM Network Management.</p>
+<table>
+<thead><tr><th style="width:30%">Item</th><th style="width:28%">Required</th><th>Where</th></tr></thead>
+<tbody>
+<tr><td>Wireless client isolation</td><td><b>Off</b> for SSID APM-KIOSK, VLAN 73</td><td>Meraki dashboard, Wireless</td></tr>
+<tr><td>Intra-VLAN peering port</td><td>TCP <b>7680</b> permitted within <code>10.73.0.0/16</code></td><td>Meraki dashboard, Security and SD-WAN</td></tr>
+<tr><td>Update endpoints</td><td>On the VLAN 73 allow-list</td><td>Meraki egress ruleset</td></tr>
+</tbody>
+</table>
+<div class="cmd">*.windowsupdate.com<br>download.windowsupdate.com<br>*.dl.delivery.mp.microsoft.com<br>*.delivery.mp.microsoft.com<br>*.update.microsoft.com<br>*.windowsupdate.microsoft.com<br>*.prod.do.dsp.mp.microsoft.com<br>*.notify.windows.com</div>
+<p>Microsoft republishes this set. A retired endpoint left on the allow-list is harmless; a new one that is missing stops patching. The list is reviewed quarterly by APM Network Management.</p>
+
+<h2>Step 9 &middot; Verify</h2>
+<table class="tick">
+<thead><tr><th class="bx">&nbsp;</th><th style="width:36%">Check</th><th>Pass</th></tr></thead>
+<tbody>
+<tr><td class="bx"><span></span></td><td>No cross-group overlap</td><td>No kiosk appears under the estate Autopatch group, and none reads <b>Not ready</b> or <b>Not registered</b> because of a group conflict</td></tr>
+<tr><td class="bx"><span></span></td><td>Group names</td><td>Entra shows four Autopatch-created groups: <code>Kiosk-Autopatch - Test</code>, <code>- Ring1</code>, <code>- Ring2</code> and <code>- Last</code>, with no hand-made duplicate of any of them and no ring left named <code>Deployment ring n</code></td></tr>
+<tr><td class="bx"><span></span></td><td>Last is empty</td><td><code>Kiosk-Autopatch - Last</code> holds no devices</td></tr>
+<tr><td class="bx"><span></span></td><td>Device registration</td><td>Pilot devices read <b>Registered</b>, and none sits in <b>Not registered</b></td></tr>
+<tr><td class="bx"><span></span></td><td>Ring split</td><td>Ring1 and Ring2 counts sit near 30 and 70 per cent of the registered total</td></tr>
+<tr><td class="bx"><span></span></td><td>Test precedence</td><td>Every device in <code>sg-stc-dvc-cdg-participant-kiosk-Autopatch-Test</code> appears in Test and in neither Ring1 nor Ring2</td></tr>
+<tr><td class="bx"><span></span></td><td>No competing policy</td><td>No update ring, feature update or quality update policy targets the kiosk group</td></tr>
+<tr><td class="bx"><span></span></td><td>Profiles applied</td><td>Both profiles from steps 4 and 5 report Succeeded on a pilot device</td></tr>
+<tr><td class="bx"><span></span></td><td>No update interface</td><td>On a kiosk, the restricted session offers no way to check for, pause or defer an update, and no update notification appears on screen</td></tr>
+<tr><td class="bx"><span></span></td><td>Peering works (T-22)</td><td>On two kiosks at the same site, <code>Get-DeliveryOptimizationStatus</code> shows a non-zero <code>BytesFromPeers</code> after an update</td></tr>
+<tr><td class="bx"><span></span></td><td>Restart behaviour</td><td>A device with a pending update that requires a restart completes it and returns to the participant session unattended</td></tr>
+</tbody>
+</table>
+<div class="cmd">Get-DeliveryOptimizationStatus | Select-Object FileId, BytesFromPeers, BytesFromHttp<br>Get-WindowsUpdateLog</div>
+
+<h2>Once it is running</h2>
+<table>
+<thead><tr><th style="width:22%">Task</th><th style="width:16%">Frequency</th><th style="width:20%">Owner</th><th>What to do</th></tr></thead>
+<tbody>
+<tr><td>Validate a release on Test</td><td>Each release</td><td>Digital Operations</td><td>Confirm the Test ring has taken the release, and that the restricted session, the application set and the session purge still behave, before Ring1 takes it</td></tr>
+<tr><td>Check the ring split has not drifted</td><td>Quarterly</td><td>Digital Operations</td><td>Autopatch recalculates as devices register and deregister. A split well off 30/70 usually means devices have left the source group, not that the setting changed</td></tr>
+<tr><td>Review the endpoint list</td><td>Quarterly</td><td>APM Network Management</td><td>Microsoft republishes the Windows Update and Delivery Optimization endpoints</td></tr>
+<tr><td>Reconcile registration against the fleet</td><td>Monthly</td><td>Digital Operations</td><td>A device whose name lacks the <code>APM-PK-</code> prefix is in no group, so it is neither configured nor registered</td></tr>
+</tbody>
+</table>
+
+<div class="tbc"><b>Open item</b>As-built open item 18 asked whether <code>sg-stc-dvc-cdg-participant-kiosk-Autopatch-Test</code> is still needed. It is: this procedure makes it the Assigned source for the Test ring, and it remains the application piloting ring for LibreOffice releases. It is the only place a release is seen before the fleet takes it, so it is not a tidy-up to do casually.</div>
+
+<div class="see"><b>Source</b>Object names and setting values come from the ES Participant Kiosk Solution as-built record V1.9, sections 13.1 and 13.2, and the Technical Configuration Document V2.3, 4.6.8 and 12.6. The three-ring model in steps 1 to 3 supersedes the Test and Broad model those documents record, and both are updated to match. Where this procedure and the as-built differ on a value, the as-built is correct.</div>
+
+</doc-page>
+<script src="../doc-page.js"></script>
+</body></html>

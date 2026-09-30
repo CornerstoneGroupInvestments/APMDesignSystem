@@ -1,0 +1,20 @@
+Subject: AVD session hosts — keeping WDAC enforced with signed Nerdio scripted actions (revises our 18 June request)
+
+Following our 18 June request to enable Nerdio host provisioning in the FVE: we asked then to exempt the AVD session hosts from WDAC — audit mode, or excluding the session-host group — because Nerdio's provisioning extension was being blocked. We have since confirmed a better option that keeps WDAC enforced on the session hosts, and we would prefer it. This note revises item 1 of that request; the storage item carries over unchanged.
+
+Nerdio supports signing its own VM extensions and scripted actions with a code-signing certificate and running them under an AllSigned execution policy. Under WDAC script enforcement, scripts signed by a trusted certificate run in full language while everything else stays in Constrained Language. So rather than relax application control on the session hosts, we can sign Nerdio's provisioning scripts and leave WDAC enforced, which is the stronger position for RFFR. We need the following from your side.
+
+1. Add the kiosk code-signing certificate as an allowed signer in the session-host App Control policy.
+The certificate is the same one we requested on 15 June for the kiosk device-side scripts — one certificate serves both. Add it to the App Control policy as an allowed signer, by signer rule rather than by file hash or path, deployed as a signed supplemental policy. Once it is an allowed signer, Nerdio's signed scripted actions run in full language and a host provisions to completion with WDAC still enforced. On our side we enable Nerdio's script signing with that certificate and adjust the extension invocation to avoid a documented language-mode conflict; nothing further is needed from you there.
+
+2. Confirm the base App Control policy trusts the Microsoft-signed Azure VM Agent and CustomScriptExtension binaries.
+The host failure was logged as CustomScriptHandler.exe blocked by Device Guard (exit code 4551). If that block is at the executable layer rather than the script layer, signing the scripts will not release the handler binary itself — trusting the Microsoft publisher in the base policy covers it. We will confirm from the raw block event which layer applied, and come back only if anything beyond the standard Microsoft trust is needed.
+
+3. Storage access for the provisioning scripts (carried over from 18 June, still required).
+The same extension downloads its scripts from the Nerdio-managed storage account in the NME resource group (auea-rg-avd-ctrl-nme-001). From the locked-down host subnet that download is denied with HTTP 403 by the storage-account firewall. Permit the host subnet to reach that single storage account over HTTPS — a Microsoft.Storage service endpoint plus a storage-account virtual-network rule (Azure backbone, no public exposure), or a private endpoint. Signing does not remove this; the host must still fetch the payload. The storage account stays firewalled to all other sources. For production: the production session-host NSG (Detailed Design V1.0, Table 45) likewise carries no storage egress, so the same allowance needs designing into the production network — flagging it now so it is not a surprise at the production pool build.
+
+Scope is unchanged from 18 June: all three items are scoped to the AVD session hosts, and the physical kiosk thin clients keep WDAC enforced and are untouched. Compensating controls on the session hosts are as before — stateless and reimaged on every logoff, inside the controlled-connectivity network boundary, locked down in-session (Assigned Access, Edge-only, web-only Office, single-session), no persistent data, Defender and ASR on. We will record the signed-and-enforced position and these controls in the RFFR risk register.
+
+The one dependency that gates all of this is the code-signing certificate from the 15 June request. Once it is issued, it closes the kiosk device-side scripts and the Nerdio session-host scripts together.
+
+The project team

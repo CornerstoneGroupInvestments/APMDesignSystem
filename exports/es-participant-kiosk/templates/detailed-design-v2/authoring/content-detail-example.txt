@@ -1,0 +1,101 @@
+H1 |1. Introduction
+GD |Purpose, the decision being asked for, and audience by group.
+H2 |1.1 Purpose
+P |**Example.** This document provides a high-level logical and physical architecture view of the implementation of <<Solution Name>>, and defines any services required for satellite systems to integrate and coexist with the inherent ecosystem. Services are mapped to business use cases.
+H2 |1.2 Audience
+B |Business Sponsor
+B |Business Partners
+B |Project Management Office
+B |Digital Transformation &amp; Architecture
+B |Digital Operations, Digital Delivery, Cyber Security
+H1 |2. Overview
+H2 |2.1 Scope
+P |**In scope**
+B |<<Capability, process or population included>>
+P |**Out of scope**
+B |<<Explicitly excluded item>> - handled by <<other workstream>>
+H2 |2.2 Guiding Principles
+TBL |2400,6960
+TH |Principle||What it means in this design
+TR |<<Principle name>>||<<The design consequence>>
+END
+H2 |2.3 Assumptions
+TBL |1000,8360
+TH |ID||Assumption
+TR |A-01||<<Assumption>>
+END
+H1 |3. Business Architecture
+H2 |3.1 Business Reference Architecture
+P |N/A - this example is a device-management policy change with no business capability model impact. See the Design Definition (§2, §3) for the business context this design implements.
+H2 |3.2 Business Requirements
+TBL |900,4260,4200
+TH |ID||Requirement||Met by
+TR |BR-01||<<Functional requirement>>||<<Section reference>>
+END
+H2 |3.3 Gap Treatment
+P |N/A - no requirement gap identified for this example.
+H1 |4. Application Architecture
+H2 |4.1 System Context Diagram
+P |N/A - no new application boundary is introduced; the solution is delivered entirely within the existing Intune/Entra ID management plane already in scope for the program.
+H2 |4.2 Solution/Product Component Inventory
+TBL |2300,3760,3300
+TH |Component||Role in the solution||Version / licensing / status
+TR |Microsoft Intune||Device configuration and compliance policy engine||Existing licensing. Configuration change only
+TR |<<Product name>>||<<Role>>||<<Version, licence, status>>
+END
+H2 |4.3 Solution Interface Diagram
+P |N/A - no new interface is introduced.
+H2 |4.4 Solution/Product Interface Catalogue
+TBL |1000,2200,2760,3400
+TH |ID||Interface||Pattern / protocol||Notes
+TR |INT-01||<<Source>> to <<Target>>||<<Pattern>>||<<Detail>>
+END
+H1 |5. Technology Architecture
+H2 |5.1 Technology Component Standards
+TBL |1900,2400,2400,2660
+TH |TRM domain||Component||Product / version||Approval status
+TR |Endpoint management||Microsoft Intune||Current tenant release||Approved
+END
+H2 |5.2 Integration Standards and Patterns
+P |N/A - no new integration pattern is introduced by this example.
+H2 |5.3 Network &amp; Infrastructure Standards &amp; Patterns
+P |N/A - no network or infrastructure change; the policy applies over the existing managed device network path.
+H2 |5.4 Technology Component Deployment Patterns
+TBL |1600,2600,2600,2560
+TH |Environment||Purpose||Deployment method||Promotion gate
+TR |Pilot ring||Validate the new policy on a small device set||Intune policy assignment to the pilot Entra ID group||Pilot sign-off
+TR |Production ring||Roll out to the full fleet||Staged Intune assignment by ring||Change record approval
+END
+H1 |6. Information &amp; Data Architecture
+H2 |6.1 Information Model
+P |N/A - this example creates or stores no new data entity.
+H2 |6.2 Information Classification
+P |N/A - no new information entity to classify.
+H2 |6.3 Analytics and Reporting Patterns
+P |N/A - reporting is via the existing Intune compliance dashboard; no new reporting pattern is introduced.
+H1 |7. Cyber &amp; Security Architecture
+TBL |1900,3400,4060
+TH |Domain||Control implemented||Standard / obligation met
+TR |Device||Removable-storage (USB) access policy, applied by Intune device configuration profile||APM device hardening standard
+END
+H1 |8. Service Availability and Disaster Recovery
+H2 |8.1 Business Service Tiering
+P |N/A - this is a configuration-only change to an existing managed service; the service tier of the underlying platform is unchanged.
+H2 |8.2 Service Availability
+P |N/A - no change to platform availability.
+H2 |8.3 Disaster Recovery &amp; Resilience
+P |N/A - the policy is defined in Intune, which carries its own platform-level resilience; no design-specific DR action is required.
+H1 |9. Service Management
+H2 |9.1 Service Management Principles
+P |**Example.** Support is via the existing Digital Operations Tier 1/2/3 model; no new support tier is introduced by this change.
+H2 |9.2 Monitoring, Logging, Reporting and Alerting
+TBL |2900,2860,3600
+TH |Event||Source||Action and owner
+TR |Policy assignment failure||Intune device configuration report||Alert to Digital Operations Tier 2, investigate within one business day
+END
+H1 |Appendix A: Terms &amp; Abbreviations
+TBL |2000,7360
+TH |Term||Definition
+TR |SOE||Standard Operating Environment
+TR |RBAC||Role-Based Access Control
+END

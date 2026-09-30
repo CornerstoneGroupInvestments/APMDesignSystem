@@ -1,0 +1,22 @@
+<!-- @dsCard group="Spacing" viewport="700x160" name="Radii & elevation" subtitle="Corner radii and shadow steps" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style> body{margin:0;padding:24px;background:var(--surface-page);font-family:var(--font-ui);display:flex;gap:28px;flex-wrap:wrap}
+ .grp{display:flex;gap:14px;align-items:flex-end}
+ .c{display:flex;flex-direction:column;align-items:center;gap:8px}
+ .box{width:64px;height:64px;background:var(--surface-card);border:1px solid var(--border-subtle)}
+ .n{font-size:10px;color:var(--text-muted);font-weight:600}
+</style></head>
+<body>
+<div class="grp">
+  <div class="c"><div class="box" style="border-radius:var(--radius-sm)"></div><span class="n">sm 6</span></div>
+  <div class="c"><div class="box" style="border-radius:var(--radius-md)"></div><span class="n">md 10</span></div>
+  <div class="c"><div class="box" style="border-radius:var(--radius-lg)"></div><span class="n">lg 16</span></div>
+  <div class="c"><div class="box" style="border-radius:var(--radius-pill)"></div><span class="n">pill</span></div>
+</div>
+<div class="grp">
+  <div class="c"><div class="box" style="box-shadow:var(--shadow-sm);border-color:transparent;border-radius:var(--radius-md)"></div><span class="n">sm</span></div>
+  <div class="c"><div class="box" style="box-shadow:var(--shadow-md);border-color:transparent;border-radius:var(--radius-md)"></div><span class="n">md</span></div>
+  <div class="c"><div class="box" style="box-shadow:var(--shadow-lg);border-color:transparent;border-radius:var(--radius-md)"></div><span class="n">lg</span></div>
+  <div class="c"><div class="box" style="box-shadow:var(--shadow-xl);border-color:transparent;border-radius:var(--radius-md)"></div><span class="n">xl</span></div>
+</div>
+</body></html>

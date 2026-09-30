@@ -1,0 +1,20 @@
+/* APM — Elevation, shadow, motion tokens.
+   Soft, low-contrast navy-tinted shadows; calm fade/ease motion (no bounce). */
+
+:root {
+  --shadow-xs:  0 1px 2px rgba(17, 26, 54, 0.06);
+  --shadow-sm:  0 1px 3px rgba(17, 26, 54, 0.08), 0 1px 2px rgba(17, 26, 54, 0.04);
+  --shadow-md:  0 4px 12px rgba(17, 26, 54, 0.10), 0 2px 4px rgba(17, 26, 54, 0.05);
+  --shadow-lg:  0 12px 28px rgba(17, 26, 54, 0.14), 0 4px 8px rgba(17, 26, 54, 0.06);
+  --shadow-xl:  0 24px 48px rgba(17, 26, 54, 0.18);
+
+  /* Focus ring (orange brand) */
+  --ring-focus: 0 0 0 3px rgba(248, 151, 40, 0.45);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);   /* @kind other */
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */
+  --duration-fast: 120ms;                          /* @kind other */
+  --duration-base: 200ms;                          /* @kind other */
+  --duration-slow: 320ms;                          /* @kind other */
+}

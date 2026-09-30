@@ -1,0 +1,396 @@
+
+Design Definition
+Template V0.1
+ DATE \@ "d MMMM yyyy" 
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Project Name: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Document Owner: |  |  | 
+Samit Chandra
+Head of Digital Transformation &amp; Architecture
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Contact Details: |  |  | 
+Samit.Chandra@apm.net.au
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Program Name: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Division/Unit: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Document Status: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Document Version: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Product ID: |  |  | 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FOR INTERNAL USE ONLY
+Commercial in confidence
+© APM
+
+Document control
+Version History
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Version |  |  | 
+       Date |  |  | 
+Author |  |  | 
+                             Key changes
+[ROW]
+[ROW] |  |  | 
+V0.1 |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Consultation
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Position title |  |  | 
+Date
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+References and Derivation
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Version # |  |  | 
+Document Title |  |  | 
+Reference Location
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Design Authority Endorsement
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Role/Group |  |  | 
+Signature |  |  | 
+Date
+[ROW]
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Confidentiality &amp; Disclaimer
+This document is provided by Advanced Personnel Management International Pty Ltd and / or its related entities (APM) on a confidential basis. This document is subject to approval of the APM Board and does not constitute an offer capable of acceptance. No agreement binding APM or its related companies in respect of this document is intended or proposed unless and until the terms and conditions between APM or its related entities are agreed in writing in a formal agreement with the named Company or Prospective Client.
+APM will not be bound by any pricing or any other material contained in this response until the above has taken place. 
+Photography
+Photographs used in this document are for illustration only and should not be interpreted to mean that any person or organisation whose assets are shown in them endorses this document.
+
+APM Contact
+Communications regarding this document should be forwarded to:
+Head of Digital Transformation &amp; Architecture 
+P      08 XXXX XXXX
+M08 XXXX XXXX
+Esamit.chandra@apm.net.au
+APM Contact
+Communications regarding this document should be forwarded to:
+Head of Digital Transformation &amp; Architecture 
+P      08 XXXX XXXX
+M08 XXXX XXXX
+Esamit.chandra@apm.net.au
+
+
+
+Contents
+ TOC \o "1-3" \h \z \u 1. Introduction PAGEREF _Toc201233670 \h 5
+1.1 Purpose PAGEREF _Toc201233671 \h 5
+1.2 Document Scope PAGEREF _Toc201233672 \h 5
+1.3 Document Audience PAGEREF _Toc201233673 \h 5
+2. Business Context PAGEREF _Toc201233674 \h 6
+2.1 Business Goals PAGEREF _Toc201233675 \h 6
+2.2 Business Operational Considerations PAGEREF _Toc201233676 \h 6
+2.3 Project Scope PAGEREF _Toc201233677 \h 6
+3. Technology Context PAGEREF _Toc201233678 \h 7
+3.1 Technology Recommendation PAGEREF _Toc201233679 \h 7
+3.2 Technology Strategic alignment PAGEREF _Toc201233680 \h 7
+3.3 Key Architecture Principles PAGEREF _Toc201233681 \h 7
+3.4 Conceptual View PAGEREF _Toc201233682 \h 7
+3.5 Program/Portfolio Dependencies PAGEREF _Toc201233683 \h 7
+3.5 Product/Project Methodology PAGEREF _Toc201233684 \h 7
+3.6 Assumptions, Gaps, Risks and Constraints PAGEREF _Toc201233685 \h 8
+4. Definition PAGEREF _Toc201233686 \h 8
+
+
+
+
+
+1. Introduction
+1.1 Purpose
+The Design Definition document outlines the proposed target-state of the solution, specifically the application or service, the technology or process, and the integration requirements. Design Definition typically does not contain the detailed specification of how each piece works, rather it defines what technology parts are used and how they interact.
+The Design Definition document aims to:
+•Outline the Key Architectural Principles to guide the implementation of the solution, as well as the Architectural Objectives for the Program;
+•Identify the need for change in ICT capabilities as classified by the business architecture capability model and align capability to the selected solution components to implement the capabilities;
+•Define the scope boundaries for the program (including impacted solution components) and relationships and interdependencies to in-flight and planned programs; and
+•Describe the proposed target-state architecture to a sufficient level of detail to provide input into project scope and business case.
+1.2 Document Scope
+The Design Definition document summarises the conceptual target state or TO-BE architecture. The document identifies the need for change in capabilities as classified by the business architecture capability model. It aligns capability to the selected solution components to implement the capabilities. Each solution component identified to implement capability will be elaborated in detailed design documents.
+1.3 Document Audience
+The audience for this document includes:
+Business Sponsor,
+Business Partners,
+Project Management office,
+Digital Transformation &amp; Architecture, 
+Digital Operations
+Digital Delivery
+Cyber Security 
+
+
+
+
+
+
+
+
+2. Business Context
+
+&lt;&lt; Insert a description for the solution/product providing high level context and background for the using business friendly language and terms. &gt;&gt;
+2.1 Business Goals
+
+&lt;&lt;Insert a statement that explains the business goals &amp; drivers, including objectives and business uplift expected as part of the enterprise strategy. Include any relevant stakeholder metrics and/or documented pain point, concerns, opportunities and statements. Explain how these will influence the direction of the solution/product.
+Why and what part of the business will this solution/product impact at the high level?
+2.2 Business Operational Considerations
+
+&lt;&lt;Insert a statement that explains the business operational considerations, including key business policies, objectives and relevant external drivers that influence the direction of the solution/product. 
+What part of the business will this solution/product impact at the high level?
+What business policies, controls internal or external (regulatory) must this solution/product comply with?&gt;&gt;
+Overlay of Business Capability Model to demonstrate impacted business areas, capabilities with heatmap
+Impacted stakeholders including but not limited to APM staff, Customers, partners, vendors, government agencies  
+
+
+2.3 Project Scope
+&lt;&lt;Insert a statement that explains the business scope including capabilities, process, people, that is impacted directly or indirectly by this initiative. 
+What part of the business will this solution/product impact at the high level?
+Overlay of Business Capability Model to demonstrate impacted business areas, capabilities with heatmap
+
+
+3. Technology Context
+
+&lt;&lt;Insert a statement that explains the technology/technical context, including key technology policies, objectives and relevant external drivers influence the direction of the solution/product. &gt;&gt;
+
+3.1 Technology Recommendation
+&lt;&lt;Insert a statement that explains the recommendation to achieve business goals, including objectives defined as part of the enterprise strategy. 
+Include any product/technology assessment conducted or rationale supporting the recommendation.
+3.2 Technology Strategic alignment
+&lt;&lt;Include current and target state with inventory of applications, Technology, Infrastructure and Data impacted and change description to articulate business uplift&gt;&gt; 
+3.3 Key Architecture Principles
+
+&lt;&lt;Insert key guiding and architectural principles inform the design and implementation of Target State Architecture or recommendation. The principles should be reviewed in conjunction with the APM IT Principles across all the architectural domains(Business, Application, Integration &amp; Infrastructure, Data &amp; Cyber)
+
+3.4 Conceptual View
+&lt;&lt; Reflect the domain of .. key callouts for each domains &gt;&gt;
+
+3.5 Program/Portfolio Dependencies
+&lt;&lt;Insert a statement to explain how this initiative relates to inflight programs or portfolios.&gt;&gt; 
+&lt;&lt;Insert specific dependencies as subsections as required. 
+Are there other initiatives delivery solutions/products that impact or are dependent on this solution/product? &gt;&gt;
+
+3.5 Product/Project Methodology
+&lt;&lt;Insert a statement that explains how the solution/product life cycle will be managed. Will it follow a formal approach waterfall or agile? 
+How will the solution/product architecture be developed and what engagement and interactions with stakeholders are to be expected?
+Include any references to product/project methodology standards that need to be followed (i.e., Scaled Agile Framework)
+Are there time scale and key decision points that the solution/product needs to align with?
+Where will this solution/product documentation be stored and managed? As part of an existing repository/shared drive or DevOps environment? &gt;&gt;
+
+
+3.6 Assumptions, Gaps, Risks and Constraints
+
+&lt;&lt;List all technology assumptions, residual gaps, technical debt, risks and constraints associated with the solution/product.&gt;&gt;
+
+Appendix - Definition
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Term/Acronym |  |  | 
+Definition
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+

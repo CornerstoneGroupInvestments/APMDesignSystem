@@ -1,0 +1,264 @@
+as system
+
+Participant Kiosk - LibreOffice launch chain
+   Device                                       APM-PK-63TFTJ4
+   Run at                                       2026-08-23 22:56:24
+   Kiosk account                                Kiosk-63TFTJ4
+   Running as                                   WORKGROUP\APM-PK-63TFTJ4$
+   Language mode                                ConstrainedLanguage
+
+== 1. Installation
+   Install root                                 C:\Program Files\LibreOffice
+   OK    Matches %ProgramFiles% in the allowed-app list.
+   swriter.exe                                  C:\Program Files\LibreOffice\program\swriter.exe
+   scalc.exe                                    C:\Program Files\LibreOffice\program\scalc.exe
+   simpress.exe                                 C:\Program Files\LibreOffice\program\simpress.exe
+   soffice.exe                                  C:\Program Files\LibreOffice\program\soffice.exe
+   soffice.bin                                  C:\Program Files\LibreOffice\program\soffice.bin
+
+== 2. Signature on each binary in the launch chain
+         App Control trusts The Document Foundation as a publisher. A binary not carrying that
+         signature is not covered by the publisher rule, whatever its extension.
+   swriter.exe                                  Valid  The Document Foundation
+   scalc.exe                                    Valid  The Document Foundation
+   simpress.exe                                 Valid  The Document Foundation
+   soffice.exe                                  Valid  The Document Foundation
+   soffice.bin                                  Valid  The Document Foundation
+   OK    Every binary in the chain carries a valid Document Foundation signature.
+         So the App Control publisher rule covers the whole chain, and App Control is unlikely to be the blocker.
+
+== 3. AppLocker effective policy
+   AppIDSvc                                     Running
+   Exe collection enforcement                   AuditOnly
+   Dll collection enforcement                   AuditOnly
+   Total rules in effective policy              3
+   References to LibreOffice                    0
+   WARN  The executable collection is AuditOnly, so AppLocker is not blocking anything on this device.
+         That rules AppLocker out as the cause of the launch failure.
+         It is also a finding in its own right: the Assigned Access allowed-app list is enforced through
+         AppLocker, so in AuditOnly the participant is restricted by the Start menu alone, not by execution
+         control. Confirm whether a corporate AppLocker policy in audit mode is merging over the kiosk rules.
+   WARN  No rule in the effective policy names LibreOffice.
+         Assigned Access implements its allowed-app list as AppLocker rules, so with the restricted session
+         active there should be rules naming every allowed application. Either the rules are held per user
+         and are not visible from this account, or the allowed-app list has not been applied.
+
+   Test-AppLockerPolicy for                     Kiosk-63TFTJ4
+      swriter.exe                               DeniedByDefault  rule: 
+      scalc.exe                                 DeniedByDefault  rule: 
+      simpress.exe                              DeniedByDefault  rule: 
+      soffice.exe                               DeniedByDefault  rule: 
+      soffice.bin                               not evaluated - The following file: C:\Program Files\LibreOffice\program\soffice.bin, 
+
+== 4. App Control for Business
+   Code integrity policy enforcement            enforced
+   Usermode policy enforcement                  enforced
+   Events in log (7 days)                       600
+   Blocks (3077)                                0
+   Audit-only (3076)                            0
+   OK    No App Control blocks at all in the last 7 days.
+         With the policy enforced and nothing blocked, App Control is not stopping LibreOffice.
+
+== 5. AppLocker events (last 7 days)
+   Microsoft-Windows-AppLocker/EXE and DLL      400 event(s), 0 block(s)
+      08-23 22:56                               id 8003: %PROGRAMFILES%\LIBREOFFICE\PROGRAM\LANGUAGETOOLLO.DLL was allowed to run but would have been prevented from ru
+      08-23 22:56                               id 8003: %PROGRAMFILES%\LIBREOFFICE\PROGRAM\LANGUAGETOOLLO.DLL was allowed to run but would have been prevented from ru
+      08-23 22:56                               id 8003: %PROGRAMFILES%\LIBREOFFICE\PROGRAM\PYTHON-CORE-3.12.13\LIB\SELECT.PYD was allowed to run but would have been p
+      08-23 22:56                               id 8003: %PROGRAMFILES%\LIBREOFFICE\PROGRAM\PYTHON-CORE-3.12.13\LIB\SELECT.PYD was allowed to run but would have been p
+      08-23 22:56                               id 8003: %PROGRAMFILES%\LIBREOFFICE\PROGRAM\PYTHON-CORE-3.12.13\LIB\_SOCKET.PYD was allowed to run but would have been 
+      08-23 22:56                               id 8003: %PROGRAMFILES%\LIBREOFFICE\PROGRAM\PYTHON-CORE-3.12.13\LIB\_SOCKET.PYD was allowed to run but would have been 
+         Audit-only (8003), so nothing was prevented.
+   Microsoft-Windows-AppLocker/MSI and Script   400 event(s), 0 block(s)
+      08-23 22:51                               id 8041: A File was allowed to execute normally by system execution policy. The application provided this information: 
+      08-23 22:51                               id 8037: \\?\D:\Test-KioskLibreOffice (3).ps1 passed Config CI policy and was allowed to run.
+      08-23 22:51                               id 8037: D:\Test-KioskLibreOffice (3).ps1 passed Config CI policy and was allowed to run.
+      08-23 22:43                               id 8041: A File was allowed to execute normally by system execution policy. The application provided this information: 
+      08-23 22:43                               id 8037: \\?\D:\Test-KioskLibreOffice (2).ps1 passed Config CI policy and was allowed to run.
+      08-23 22:43                               id 8037: D:\Test-KioskLibreOffice (2).ps1 passed Config CI policy and was allowed to run.
+         All allowed (8037/8041). Nothing here was blocked.
+
+== 6. LibreOffice user profile
+         LibreOffice creates a per-user profile on first run. If it cannot, the process starts
+         and exits with no window and no error, which looks identical to a policy block.
+   Kiosk profile path                           C:\Users\Kiosk-63TFTJ4\AppData\Roaming\LibreOffice
+   WARN  The account profile exists but LibreOffice has never completed a first run in it.
+   LibreOffice ADMX policy                      none
+
+== 6b. Standard-user access to the installation
+         A launch that works as SYSTEM and fails for the participant is most often permissions.
+         The kiosk account is a standard user; SYSTEM is not, so a directory that denies Users
+         runs perfectly in every test run from an elevated session.
+   Path                                         C:\Program Files\LibreOffice\program
+   Grants BUILTIN\Users                         yes
+   Names the kiosk account                      no (expected, Users covers it)
+          BUILTIN\Users:(I)(RX)
+          BUILTIN\Users:(I)(OI)(CI)(IO)(GR,GE)
+   OK    Standard users are granted access to the program directory.
+
+== 6c. Application error records (last 7 days)
+   Records naming LibreOffice                   4
+   08-23 19:54                                  id 1042 Information: Ending a Windows Installer transaction: C:\Windows\IMECache\67a420cc-6718-40bd-9ef6-e9a6b75c603e_1\Lib
+reOffice
+   08-23 19:54                                  id 1033 Information: Windows Installer installed the product. Product Name: LibreOffice 26.2.5.2. Product Version: 26.2.5.2
+. Produc
+   08-23 19:54                                  id 11707 Information: Product: LibreOffice 26.2.5.2 -- Installation operation completed successfully.
+   08-23 19:51                                  id 1040 Information: Beginning a Windows Installer transaction: C:\Windows\IMECache\67a420cc-6718-40bd-9ef6-e9a6b75c603e_1\
+LibreOff
+
+== 7. Running instances
+   OK    No soffice process running.
+
+== 8. Launch test
+   Testing as                                   WORKGROUP\APM-PK-63TFTJ4$
+   WARN  Running as the machine account. A launch from session 0 has no desktop, so a window cannot appear
+         and this test cannot distinguish a block from a missing desktop. Run this section from an
+         interactive administrator session, or read the Test-AppLockerPolicy results in section 3 instead.
+   soffice processes before / after             0 / 2
+   OK    Launched: soffice, soffice.bin
+         Test instances closed.
+
+== 9. Verdict
+   Sections that completed                      install, signatures, applocker policy, code integrity log, applocker log, profile, acl, application log, processes, launch
+
+   3 finding(s): applocker auditonly; no applocker rules for allowed apps; no libreoffice profile
+
+   Assigned Access allow-list may not be enforced
+         This does not block LibreOffice, it permits too much. The restricted session is being held by
+         the Start menu alone. Establish whether a corporate AppLocker policy in AuditOnly is merging
+         over the rules Assigned Access generates, and raise it against the design if so.
+   Not yet reproducible from this account
+         The measurements above describe the account this script ran as. Sign in as the kiosk account,
+         reproduce the fault, then run this again so sections 4 and 5 have events to read.
+
+
+PS D:\> 
+
+
+user standard admin user (but not elevated)
+Participant Kiosk - LibreOffice launch chain
+   Device                                       APM-PK-63TFTJ4
+   Run at                                       2026-08-23 22:56:08
+   Kiosk account                                Kiosk-63TFTJ4
+   Running as                                   APM-PK-63TFTJ4\APM-PKAdmin
+   Language mode                                ConstrainedLanguage
+
+== 1. Installation
+   Install root                                 C:\Program Files\LibreOffice
+   OK    Matches %ProgramFiles% in the allowed-app list.
+   swriter.exe                                  C:\Program Files\LibreOffice\program\swriter.exe
+   scalc.exe                                    C:\Program Files\LibreOffice\program\scalc.exe
+   simpress.exe                                 C:\Program Files\LibreOffice\program\simpress.exe
+   soffice.exe                                  C:\Program Files\LibreOffice\program\soffice.exe
+   soffice.bin                                  C:\Program Files\LibreOffice\program\soffice.bin
+
+== 2. Signature on each binary in the launch chain
+         App Control trusts The Document Foundation as a publisher. A binary not carrying that
+         signature is not covered by the publisher rule, whatever its extension.
+   swriter.exe                                  Valid  The Document Foundation
+   scalc.exe                                    Valid  The Document Foundation
+   simpress.exe                                 Valid  The Document Foundation
+   soffice.exe                                  Valid  The Document Foundation
+   soffice.bin                                  Valid  The Document Foundation
+   OK    Every binary in the chain carries a valid Document Foundation signature.
+         So the App Control publisher rule covers the whole chain, and App Control is unlikely to be the blocker.
+
+== 3. AppLocker effective policy
+   AppIDSvc                                     Running
+   Exe collection enforcement                   AuditOnly
+   Dll collection enforcement                   AuditOnly
+   Total rules in effective policy              3
+   References to LibreOffice                    0
+   WARN  The executable collection is AuditOnly, so AppLocker is not blocking anything on this device.
+         That rules AppLocker out as the cause of the launch failure.
+         It is also a finding in its own right: the Assigned Access allowed-app list is enforced through
+         AppLocker, so in AuditOnly the participant is restricted by the Start menu alone, not by execution
+         control. Confirm whether a corporate AppLocker policy in audit mode is merging over the kiosk rules.
+   WARN  No rule in the effective policy names LibreOffice.
+         Assigned Access implements its allowed-app list as AppLocker rules, so with the restricted session
+         active there should be rules naming every allowed application. Either the rules are held per user
+         and are not visible from this account, or the allowed-app list has not been applied.
+
+   Test-AppLockerPolicy for                     Kiosk-63TFTJ4
+      swriter.exe                               DeniedByDefault  rule: 
+      scalc.exe                                 DeniedByDefault  rule: 
+      simpress.exe                              DeniedByDefault  rule: 
+      soffice.exe                               DeniedByDefault  rule: 
+      soffice.bin                               not evaluated - The following file: C:\Program Files\LibreOffice\program\soffice.bin, 
+
+== 4. App Control for Business
+   Code integrity policy enforcement            enforced
+   Usermode policy enforcement                  enforced
+   Events in log (7 days)                       600
+   Blocks (3077)                                0
+   Audit-only (3076)                            0
+   OK    No App Control blocks at all in the last 7 days.
+         With the policy enforced and nothing blocked, App Control is not stopping LibreOffice.
+
+== 5. AppLocker events (last 7 days)
+   Microsoft-Windows-AppLocker/EXE and DLL      400 event(s), 0 block(s)
+   Microsoft-Windows-AppLocker/MSI and Script   400 event(s), 0 block(s)
+      08-23 22:51                               id 8041: A File was allowed to execute normally by system execution policy. The application provided this information: 
+      08-23 22:51                               id 8037: \\?\D:\Test-KioskLibreOffice (3).ps1 passed Config CI policy and was allowed to run.
+      08-23 22:51                               id 8037: D:\Test-KioskLibreOffice (3).ps1 passed Config CI policy and was allowed to run.
+      08-23 22:43                               id 8041: A File was allowed to execute normally by system execution policy. The application provided this information: 
+      08-23 22:43                               id 8037: \\?\D:\Test-KioskLibreOffice (2).ps1 passed Config CI policy and was allowed to run.
+      08-23 22:43                               id 8037: D:\Test-KioskLibreOffice (2).ps1 passed Config CI policy and was allowed to run.
+         All allowed (8037/8041). Nothing here was blocked.
+
+== 6. LibreOffice user profile
+         LibreOffice creates a per-user profile on first run. If it cannot, the process starts
+         and exits with no window and no error, which looks identical to a policy block.
+   Kiosk profile path                           C:\Users\Kiosk-63TFTJ4\AppData\Roaming\LibreOffice
+Test-Path : Access is denied
+At line:307 char:11
++ } elseif (Test-Path $kioskRoaming) {
++           ~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : PermissionDenied: (C:\Users\Kiosk-63TFTJ4\AppData\Roaming:String) [Test-Path], UnauthorizedAccessException
+    + FullyQualifiedErrorId : ItemExistsUnauthorizedAccessError,Microsoft.PowerShell.Commands.TestPathCommand
+ 
+   WARN  No Windows profile at C:\Users\Kiosk-63TFTJ4\AppData\Roaming, so the kiosk account has never signed in on this device.
+         Nothing here can be concluded about the participant experience until it has.
+   LibreOffice ADMX policy                      none
+
+== 6b. Standard-user access to the installation
+         A launch that works as SYSTEM and fails for the participant is most often permissions.
+         The kiosk account is a standard user; SYSTEM is not, so a directory that denies Users
+         runs perfectly in every test run from an elevated session.
+   Path                                         C:\Program Files\LibreOffice\program
+   Grants BUILTIN\Users                         yes
+   Names the kiosk account                      no (expected, Users covers it)
+          BUILTIN\Users:(I)(RX)
+          BUILTIN\Users:(I)(OI)(CI)(IO)(GR,GE)
+   OK    Standard users are granted access to the program directory.
+
+== 6c. Application error records (last 7 days)
+   Records naming LibreOffice                   4
+   08-23 19:54                                  id 1042 Information: Ending a Windows Installer transaction: C:\Windows\IMECache\67a420cc-6718-40bd-9ef6-e9a6b75c603e_1\LibreOffice
+   08-23 19:54                                  id 1033 Information: Windows Installer installed the product. Product Name: LibreOffice 26.2.5.2. Product Version: 26.2.5.2. Produc
+   08-23 19:54                                  id 11707 Information: Product: LibreOffice 26.2.5.2 -- Installation operation completed successfully.
+   08-23 19:51                                  id 1040 Information: Beginning a Windows Installer transaction: C:\Windows\IMECache\67a420cc-6718-40bd-9ef6-e9a6b75c603e_1\LibreOff
+
+== 7. Running instances
+   OK    No soffice process running.
+
+== 8. Launch test
+   Testing as                                   APM-PK-63TFTJ4\APM-PKAdmin
+   soffice processes before / after             0 / 2
+   OK    Launched: soffice, soffice.bin
+         Test instances closed.
+
+== 9. Verdict
+   Sections that completed                      install, signatures, applocker policy, code integrity log, applocker log, profile, acl, application log, processes, launch
+
+   3 finding(s): applocker auditonly; no applocker rules for allowed apps; kiosk account never signed in
+
+   Assigned Access allow-list may not be enforced
+         This does not block LibreOffice, it permits too much. The restricted session is being held by
+         the Start menu alone. Establish whether a corporate AppLocker policy in AuditOnly is merging
+         over the rules Assigned Access generates, and raise it against the design if so.
+   Not yet reproducible from this account
+         The measurements above describe the account this script ran as. Sign in as the kiosk account,
+         reproduce the fault, then run this again so sections 4 and 5 have events to read.
+
+
+PS C:\Users\APM-PKAdmin> 

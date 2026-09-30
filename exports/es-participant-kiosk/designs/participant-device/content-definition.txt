@@ -1,0 +1,114 @@
+H1 |1. Introduction
+H2 |1.1 Purpose
+P |This document defines the APM ES Participant Kiosk solution, referred to throughout as the Participant Kiosk, at a conceptual level: the business need it answers, the technology recommended to meet it, and the principles that govern how it is built. It establishes the target state that the Detail Design Document and the Technical Configuration Document then specify and configure.
+H2 |1.2 Document Scope
+P |Conceptual design only. This document names the components of the solution, the standards it aligns to, and the dependencies, assumptions and risks that affect a decision to proceed. It states no configuration values, policy names or build steps: architecture detail sits in the Detail Design Document, and every setting sits in the Technical Configuration Document.
+H2 |1.3 Document Audience
+TBL|2800,6560
+TH |**Audience**||**Interest in this document**
+TR |Business Sponsor and Business Partners||Confirm the solution answers the participant access need and accept the operating model, including document handling without printing
+TR |Digital Transformation and Architecture||Endorse the technology recommendation, the standards alignment and the architecture principles
+TR |Cyber Security||Confirm the compliance position, in particular alignment to ASD guidance under RFFR and the areas where full alignment is not possible
+TR |Project Management Office and Digital Delivery||Accept the dependencies, assumptions and risks, and the delivery methodology
+TR |Digital Operations||Confirm the solution is supportable under the existing service model
+END
+H1 |2. Business Context
+H2 |2.1 Business Goals
+P |APM delivers Workforce Australia and Inclusive Employment Australia employment services under contract with the Department of Employment and Workplace Relations. Participants attending APM sites need computing facilities for job search, resume preparation, interaction with government services and online training. The existing shared devices are old, slowly connected and inconsistently managed.
+P |Three business goals drive this solution:
+B |**Consistent participant privacy at every site.** No participant's information persists on a device after they leave it
+B |**Standardised, centrally managed devices at scale.** One build, managed the same way nationally, replacing a fleet that varies site to site
+B |**Demonstrable compliance.** A device fleet that can be evidenced against RFFR accreditation obligations rather than argued case by case
+H2 |2.2 Business Operational Considerations
+TBL|2600,6760
+TH |**Consideration**||**Position**
+TR |No participant account or credential||Participants do not sign in. A device presents a ready session when powered on, removing credential handling from site staff and removing the risk of one participant using another's session
+TR |Document handling||Participants take their work with them on their own USB media, or send it to their case manager from personal webmail. No document remains on the device and no printing is provided from the fleet
+TR |Accessibility||Participants with visual, language or literacy needs must be able to use a device independently, so the built-in Windows accessibility tools and browser reading and translation features are part of the solution rather than an option
+TR |Site environment||Devices sit in public areas on site wireless networks, unattended for long periods, and are used by members of the public with a wide range of confidence with technology
+TR |Support model||Devices are supported remotely under the existing service desk model. A national fleet cannot depend on attendance at site for routine faults
+END
+H2 |2.3 Project Scope
+P |**In scope.** A single physical device build for participant use at APM sites nationally: hardware, operating system, the applications a participant needs, the network the fleet sits on, the security controls that protect it, and the service model that supports it.
+P |**Out of scope.** The Standard User, Developer, Privileged Access and take-home device builds, each covered by its own design. Site network infrastructure and cabling. Printing from the fleet. Any Microsoft 365 service access from a Participant Kiosk. Decommissioning of the superseded kiosk components, which is a separate change to the running environment.
+H1 |3. Technology Context
+H2 |3.1 Technology Recommendation
+P |A physical Windows device, centrally managed, running a locked-down session that resets itself. The recommended components are:
+TBL|2600,6760
+TH |**Component**||**Role and reason for selection**
+TR |Windows 11 Enterprise||The standard APM desktop operating system, so the fleet inherits the existing hardening standard and servicing model rather than introducing a variant to maintain. It replaces the specialised long-term-servicing edition originally proposed, which would have sat outside that standard
+TR |Microsoft Intune||Single management plane for configuration, applications, compliance and remediation. The fleet is licensed by device, so no participant licence or user account is required
+TR |Microsoft Entra ID||Holds a device identity only. The device authenticates; the participant authenticates to nothing
+TR |Windows Autopilot||Hands-off provisioning: a device is registered at procurement, and builds itself on first boot with no technician sign-in
+TR |Locked-down multi-application session||Presents only the applications a participant needs, with no desktop shell, settings, command line or installation path
+TR |LibreOffice, installed locally||Document creation, reading and writing the Microsoft Word, Excel and PowerPoint formats participants exchange with employers and case managers. Chosen over a browser-based or locally installed Microsoft Office suite because both would require a licensed identity for every participant, and the browser-based option would write every document to a cloud store. LibreOffice needs no identity, no licence and no cloud store
+TR |Microsoft Edge||Browser and PDF viewer, with a managed set of job search, government, support and training bookmarks
+TR |Microsoft Defender for Endpoint||Endpoint protection, detection and response, and vulnerability reporting, entitled by the device operating system licence
+TR |Zscaler||Web filtering and logging, applied from the device itself
+TR |Windows Autopatch and third-party patch publishing||Operating system, browser and application updates delivered without manual packaging, restarting outside site hours
+TR |Windows LAPS and a remote support tool||Support access to a device in a public area, with a per-device password APM rotates and audits rather than a shared credential
+END
+H2 |3.2 Technology Strategic alignment
+P |The solution aligns to APM's modern management direction: cloud-managed devices, no domain join, no on-premises directory dependency, and one management plane for the estate.
+P |**Security standards alignment.** The fleet is governed by the APM Windows SOE Hardening Standard, which is itself benchmarked against the Australian Signals Directorate (ASD) Windows hardening guidance and the Microsoft Windows 11 and Edge security baselines. It therefore aligns to ASD guidance wherever the participant use case allows, and the alignment is inherited rather than rebuilt for this fleet.
+P |Three areas cannot align fully, and each is treated as a named exception with compensating controls rather than left unstated:
+B |**Removable media.** ASD guidance blocks removable storage. Participants must be able to carry a resume to and from a device, and there is no printing on the fleet to substitute for it, so USB read and write is permitted and compensated by application control, endpoint protection scanning, attack surface reduction and a session with no shell
+B |**Encryption of participant media.** Participant-owned drives cannot be required to carry encryption, because that would encrypt a member of the public's own property and make it unreadable on their own computer. The device's own disk remains encrypted
+B |**Pre-boot authentication.** A device that signs itself in unattended cannot prompt anyone for a pre-boot code, so disk encryption relies on hardware-based unlock with boot integrity validation, submitted as a variation
+P |The remaining ASD-aligned controls apply in full, and the fleet is deliberately stricter than the staff standard in two places: application control is enforced with script control enabled, and the device restarts and erases its session rather than locking it.
+P |**Compliance.** RFFR accreditation, based on ISO 27001 and the ASD Information Security Manual, is the governing obligation. The fleet's compliance position rests on holding no participant identity, no persistent participant data and no route to corporate services.
+H2 |3.3 Key Architecture Principles
+TBL|1900,7460
+TH |**Principle**||**What it means in this solution**
+TR |Zero Trust||The device is the only identity, continuously assessed for compliance, and no corporate identity can authenticate from it
+TR |Ephemeral by default||Nothing a participant does persists. The session is destroyed and rebuilt, not cleaned up
+TR |Least privilege||The session runs as a standard account with only the applications a participant needs, and no path to install, configure or elevate
+TR |Simplicity for the participant||The device is ready when powered on. No username, no password, no instruction needed to start
+TR |Inherit, do not reinvent||The fleet takes the existing hardening standard, management plane and service model, and varies from them only where the use case forces it, with each variation named
+TR |Fail secure||If the locked-down session does not apply, the device is unusable rather than open
+END
+H2 |3.4 Conceptual View
+P |Figure 1 shows the solution in context: what manages the device, what it is permitted to reach, and what it is prevented from reaching.
+FIG|solution-context.png|Figure 1. Participant Kiosk conceptual view - management plane, permitted destinations and blocked corporate services|1520|1240
+P |In summary: the device is managed from the Microsoft cloud, reaches the internet through Zscaler inspection on a network segment that permits nothing else, and cannot reach APM corporate systems or sign in to any APM service. The participant works locally, takes their documents with them, and the session is erased when they leave.
+H2 |3.5 Program/Portfolio Dependencies
+TBL|2600,6760
+TH |**Dependency**||**Effect if not met**
+TR |Code-signing certificate issued by APM||The device scripts and the application control policy cannot be deployed in signed form, which blocks the build. This is the largest single dependency
+TR |Device licensing confirmed and procured||Hands-off provisioning fails without a device management licence
+TR |Site network prepared: reserved wireless network, per-site addressing, restricted egress||Devices cannot be deployed to a site until its network is in place and verified as enforcing
+TR |Hardware procured to specification, registered for hands-off provisioning at the point of supply||Devices require manual preparation on site, which does not scale to a national fleet
+TR |Cyber Security acceptance of the named exceptions and variations||The fleet cannot be evidenced for RFFR accreditation
+TR |Device preparation and shipping partner capacity||Rollout schedule slips at site level
+END
+H2 |3.5 Product/Project Methodology
+P |Delivery is staged rather than released at once: foundation and enrolment, then build, then a pilot at a small number of sites, then penetration testing, then national rollout site by site, then decommissioning of the superseded components, then operational handover. Two controls are deliberately held back until the pilot has passed its test plan: enforcement of the corporate sign-in block, and enforcement of application control. Nothing proceeds to national rollout until both are confirmed in production.
+P |Design documentation follows three tiers: this Design Definition sets the target state; the Detail Design Document specifies the architecture and records the decisions; the Technical Configuration Document specifies every setting and script for build.
+H2 |3.6 Assumptions, Gaps, Risks and Constraints
+TBL|1400,4160,3800
+TH |**Type**||**Item**||**Treatment**
+TR |Assumption||The fleet enrols into the existing APM tenant, with no new tenant, subscription or domain||Confirmed. A separate identity plane would reintroduce the operational overhead this design removes
+TR |Assumption||Hardware supports hands-off provisioning and device-based encryption, and is registered at procurement||Confirmed with the supplier before the pilot
+TR |Assumption||Corporate policies, applications and access grants that target all devices or all users can be scoped to exclude this fleet||Scoped before the first device enrols. Unscoped corporate assignment is the largest configuration risk in the design
+TR |Gap||Participants without a personal email address cannot send documents to a case manager||USB remains available, and the case manager assists. Accepted by the business
+TR |Gap||No printing from the fleet||Documents are emailed to the case manager, who prints them. Approved operating model
+TR |Risk||A participant's data is recovered by the next participant||Session erased on every restart, with browser data never written to disk and a second erase at boot to cover power loss
+TR |Risk||Malware arrives on participant USB media||Application control enforced, endpoint protection scanning of removable drives, attack surface reduction, and a session with no command line or installer
+TR |Risk||A staff member signs in to a corporate service from a device in a public area||Blocked at three independent layers: identity, browser and network
+TR |Risk||The certificate the build depends on is not issued in time||Escalated as a program dependency. No workaround is proposed; relaxing the script execution policy is rejected
+TR |Constraint||Pre-boot authentication cannot be used on an unattended self-signing device||Variation submitted with compensating controls
+TR |Constraint||Participant-owned media cannot be required to carry encryption||Compensated by application control and endpoint protection. Recorded as an accepted risk
+TR |Constraint||Devices share a modest per-site internet link with the participants using it||Update traffic is capped and shared between devices at a site rather than downloaded once per device
+END
+H1 |Appendix - Definition
+TBL|2000,7360
+TH |**Term**||**Definition**
+TR |APM||Advanced Personnel Management
+TR |ASD||Australian Signals Directorate, publisher of the Information Security Manual and Australian government hardening guidance
+TR |DEWR||Department of Employment and Workplace Relations
+TR |Hands-off provisioning||Device build that completes with no technician sign-in, driven by cloud registration of the hardware
+TR |ISM||Information Security Manual (ASD)
+TR |Participant Kiosk||A physical device in an APM site, for participant use, running a locked-down session with no participant identity
+TR |RFFR||Right Fit For Risk, the DEWR cybersecurity accreditation framework, based on ISO 27001 and the ASD ISM
+TR |SOE||Standard Operating Environment, APM's managed device build and its hardening standard
+END

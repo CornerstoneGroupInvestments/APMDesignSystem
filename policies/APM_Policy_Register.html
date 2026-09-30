@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><title>APM Policy & Standards Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#F4F5F9;font-family:Mulish,sans-serif;color:#232A3D;line-height:1.5}
+a{color:#1F2D58}a:hover{color:#F89728}
+.wrap{max-width:1240px;margin:0 auto;padding:0 32px 80px}
+header{background:linear-gradient(115deg,#1F2D58 0%,#2C3D71 60%,#3A4B85 100%);color:#fff;padding:40px 0 34px;margin-bottom:0}
+header .wrap{padding-bottom:0}
+h1{font-family:Poppins,sans-serif;font-size:30px;margin:0 0 6px;color:#fff;font-weight:600}
+.sub{color:#F89728;font-family:Poppins,sans-serif;font-weight:600;font-size:14px;letter-spacing:.02em}
+.hdrmeta{margin-top:14px;font-size:13.5px;color:#C7CEE2}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:10px 16px;min-width:96px}
+.stat b{display:block;font-family:Poppins,sans-serif;font-size:22px;font-weight:600;color:#fff;line-height:1.1}
+.stat span{font-size:11.5px;color:#C7CEE2;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.toolbar{position:sticky;top:0;z-index:20;background:#F4F5F9;padding:20px 0 14px;border-bottom:1px solid #E1E4EE;margin-bottom:24px}
+.toolbar .wrap{padding-bottom:0}
+.searchrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+input[type=search]{flex:1;min-width:260px;font-family:Mulish,sans-serif;font-size:15px;padding:12px 18px;border:1.6px solid #D3D8E6;border-radius:999px;background:#fff;color:#232A3D}
+input[type=search]:focus{outline:none;border-color:#F89728;box-shadow:0 0 0 3px rgba(248,151,40,.16)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{font-family:Poppins,sans-serif;font-size:12px;font-weight:600;padding:7px 15px;border-radius:999px;border:1.5px solid #D3D8E6;background:#fff;color:#41507F;cursor:pointer}
+.chip:hover{border-color:#F89728}
+.chip.on{background:#1F2D58;border-color:#1F2D58;color:#fff}
+.chip.on.acc{background:#F89728;border-color:#F89728;color:#4A2705}
+.count{font-size:13px;color:#5A668C;margin-top:12px}
+.card{background:#fff;border:1px solid #E1E4EE;border-radius:16px;margin-bottom:16px;box-shadow:0 2px 10px rgba(31,45,88,.05);overflow:hidden}
+.chead{padding:20px 24px;display:flex;gap:18px;align-items:flex-start;cursor:pointer}
+.chead:hover{background:#FAFBFD}
+.ct{flex:1;min-width:0}
+.ct h2{font-family:Poppins,sans-serif;font-size:18px;margin:0 0 6px;color:#1F2D58;font-weight:600}
+.meta{font-size:12.5px;color:#5A668C;display:flex;gap:14px;flex-wrap:wrap}
+.meta b{color:#41507F;font-weight:600}
+.tag{font-family:Poppins,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:6px;white-space:nowrap}
+.tag.gov{background:#E8ECF7;color:#2C3D71}.tag.idm{background:#EAF3EC;color:#2C5C3A}
+.tag.mon{background:#FFF1DC;color:#8A5008}.tag.cry{background:#EDE7F6;color:#4A2C74}
+.tag.inc{background:#FBE4E7;color:#8E1B2C}.tag.soe{background:#E4EEF7;color:#1B5580}
+.tag.cfg{background:#F4EBDD;color:#6B5416}
+.tag.conf{background:#8E1B2C;color:#fff}
+.exp{font-family:Poppins,sans-serif;font-size:22px;color:#9AA3BF;line-height:1;padding-top:2px}
+.cbody{display:none;padding:0 24px 24px;border-top:1px solid #EEF0F6}
+.card.open .cbody{display:block}
+.card.open .exp{color:#F89728}
+.purpose{font-size:14px;color:#41507F;margin:18px 0 22px;padding-left:14px;border-left:3px solid #F89728}
+h3{font-family:Poppins,sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5A668C;margin:22px 0 12px}
+.req{border-bottom:1px solid #F0F2F7;padding:11px 0}
+.req:last-child{border-bottom:none}
+.req b{display:block;font-family:Poppins,sans-serif;font-size:14px;color:#1F2D58;font-weight:600;margin-bottom:3px}
+.req span{font-size:13.5px;color:#4A5675}
+.imp{border-radius:10px;padding:13px 16px;margin-bottom:10px;font-size:13.5px}
+.imp b{display:block;font-family:Poppins,sans-serif;font-size:13.5px;margin-bottom:4px}
+.imp.conflict{background:#FBE4E7;border-left:4px solid #8E1B2C}.imp.conflict b{color:#8E1B2C}
+.imp.flag{background:#FFF7EC;border-left:4px solid #F89728}.imp.flag b{color:#8A5008}
+.imp.good{background:#EAF3EC;border-left:4px solid #3A7D52}.imp.good b{color:#2C5C3A}
+.imp.info{background:#F2F5FB;border-left:4px solid #41507F}.imp.info b{color:#2C3D71}
+.imp.has b:after{content:' \25B8';opacity:.5;font-size:12px}
+.imp.has{cursor:pointer}
+.imp.has.open b:after{content:' \25BE'}
+.det{display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(31,45,88,.14)}
+.imp.open .det{display:block}
+.det h4{font-family:Poppins,sans-serif;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#5A668C;margin:0 0 5px}
+.det .blk{margin-bottom:14px}
+.det .blk p{margin:0;font-size:13.5px;color:#3A4560}
+.det ol{margin:0;padding-left:20px}
+.det ol li{font-size:13.5px;color:#3A4560;margin-bottom:7px}
+.det .own{background:rgba(255,255,255,.72);border-radius:8px;padding:10px 13px;font-size:13px;color:#2C3D71}
+.det .refs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.det .refs span{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;background:rgba(31,45,88,.08);border-radius:5px;padding:3px 8px;color:#41507F}
+.pills{display:flex;gap:7px;flex-wrap:wrap}
+.pill{font-size:12px;background:#F2F5FB;border:1px solid #E1E4EE;border-radius:999px;padding:5px 12px;color:#41507F}
+.file{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#5A668C}
+.hide{display:none}
+.empty{text-align:center;padding:60px 0;color:#5A668C;font-size:15px}
+mark{background:#FFF1A8;padding:0 1px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#5A668C;margin-top:14px;align-items:center}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+</style></head><body>
+
+<header><div class="wrap">
+<h1>APM Policy &amp; Standards Register</h1>
+<div class="sub">Searchable index of APM policies, standards and plans that govern our designs</div>
+<div class="hdrmeta">Sources in <span class="file">policies/</span>, <span class="file">reference/environment/</span>, <span class="file">reference/eslz/</span> &middot; every requirement traceable to a named section &middot; <span id="gendate"></span><br><a href="APM_Compliance_Check.html" style="color:#fff;text-decoration:underline;font-weight:600">Check a document against this register &rarr;</a> &nbsp;&middot;&nbsp; <a href="APM_CA_Policy_Analysis.html" style="color:#fff;text-decoration:underline;font-weight:600">Conditional Access analysis (116 policies) &rarr;</a></div>
+<div class="stats" id="stats"></div>
+</div></header>
+
+<div class="toolbar"><div class="wrap">
+<div class="searchrow">
+<input type="search" id="q" placeholder="Search requirements, controls, owners, document numbers..." autocomplete="off">
+</div>
+<div class="chips" id="cats"></div>
+<div class="legend">
+<span><i style="background:#8E1B2C"></i>Conflict with a current design</span>
+<span><i style="background:#F89728"></i>Needs a decision or confirmation</span>
+<span><i style="background:#3A7D52"></i>Design already compliant</span>
+<span><i style="background:#41507F"></i>Context</span>
+</div>
+<div class="count" id="count"></div>
+</div></div>
+
+<div class="wrap" id="list"></div>
+
+<script src="policy-data.js"></script>
+<script>
+const D = window.POLICY_DATA, list = document.getElementById('list');
+document.getElementById('gendate').textContent = 'generated ' + D.generated;
+const CATCLASS = {'Governance & Compliance':'gov','Identity & Access':'idm','Monitoring & Assurance':'mon','Cryptography':'cry','Incident Response':'inc','Endpoint & SOE':'soe','Configuration':'cfg'};
+let activeCats = new Set(), query = '';
+
+const allImpacts = D.docs.flatMap(d => d.impact || []);
+document.getElementById('stats').innerHTML = [
+  [D.docs.length,'Documents'],
+  [D.docs.reduce((a,d)=>a+d.reqs.length,0),'Requirements'],
+  [allImpacts.filter(i=>i.level==='conflict').length,'Conflicts'],
+  [allImpacts.filter(i=>i.level==='flag').length,'To confirm'],
+  [allImpacts.filter(i=>i.level==='good').length,'Compliant']
+].map(([n,l])=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+
+const cats = [...new Set(D.docs.map(d=>d.cat))];
+document.getElementById('cats').innerHTML =
+  `<button class="chip acc" data-c="__impact">Program impact only</button>` +
+  cats.map(c=>`<button class="chip" data-c="${c}">${c} <span style="opacity:.6">${D.docs.filter(d=>d.cat===c).length}</span></button>`).join('');
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function hl(s){ if(!query) return esc(s);
+  const re = new RegExp('('+query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return esc(s).replace(re,'<mark>$1</mark>'); }
+
+function render(){
+  const showImpactOnly = activeCats.has('__impact');
+  const catFilter = [...activeCats].filter(c=>c!=='__impact');
+  let shown = 0, reqShown = 0;
+  list.innerHTML = D.docs.map(d => {
+    if (catFilter.length && !catFilter.includes(d.cat)) return '';
+    if (showImpactOnly && !(d.impact||[]).length) return '';
+    const hay = [d.title,d.id,d.owner,d.cat,d.purpose,d.file,
+      ...d.reqs.flatMap(r=>[r.r,r.d]), ...(d.impact||[]).flatMap(i=>[i.t,i.d]),
+      ...(d.external||[]), ...(d.related||[])].join(' ').toLowerCase();
+    if (query && !hay.includes(query.toLowerCase())) return '';
+    shown++;
+    const reqs = query ? d.reqs.filter(r=>(r.r+' '+r.d).toLowerCase().includes(query.toLowerCase())) : d.reqs;
+    reqShown += reqs.length;
+    const imps = query ? (d.impact||[]).filter(i=>(i.t+' '+i.d).toLowerCase().includes(query.toLowerCase())) : (d.impact||[]);
+    const isOpen = query || showImpactOnly;
+    return `<div class="card${isOpen?' open':''}">
+      <div class="chead">
+        <div class="ct">
+          <h2>${hl(d.title)}</h2>
+          <div class="meta">
+            <span><b>${hl(d.id)}</b></span>
+            <span>Owner: ${hl(d.owner)}</span>
+            <span>Published ${d.published}</span>
+            <span>${d.pages} ${typeof d.pages==='number'?'pp':''}</span>
+            <span class="file">${hl(d.file)}</span>
+          </div>
+        </div>
+        <span class="tag ${CATCLASS[d.cat]||'gov'}">${d.cat}</span>
+        ${d.classification==='Confidential'?'<span class="tag conf">Confidential</span>':''}
+        <span class="exp">${isOpen?'\u2212':'+'}</span>
+      </div>
+      <div class="cbody">
+        <p class="purpose">${hl(d.purpose)}</p>
+        ${imps.length?`<h3>Impact on our designs (${imps.length})</h3>${imps.map(i=>
+          `<div class="imp ${i.level}${i.det?' has':''}"><b>${hl(i.t)}</b>${hl(i.d)}${i.det?`
+            <div class="det">
+              <div class="blk"><h4>What the policy says</h4><p>${hl(i.det.policy)}</p></div>
+              <div class="blk"><h4>What the design says</h4><p>${hl(i.det.design)}</p></div>
+              <div class="blk"><h4>Why it matters</h4><p>${hl(i.det.why)}</p></div>
+              <div class="blk"><h4>Options</h4><ol>${i.det.options.map(o=>`<li>${hl(o)}</li>`).join('')}</ol></div>
+              <div class="own"><b style="font-family:Poppins,sans-serif">Decision owner:</b> ${hl(i.det.owner)}
+                <div class="refs">${i.det.refs.map(r=>`<span>${hl(r)}</span>`).join('')}</div></div>
+            </div>`:''}</div>`).join('')}`:''}
+        ${reqs.length?`<h3>Requirements (${reqs.length}${query&&reqs.length<d.reqs.length?' of '+d.reqs.length+' matching':''})</h3>
+          ${reqs.map(r=>`<div class="req"><b>${hl(r.r)}</b><span>${hl(r.d)}</span></div>`).join('')}`:''}
+        ${d.external?`<h3>External obligations</h3><div class="pills">${d.external.map(e=>`<span class="pill">${hl(e)}</span>`).join('')}</div>`:''}
+        ${d.related?`<h3>Related documents named in this policy (not yet held)</h3><div class="pills">${d.related.map(e=>`<span class="pill">${hl(e)}</span>`).join('')}</div>`:''}
+      </div></div>`;
+  }).join('');
+  document.getElementById('count').textContent =
+    shown ? `${shown} document${shown===1?'':'s'}${query?` \u00b7 ${reqShown} matching requirement${reqShown===1?'':'s'}`:''}` : '';
+  if (!shown) list.innerHTML = '<div class="empty">No documents match that search.</div>';
+  list.querySelectorAll('.chead').forEach(h=>h.onclick=()=>{
+    const c=h.parentElement; c.classList.toggle('open');
+    h.querySelector('.exp').textContent = c.classList.contains('open')?'\u2212':'+';
+  });
+  list.querySelectorAll('.imp.has').forEach(el=>el.onclick=e=>{
+    if(e.target.closest('.det')) return;
+    el.classList.toggle('open');
+  });
+  if (query) list.querySelectorAll('.imp.has').forEach(el=>{ if(el.querySelector('mark')) el.classList.add('open'); });
+}
+
+document.getElementById('q').oninput = e => { query = e.target.value.trim(); render(); };
+document.getElementById('cats').onclick = e => {
+  const b = e.target.closest('.chip'); if(!b) return;
+  const c = b.dataset.c;
+  activeCats.has(c) ? activeCats.delete(c) : activeCats.add(c);
+  document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on', activeCats.has(x.dataset.c)));
+  render();
+};
+render();
+</script>
+</body></html>

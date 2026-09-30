@@ -1,0 +1,175 @@
+H1 |What this guide is for
+P |Ten steps build one ES Participant Kiosk. Eight of the ten take a few minutes of technician time; the other two, the Windows installation and the automatic provisioning that follows it, run for 25 to 40 minutes each with nobody watching. A batch built one device at a time therefore spends most of its day idle.
+P |This guide sets out the ten steps in order, and the bench layout and sequencing that let one technician hold four to six devices in flight at once. The detailed per-step procedure, with every on-screen confirmation and escalation path, is CN-PK-01 Device Build Procedure. Use this guide to plan and run a batch; use CN-PK-01 when a step does not behave as described.
+H1 |The six things that stop a build
+NUM|The device is **registered in Windows Autopilot** and tagged **PARTICIPANT** in upper case before anything else is done to it. The tag is the sole mechanism that assigns the kiosk deployment profile: an absent, lower-case or misspelt tag produces a standard Windows desktop with no lockdown, and the device has to be rebuilt.
+NUM|**Ethernet stays disconnected** through installation and the out-of-box experience, and is connected immediately before the registry key script is run at step 6. A cable connected earlier changes what the device does at the out-of-box experience.
+NUM|The registry key script is run **at the out-of-box experience**, from the command prompt opened with **Shift + F10**, before anything else is done to the device. OOBE is never worked through and no account is ever created.
+NUM|The image is installed from a **UEFI** USB entry in the **F12** boot menu. A legacy entry produces a device that cannot provision.
+NUM|**Zscaler, TeamViewer and LibreOffice** must all three be present before the device is packed.
+NUM|The Wi-Fi configuration profile **AU-W11-SEC-Kiosk Device Wi-Fi-P-1.0** must show as applied in Intune. Sites have no ethernet ports, so it is the device's only path to the network, and the fault is only discovered at the site.
+H1 |Bench setup, done once per batch
+P |Set up once, then every device in the batch runs the same path.
+TBL|2900,6460
+TH |**Item**||**Quantity and detail**
+TR |**Build USB drives**||One per concurrent build station, plus one spare. Four stations means five drives. Each drive is identical: the APM Windows 11 25H2 image with the APM wallpaper and current updates injected, plus the build scripts at the top level.
+TR |Build stations||Four to six. Each needs power, a monitor, a keyboard and a mouse.
+TR |Network||Available at the bench but **not connected to any device** during installation. See the step 3 note.
+TR |Intune access||A workstation signed in to intune.microsoft.com, left open on the device list all day. Steps 7 and 9 both use it.
+TR |Allocation list||Quantity per site and destination site code, issued by APM.
+TR |Record sheets||One per device, from the end of this document.
+END
+H2 |Writing the build USB drives (15 minutes per drive)
+P |Write the APM Windows 11 25H2 image to a USB drive of 16 GB or larger, as a **GPT** / **UEFI (non CSM)** / **FAT32** drive so that it boots with Secure Boot enabled. Accept the offer to split the install file where the tool warns it exceeds the FAT32 limit. Then copy the build scripts to the top level of the drive, not into a folder. Full keystrokes: CN-PK-01, Prerequisites.
+P |APM supplies the image. Write it with **Rufus**, or an equivalent bootable-USB tool the build facility already carries. Prepare every drive for the batch in one sitting, from the same image file. A drive is then reused for every device it builds.
+H2 |What is on the build USB drive
+TBL|3400,5960
+TH |**File at the top level**||**Purpose**
+TR |sources, boot, efi, bootmgr, setup.exe||The Windows 11 25H2 installation media, written from the APM image. The wallpaper and the updates are already inside it.
+TR |Run-CreateMIRegKey.bat||Run at the out-of-box experience at step 6. Invokes the PowerShell script below.
+TR |Create_MI_RegKey.ps1||Invoked by the batch file. Progresses the device through OOBE into Autopilot provisioning. Not run directly.
+TR |Get-AutopilotHash.bat||Captures the hardware hash on the device. The manual fallback at step 1, used only where a device was not uploaded to Autopilot ahead of time. See CN-PK-01 Stage 4.
+TR |support, AutoRun.inf||Supplied with the media. No technician action.
+TR |test.odp||Test file for the LibreOffice check at step 8.
+END
+P |**Preferred path:** Upload every device in the batch to Autopilot and tag it PARTICIPANT ahead of time, from the supplier's serial number list. Per-device hash capture with Get-AutopilotHash.bat at the out-of-box experience is the manual fallback, used where a device is not already registered.
+H1 |Step 1 - Register the device in Autopilot and tag it PARTICIPANT (5 to 20 minutes)
+P |Nothing is done to the device until it is registered in Windows Autopilot and carries the group tag PARTICIPANT. The tag determines the configuration the device receives, and no configuration, application or lockdown reaches an unregistered device.
+NUM|In Intune, choose **Devices**, then **Enrolment**, then **Devices** under the Windows Autopilot heading.
+NUM|Find the device in the list by serial number. Registering and tagging the whole batch ahead of time is the preferred path, so the device should already be listed. Where it is not, capture the hardware hash on the device with Get-AutopilotHash.bat at the out-of-box experience and import it, per CN-PK-01 Stages 4 and 5. That is the manual fallback, one device at a time.
+NUM|Read the **Group Tag** column. It must read PARTICIPANT in upper case.
+NUM|Where it is empty, lower case or any other value, select the device, choose **Edit** on the right-hand panel, enter PARTICIPANT in upper case, then **Save**.
+NUM|Read the **Userless enrolment status** column, scrolling right if it is not visible. It must read **Allowed**. Where it reads **Blocked**, select the device and choose **Unblock**. Blocked is expected on any device that has previously completed a kiosk build, including returned units.
+P |**Ready to build:** The device is listed in Autopilot, Group Tag reads PARTICIPANT, and Userless enrolment status reads **Allowed**.
+P |**Do not start step 2 until all three are true.** A device built without the tag provisions to a standard Windows desktop and has to be rebuilt from step 2, and a device left at Blocked fails during the account setup phase of provisioning, forfeiting the whole run.
+P |Register and tag the whole batch in one sitting at the start of the day, checking each serial number off the allocation list. That takes the check off the critical path for every device that follows.
+H1 |Step 2 - Boot the Dell thin client from USB (2 minutes)
+NUM|With the device off, connect the build USB drive, the monitor, the keyboard, the mouse and power.
+NUM|Press the power button, then immediately start tapping **F12** about once a second until the boot menu opens.
+NUM|Select the USB device listed under **UEFI Boot**.
+P |**On screen:** Windows Setup, beginning with a language and keyboard screen.
+P |Record the serial number on the record sheet while the device boots. It is on the carton label and on the device.
+H1 |Step 3 - Confirm ethernet is not connected (immediate)
+P |**No network cable is connected to the device at this point.** Check the port physically before continuing. A connected cable changes what the device does at the out-of-box experience and the build cannot be recovered by unplugging it later. The cable goes in at step 6, not before.
+H1 |Step 4 - Install Windows 11 from the image (25 to 40 minutes, unattended)
+P |Work through the language and keyboard screens, choose **Custom: Install Windows only (advanced)**, delete every partition on the internal drive until it reads a single **Unallocated Space** entry, then continue. The device restarts one or more times without input.
+P |**This erases the internal drive,** including the factory operating system. That is intended. **Delete partitions on the internal drive only.** The build USB drive is also listed on this screen: deleting a partition on it destroys the build media, and the drive has to be written again before any further device can be built. Identify the internal drive by its capacity before deleting anything.
+P |**Start the next device at step 2 now.** This is the longest unattended wait in the build and the largest single throughput gain available.
+H1 |Step 5 - Stop at the out-of-box experience (immediate)
+P |Wait for the device to restart into the out-of-box experience, the first screen after installation, which asks for a language or region.
+P |**Stop there. Do not work through OOBE and do not create an account.** A device that has completed OOBE, or that has an account on it, cannot be recovered by restarting. It must be rebuilt from step 2.
+H1 |Step 6 - Run the registry key script (3 minutes)
+NUM|At the language prompt, press **Shift + F10** together to open a command prompt. On some keyboards this needs **Fn** held as well: **Shift + Fn + F10**.
+NUM|**Connect the ethernet cable now**, just before running the script. The device restarts and provisions itself as soon as the script runs, and provisioning needs the network.
+NUM|Type: d:\Run-CreateMIRegKey.bat   then press Enter
+P |The script progresses the device through the out-of-box experience automatically and hands it to Autopilot. There is no completion message and no prompt: the device restarts itself and provisioning begins.
+P |**On screen:** PowerShell text scrolling past, then the device restarts on its own and starts provisioning. No further input.
+P |Where the response is The system cannot find the path specified, the USB drive holds a different letter. Type e: then press Enter, then dir, and repeat with f: and so on until the build files are listed, then run the batch file from that letter.
+H1 |Step 7 - Wait for automatic sign-in, and sync Intune (20 to 60 minutes, unattended)
+P |The device restarts, provisions itself, and signs in automatically to the restricted session. No keyboard or mouse input, and no sign-in prompt: there is no participant identity and no password on this build.
+P |To shorten the wait, find the device in Intune by serial number and choose **Sync**. Repeat every few minutes rather than waiting on the device's own check-in schedule. This is the difference between a 20 minute step and a 60 minute one.
+P |**On screen at the end:** A desktop showing the APM wallpaper and a taskbar, reached with no input.
+P |Work the bench in a loop while this runs: start a new device at step 2, run step 6 on any device sitting at OOBE, and press Sync on every device in flight.
+P |**Where the device sits on the same screen beyond 90 minutes,** or shows an error code, stop. Photograph the screen, record the serial number and the start time, and escalate. Do not restart or wipe it.
+H1 |Step 8 - Confirm the applications are installed (5 minutes)
+P |All three must be present on the device before it is packed.
+TBL|2900,6460
+TH |**Application**||**How to confirm**
+TR |**Zscaler**||The Zscaler icon is in the notification area at the right of the taskbar, and hovering over it does not report a disconnected or error state.
+TR |**TeamViewer**||Present and running. This is the remote support path once the device is at site, so a device without it cannot be supported.
+TR |**LibreOffice**||Writer, Calc and Impress each open. Each is a separate application in the restricted session's allowed list, so one opening does not prove another will. Open test.odp from the USB drive in Impress if a file is wanted for the check.
+END
+P |**Any one of the three absent stops the device.** Do not pack it and do not attempt a fix. Report the serial number and which application is missing.
+P |Where the batch is being accepted formally rather than spot-checked, run the seven acceptance tests in CN-PK-01 Stage 8 instead of this step. They cover the restricted application set, the File Explorer restriction and the restart session purge as well as the three applications above.
+H1 |Step 9 - Verify the Wi-Fi profile in Intune (3 minutes)
+P |**This is the step that most often prevents a device working at site,** and the only one whose failure is invisible on the device itself. **APM sites have no ethernet ports,** so this profile is the device's only path to the network. Without it the kiosk cannot connect at all, and there is no local way for site staff to fix it.
+NUM|In Intune, choose **Devices**, then find the device by serial number or by its name, which begins APM-PK-.
+NUM|Open the device and choose **Device configuration**.
+NUM|Find **AU-W11-SEC-Kiosk Device Wi-Fi-P-1.0** in the profile list.
+NUM|Confirm the profile state reads **Succeeded**.
+P |**Pass:** The profile is listed and reads Succeeded.
+P |**Fail if** the profile is absent from the list, or reads Error, Conflict or Pending. Choose **Sync** and allow 15 minutes. Where syncing does not resolve it, **rebuild the device from step 2**. Report the serial number and the state shown. Do not dispatch the device.
+P |While the device page is open, confirm the device name begins APM-PK-. A name in any other form means the device did not receive the kiosk configuration, which is almost always an Autopilot group tag other than PARTICIPANT. See CN-PK-01 Stage 5.
+H1 |Step 10 - Pack and dispatch (5 minutes)
+NUM|Shut the device down through Windows: **Ctrl + Alt + Delete**, the power icon, then **Shut down**.
+NUM|Disconnect the build monitor, keyboard, mouse and cables. These stay at the bench unless the allocation list says otherwise.
+NUM|Repack the device into its original carton with its power supply and all supplied accessories.
+NUM|Label the carton exterior with the **device name** and the **destination site address**.
+NUM|Place the APM site instruction sheet inside the carton, uppermost, so it is the first thing site staff see.
+NUM|Update the asset register: device name, serial number, destination site, status **Dispatched**, date.
+NUM|Release to the courier and record the consignment number.
+H1 |Running a batch efficiently
+P |The two long steps, the Windows installation at step 4 and the provisioning at step 7, need no attention. Everything else is minutes. So the technician's day is a loop across the bench rather than a device followed end to end.
+H2 |The loop
+P |Walk the bench in this order and repeat. Each pass takes a few minutes.
+TBL|2200,7160
+TH |**Look for**||**Action**
+TR |Empty bay||Start the next device off the batch list, already registered and tagged at step 1: steps 2, 3, 4. Then leave it.
+TR |At OOBE||Run step 6, the registry key script. Then leave it.
+TR |Provisioning||Press **Sync** in Intune. Nothing else.
+TR |Signed in||Steps 8, 9, 10. This frees the bay.
+END
+P |The bench holds one device per bay. Four bays is the point at which one technician is busy without queueing; six is workable where the Intune workstation sits at the bench rather than across the room.
+H2 |Throughput
+TBL|2900,1800,4660
+TH |**Bench**||**Devices per day**||**Constraint**
+TR |1 bay, sequential||4 to 5||The technician waits through both long steps on every device.
+TR |4 bays, looped||12 to 16||Technician attention. Roughly 20 minutes of hands-on time per device.
+TR |6 bays, looped||16 to 20||Bench space and monitors, and the walk to the Intune workstation.
+END
+P |Figures assume a prepared bench, drives already written, and no device failing a check. Add contingency for the first batch at a new facility, where the network requirements in CN-PK-01 are being proven for the first time.
+H2 |What to fix before scaling up
+NUM|**Prove one device end to end first,** at a new facility or after any image change, before starting a batch. A network or image fault found on device one costs an hour; found on device twelve it costs a day.
+NUM|**Register and tag the whole batch before the first device is booted.** The step 1 checks are quick in bulk and slow one at a time, and a missed tag is only discovered at the end of a 90 minute build.
+NUM|**Write every drive from the same image file.** The date in the image filename is its version. Confirm it against the most recent APM notification before a batch, and re-write every drive when the image changes.
+NUM|**Keep the Intune device list open all day.** Steps 7 and 9 both use it, and the Sync at step 7 is the single largest time saving in the build.
+NUM|**Record as you go, not at the end.** The record sheet is the evidence the device was checked. A sheet filled in from memory at dispatch is worth nothing when a device fails at site.
+H1 |Common faults
+TBL|3400,5960
+TH |**Symptom**||**Cause and action**
+TR |Device boots into the factory Windows instead of Setup||The **F12** boot selection did not register. Switch off and repeat step 2, tapping earlier.
+TR |Secure Boot violation, or the USB drive is refused as untrusted||The drive was written as NTFS. Re-write it as FAT32, GPT, UEFI (non CSM). Do not disable Secure Boot.
+TR |**Shift + F10** does nothing at OOBE||Try **Shift + Fn + F10**.
+TR |The system cannot find the path specified, at step 6||The USB drive is not D:. Try e:, then f:, running dir at each until the build files are listed.
+TR |OOBE was worked through, or an account was created||Not recoverable by restarting. Rebuild from step 2. Report the serial number so the Autopilot record can be checked first.
+TR |Device reaches a sign-in prompt asking for a password||Automatic sign-in did not apply. Allow 30 minutes, restart once, then escalate. Do not attempt to sign in.
+TR |Provisioning finishes to a standard Windows desktop with Settings and full application access||The Autopilot group tag was not PARTICIPANT. Correct the tag per CN-PK-01 Stage 5, then rebuild from step 2.
+TR |LibreOffice opens and then closes||Known fault, and it can affect one application without the others. Do not dispatch. Report which of Writer, Calc or Impress failed.
+TR |**AU-W11-SEC-Kiosk Device Wi-Fi-P-1.0** is absent or not Succeeded||Sync the device and allow 15 minutes. Where syncing does not resolve it, rebuild the device from step 2. Report the serial number and the state shown. Do not dispatch: sites have no ethernet ports, so without this profile the device has no way onto the network.
+TR |Provisioning static on one screen beyond 90 minutes||Leave the device as it is. Photograph the screen and escalate. Do not restart or wipe.
+END
+P |Escalate with three things every time: the **serial number**, the **step reached**, and a **photograph of the screen**.
+H1 |Device record sheet
+P |One per device. Keep it with the carton until dispatch, then file.
+TBL|2900,6460
+TR |**Serial number**||
+TR |**Device name**||APM-PK-
+TR |**Destination site**||
+TR |**Image version**||
+TR |**Built by**||
+TR |**Date**||
+END
+TBL|900,1200,7260
+TH |**Done**||**Step**||**Verified**
+TR |||1||Listed in Autopilot, Group Tag reads **PARTICIPANT**, Userless enrolment status reads **Allowed**
+TR |||2||Booted from the UEFI USB entry, serial number recorded
+TR |||3||Ethernet confirmed disconnected before installation
+TR |||4||Windows 11 25H2 installed, all factory partitions deleted
+TR |||5||Stopped at the out-of-box experience, no account created
+TR |||6||Ethernet connected, Run-CreateMIRegKey.bat ran, device restarted itself and began provisioning
+TR |||7||Automatic sign-in reached unattended, no sign-in prompt
+TR |||8||Zscaler present, no error state
+TR |||8||TeamViewer present
+TR |||8||LibreOffice Writer, Calc and Impress all open
+TR |||9||**AU-W11-SEC-Kiosk Device Wi-Fi-P-1.0** reads Succeeded in Intune
+TR |||9||Device name begins APM-PK-
+TR |||10||Packed, labelled, instruction sheet enclosed, asset register updated
+END
+H1 |Open items
+P |Three items, each naming the step it affects. The document is otherwise complete.
+TBL|700,1500,7160
+TH |**#**||**Step**||**Requirement**
+TR |1||7||Expected elapsed time from the automatic restart to the restricted session on the Dell thin client model in use, so a technician knows when a device is genuinely stalled rather than slow.
+TR |2||1||The source of the serial number list used to upload a batch to Autopilot ahead of time, and who performs the upload and tagging.
+TR |3||8||Whether the three application checks are sufficient for batch acceptance, or the seven acceptance tests in CN-PK-01 Stage 8 are run on every device.
+END

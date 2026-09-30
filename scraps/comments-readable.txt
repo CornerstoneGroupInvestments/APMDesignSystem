@@ -1,0 +1,85 @@
+[16] Nick Dorbie (2026-08-11T10:17:00Z): @Shaun Struik Can you please confirm if this has been added to the assigned access XML?
+---
+[17] Nick Dorbie (2026-08-11T10:31:00Z): Noting this has been covered in 4.3.1.1
+---
+[19] Nick Dorbie (2026-08-11T10:19:00Z): @Shaun Struik note to ensure that Kiosk Device group is set to be excluded from Office package installation.
+---
+[24] Nick Dorbie (2026-08-11T10:24:00Z): @Chris Katigbak @David Badger noting that this may change to EAP - TLS authentication as per request by Chris to follow Network best practice
+---
+[33] Nick Dorbie (2026-08-05T11:21:00Z): Please confirm if devices register as having same login account that this will not affect Zscaler licensing.
+---
+[34] David Badger (2026-08-06T11:32:00Z): @Phil De'ath
+---
+[35] Phil De'ath (2026-08-06T10:07:00Z): I'm still trying to work the overall solution through with ZSscaler. There are a few considerations that may affect licensing (it shouldn't increase it past what has already been purchased, but may reduce it).But in the context of this question, I was expecting the accounts to be named differently (using the machine name).
+---
+[36] Shaun Struik (2026-08-06T12:51:00Z): @Phil De'ath I have tried to keep the signin as simple ass possible, Std Auto Login Kiosk and no password. We can’t have an O365 user account sign in as that would need user licencing where as I’ve designed as An Intune device licence
+---
+[37] Shaun Struik (2026-08-06T12:51:00Z): Zscaler can be used on the Win 11 Enterprise OS, so it’s a matter of what Zscaler licence is required for device based licences
+---
+[38] Phil De'ath (2026-08-06T10:59:00Z): It doesn't need an o365 account, but the username (currently) needs to be identifiable. as you are creating the local account, can you not just name it based on the machine name?The device based licensing it what I'm looking at with zscaler. at the moment, even the existing JS machines are user based license, but device based auth. Rule are also only applied to groups at the moment.
+---
+[39] Shaun Struik (2026-08-06T18:14:00Z): @Phil De'ath I have adjusted the design to have the naming convention Kiosk-<SERIAL>
+---
+[40] Phil De'ath (2026-08-06T16:17:00Z): That should help, we are still working with zscaler to come up with the solution, but the unique naming will resolve the max number of devices per user problem.
+---
+[44] Nick Dorbie (2026-08-11T10:32:00Z): @Shaun Struik is there a way this can be turned into a shortcut instead of relying on a participant to follow a keyboard sequence? Otherwise an accessibility how-to-guide will need to be created which can be displayed beside the machine.
+---
+[46] Nick Dorbie (2026-08-05T11:12:00Z): Can either the Desktop or Downloads folder also be scoped into File Explorer for easy of access for partipants who may download documents
+---
+[47] David Badger (2026-08-06T11:31:00Z): Confirming - save to local hard drive? Script to delete this at the end of each session will need to be incorporated
+---
+[48] Nick Dorbie (2026-08-06T11:37:00Z): Yes that is correct, we need to ensure that the solution is easy for users to navigate as most do not have a firm grasp of how to use technology
+---
+[49] Shaun Struik (2026-08-06T18:14:00Z): @Nick Dorbie both are added and XML adjusted accordingly
+---
+[66] Nick Dorbie (2026-08-11T10:42:00Z): Can we please add to the documentation that the BIOS password be changed from the ThinClient default to the APM specific BIOS password?
+---
+[67] Nick Dorbie (2026-08-11T10:41:00Z): @Shaun Struik @David Badger is still still a requirement? I believe that there should no longer need to be a requirement that a device needs to be locked to a specific location and as long as they are assigned the appropriate Group Tag in Intune that they will receive all required policies.
+---
+[68] Shaun Struik (2026-08-11T11:51:00Z): @Nick Dorbie this was more a solution to assist with asset management. Knowing that the devices are in a group named by the LOC# will always let you know the device type / use and its location.Do you not require this?
+---
+[83] Chris Katigbak (2026-08-06T08:59:00Z): Do we have any PSK lifecycle management at the moment?Is the use of PSK vs EAP-TLS driven by isolation requirements? Just asking as I wasn’t around before.
+---
+[84] David Badger (2026-08-06T11:35:00Z): @Chris Katigbak we did not have a network design prior to you coming on board.  We will follow your lead on design recommendations - please adjust as necessary.
+---
+[85] Chris Katigbak (2026-08-06T14:20:00Z): Hi @Nick @Phil , are you able to share your thoughts on this? Can we potentiall deploy device certs for EAP-TLS WIFI instead of PSK? Thanks!
+---
+[89] Ugbaad Adani (2026-08-07T14:49:00Z): are we still using palos?
+---
+[90] Shaun Struik (2026-08-11T11:53:00Z): @Ugbaad Adani As discussed, I don’t feel we need to as no password rotation and full Windows 11 image allows Zscaler agent. P{Lease confirm you are happy with the deletion of Palo from this design
+---
+[92] Chris Katigbak (2026-08-12T10:29:00Z): Generated an updated diagram. Please check
+---
+[93] Chris Katigbak (2026-08-07T09:09:00Z): The diagram needs to be updated (remove Palo Alto and kiosk to use zscaler client) if we are going to use the local breakout for all traffic. Is there an editable file?
+---
+[95] Chris Katigbak (2026-08-12T09:57:00Z): This needs to be updated with specifics after the testing
+---
+[96] Nick Dorbie (2026-08-11T10:49:00Z): Is this required? Speed limiting is not set on current machines in the field.
+---
+[97] Shaun Struik (2026-08-11T11:54:00Z): @Nick Dorbie true, can be deleted, I don’t think max bandwidth control is our issue
+---
+[100] Chris Katigbak (2026-08-06T09:15:00Z): Using Zscaler client with local breakout vs the Palos in azure would need deeper analysis due to potential performance considerations. All azure bound traffic goes into the VMX then to the FW in my understanding.Local breakout might be a better choice depending on the number of sites to avoid potential bottleneck in the azure.
+---
+[101] David Badger (2026-08-06T11:37:00Z): @Chris Katigbak - please redesign as you see best fit for the solution that meets criteria.
+---
+[102] Chris Katigbak (2026-08-06T14:24:00Z): Hi @Phil, from Zscaler / security perspective, is there any concern taking this local breakout path?@David, how many sites are we deploying this?Any thoughts @Nick?Thanks all.
+---
+[103] Phil De'ath (2026-08-06T12:56:00Z): The Zscaler client on the kiosk machines will tunnel the web traffic directly to the zscaler cloud, this is the model we use for all roaming users at the moment.As the accounts will be local and there is a conditional access policy (in this design from memory) to prevent any APM Entra users from logging on and connecting back to the Azure/M365 environment, this should be ok.
+---
+[104] David Badger (2026-08-06T15:48:00Z): @Chris Katigbak 273 sites
+---
+[105] Chris Katigbak (2026-08-07T09:23:00Z): Assuming max 20Mbps full load this would be ~ 5.4G and 2.7G azure bound traffic at 100% and 50% utilisation.
+---
+[113] Chris Katigbak (2026-08-12T10:23:00Z): I’ve copilot generated a new diagram below. Please review
+---
+[114] Chris Katigbak (2026-08-07T09:24:00Z): This needs updating as well.
+---
+[117] Nick Dorbie (2026-08-11T10:51:00Z): Can we ensure that similar enforcement is completed on Meraki Firewall? Recent RFFR audit has found this is not being completed at Meraki level.
+---
+[129] Nick Dorbie (2026-08-11T10:53:00Z): These devices are also used by participants under the Inclusive Employment Australia Service Deed.
+---
+[140] Nick Dorbie (2026-08-11T10:54:00Z): Before closure of project, can a Participant Device SOE Hardening Standard be completed for us to be able to produce as part of auditing requirements?
+---
+[151] Nick Dorbie (2026-08-11T10:55:00Z): Noting again IEA contract.
+---
+[158] Nick Dorbie (2026-08-11T10:56:00Z): Can this be setup using Windows Autopatch?

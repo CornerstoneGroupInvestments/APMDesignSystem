@@ -1,0 +1,1433 @@
+H1 |1. Introduction
+H2 |1.1 Purpose
+P |This document provides the detailed technical design for the Job Seeker Kiosk solution as part of the APM digital workplace transformation program. It defines the physical device configuration, identity and access controls, security architecture, and service management model required to deliver a standardised, secure, and ephemeral computing environment for job seekers at APM sites nationally.
+P |This document builds on the Job Seeker High-Level Design (HLD) and the Job Seeker Detailed Design (DD) documents versions V1.0 through V1.3 and provides the implementation-ready specification for the build, test, and deployment phases. It maps directly to the business requirements captured in the HLD, DD and traces each requirement to its technical resolution.
+P |The aim of this document is to:
+P |**1.** Define the technical architecture across all architecture domains (business, application, technology, information, and cyber)
+P |**2.** Trace business requirements to their detailed technical implementation
+P |**3.** Specify Intune configuration profiles, Entra ID groups, conditional access policies, and credential-pipeline settings at build-ready depth
+P |**4.** Document design decisions, assumptions, and open items requiring stakeholder sign-off
+P |**5.** Outline the implementation sequence, service management model, and operational handover plan
+H2 |1.2 Audience
+P |The primary audience for this document is APM’s Digital Delivery, Digital Operations, Cyber Security, and Information Architecture teams responsible for build, integration, support, and maintenance. Business owners and operations staff should be involved in reviewing the business requirements traceability and design decisions.
+P |This includes:
+P |• Business Sponsor,
+P |• Project Management office,
+P |• Digital Transformation & Architecture,
+P |• Digital Operations
+P |• Digital Delivery
+P |• Cyber Security
+H1 |2. Overview
+P |APM delivers Workforce Australia employment services under contract with the Department of Employment and Workplace Relations (DEWR). Job seekers attending APM sites nationally require access to computing facilities for job search, resume preparation, government service interaction, and training. The current device fleet has several problems, including very old hardware, slow internet connections and a lack of manageability.
+P |This document defines the detailed design for the Job Seeker Kiosk solution. It replaces the existing shared device model with a standardised architecture: Dell kiosk hardware running Windows 11 Enterprise as a locked-down, multi-app Assigned Access kiosk. Job seekers browse the web directly on the device (Microsoft Edge to the approved job-search, government, support and training sites, and Office for the web). Intune handles device management and policy enforcement; Entra ID in the dedicated apmkiosk.net.au tenant handles identity and access control.
+P |Every session is ephemeral. Job seekers work in a locked-down Edge-based kiosk. When a session ends, local session state (browser data, downloads and the user profile) is cleared on the device so the next job seeker gets a clean environment. The design meets Right Fit for Risk (RFFR) accreditation requirements for protecting job-seeker PII.
+P |This document covers only the physical kiosk device. The CTA Laptop image and Outreach Laptop will be addressed in separate design documents.
+H2 |2.1 Scope
+P |• Physical kiosk device provisioning and configuration (Dell kiosk devices, Windows 11 Enterprise)
+P |• Windows Autopilot self-deploying mode
+P |• Multi-app Assigned Access kiosk configuration via Intune (Edge, File Explorer (USB only), Zscaler, TeamViewer)
+P |• Intune policy configuration
+P |• Microsoft Edge browser hardening (bookmarks, homepage, content filtering, data clearing)
+P |• Microsoft 365 Office access via the browser only (Word, Excel and PowerPoint for the web); no desktop Office and no device-based licensing
+P |• Session hygiene on the device (idle auto sign-out, browser data clearing, user-profile cleanup)
+P |• Identity architecture (Entra ID device groups, kiosk user accounts, conditional access)
+P |• Document handoff by webmail to the job seeker's case worker(no printing capability on kiosk devices)
+P |• USB storage access for resume transfer
+P |• Security and RFFR compliance alignment
+P |• Managed bookmark deployment across job search, government, support, training, and transport categories
+H2 |2.2 Out of Scope
+P |• CTA Laptop image design (separate document)
+P |• Outreach laptop design (separate document)
+P |• Network infrastructure and site cabling
+P |• Printing from kiosk devices, including printer hardware procurement and physical placement (job seekers email required documents to their case worker for printing)
+P |• End-user training material and laminated instruction sheets (operational deliverable)
+P |• RFFR formal accreditation audit (this document supports but does not constitute the ISMS)
+H2 |2.3 Guiding Principles
+TBL|1416,7944
+TH |**ID**||**User Story**
+TR |Zero Trust||No implicit trust. Every session is authenticated via device-based Entra ID credentials. Conditional Access restricts sign-in to approved kiosk identities and approved access conditions.
+TR |Ephemeral by Default||No user data persists beyond the session. The device profile and browser data are cleared on sign-out/restart. Edge profiles are temporary.
+TR |Least Privilege||Job seekers can access Word, Excel, PowerPoint and Edge only. No settings, command prompt, task manager or system access. File Explorer is available for removable drives only.
+TR |Simplicity||The end-user experience is frictionless. The device powers on to the Windows sign-in screen; the job seeker reads the device-specific credentials shown on the lock screen and signs in, then browses the web and Office for the web directly on the device.
+TR |Compliance||The architecture meets RFFR requirements for the handling of job seeker PII, aligning with ISO 27001 and the ASD ISM.
+END
+H2 |2.4 Assumptions
+TBL|682,3754,4924
+TH |**Ref**||**Assumption**||**Impact If Incorrect**
+TR |A-01||Dell kiosk hardware is procured with TPM 2.0 and supports Autopilot self-deploying enrolment||Hardware must be re-specified; deployment model changes
+TR |A-02||Hardware hashes are registered in Autopilot at the point of procurement||Manual hash registration required per device on-site
+TR |A-03||Zscaler proxy/web filtering is applied at the network layer (existing APM standard)||Device-level web filtering must be designed into the image
+TR |A-04||APM has Microsoft 365 F3 licences available (group-based licensing) for the 540 kiosk accounts||Licensing must be procured before deployment
+TR |A-05||The apmkiosk.net.au tenant has an Azure subscription suitable for Automation Account, Key Vault and Microsoft Cloud PKI (Intune add-on) provisioning and licensed for the credential pipeline||The per-device credential pipeline (create/rotate password, render lock screen) cannot be deployed
+TR |A-06||Job seekers have an active email address for document retrieval (if not, the case manager assists)||Alternative document handoff method required (USB only)
+TR |A-07||RFFR compliance is managed under APM’s existing ISMS with APM Cyber Security||These are listed in a separate accompanying spreadsheet.<br>Kiosk RFFR SoA based on ISM September 2025 v7.7m.xlsx
+END
+H1 |3. Business Architecture
+H2 |3.1 Business Context
+P |The kiosk solution is a response to three target business outcomes: consistent data privacy across all sites, standardised device management at scale, and compliance with RFFR accreditation requirements under the Workforce Australia Service Deed.
+H2 |3.2 Business Requirements
+P |The following requirements are drawn from the Unified SOE Requirements V2 and the Job Seeker HLD. Each requirement is expressed as a user story with acceptance criteria and priority (Must/Should/Could).
+H3 |3.2.1 Kiosk Device Requirements
+TBL|551,1817,2413,3521,1058
+TH |**ID**||**Category**||**User Story**||**Acceptance Criteria**||**Priority**
+TR |01||User Access||As a job seeker, I want to log in as a guest so I can quickly access the device without needing an account.||The device boots to the Windows sign-in screen. The job seeker reads the device-specific credentials shown on the lock screen and signs in to Windows, then uses Edge and Office for the Web directly on the device.||Must
+TR |02||Accessibility||As a job seeker, I want Windows accessibility features so I can use the device independently||All shortcuts function; features discoverable via Settings/help. Narrator, high contrast, font scaling, speech-to-text, onscreen keyboard<br>Desktop shortcuts will be available for accessibility tools where technically feasible||Must
+TR |03||||As a job seeker with visual or language needs, I want magnifier and browser translation tools so I can comfortably use the device.||Magnifier shortcut works. Edge translation/Read Aloud available.<br>Desktop shortcuts will be available for accessibility tools where technically feasible||Must
+TR |04||Session Management||As a job seeker, I want my session wiped whenever the session ends so no one can access my personal data.||The system wipes the user profile and all locally stored data when any of the following occur:<br>User manually logs out<br>Device auto-logs out after inactivity||Must
+TR |05||||As a job seeker, I want the system to automatically log me out after inactivity, so my session is not left open.||Inactivity timeout (10 min) triggers auto-logout; login screen shown afterwards.<br>Note: If proposed 10mins is longer apply existing (SOE) timeout.||Must
+TR |06||Device Maintenance||As Job seeker, I want forced restarts for system updates to occur only outside business hours, so my work is not interrupted.||System applies updates during an overnight maintenance window. Forced restarts do not occur while a job seeker is actively using the device. If the overnight restart is missed, the restart occurs on next boot before login. As kiosk sessions are non-persistent, users must save required documents to USB or personal email before ending their session.||Must
+TR |07||Applications||As a job seeker, I want a modern browser so I can perform job searches and access online services.||Edge installed<br>Default homepage set||Must
+TR |08||||As a job seeker, I want Microsoft Office so I can create resumes and documents.||Word, Excel and PowerPoint are available via web access using the approved Microsoft 365 licensing model for kiosk devices.||Must
+TR |09||||As a job seeker, I want a PDF reader so I can view job ads, forms, and resumes.||PDF viewer enabled via Edge or Adobe Reader app (Optional)||Must
+TR |10||||As Job seeker, I do NOT want Teams/Zoom installed because video interviews will not be conducted on these devices.||Teams/Zoom excluded.<br>No webcam or drivers required.||Could
+TR |11||Web Filtering||As a job seeker, I want inappropriate sites blocked so I don’t accidentally access harmful content.||Block adult, gambling, explicit, violence, and illegal-content categories.<br>As per APM standard||Must
+TR |12||||As Job seeker, I want required job search websites whitelisted, so they don’t get incorrectly blocked.||Refer to Edge Managed Favourites (section 4.3.5) for the whitelisted sites||Must
+TR |13||||As a job seeker, I want Facebook allowed so I can access community job boards.||Facebook allowed<br>TikTok, Instagram, X blocked by default.||Must
+TR |14||||As a job seeker, I want access to public AI tools to help with resumes/interview prep.||Public AI tools allowed unless high risk. Blocked only if categorised unsafe.||Must
+TR |15||USB Storage||As a job seeker, I want to use a USB drive so I can load or save my resume.||USB mass storage enabled; device mounts successfully; no additional scanning required beyond existing security layers.||Must
+TR |16||Printing||As a job seeker, I want access to a printer so I can print my resume or documents.||No direct printing from kiosk devices is provided. Documents must be sent by email to the job seeker’s case worker via webmail for printing. This operating model was approved by the APM Business Owner.||Must
+TR |17||||As IT, I want print jobs limited to a small number of pages, so costs and misuse are controlled.||No direct printing from kiosk devices is required. Documents must be emailed to the user’s case worker via webmail for printing. This operating model was approved by the APM Business Owner.<br>Note: This optional requirement is retained only to assess whether a technical solution exists to implement print job limits.||Could
+TR |18||||As a job seeker, I want to print in black and white and collect the printout from staff, so the process remains simple and low-cost.||No direct printing from kiosk devices is provided. Users must email required documents to their case worker via webmail for printing. This operating model was approved by the APM Business Owner.<br>Printing is completed by the case worker as an operational process.||Must
+TR |19||Security & Compliance||As IT, I want existing web logging levels maintained so incidents can be reviewed without increasing costs.||Zscaler/Proxy logs retained per current policy.<br>No new log depth introduced.||Must
+TR |20||||As IT, I want devices isolated from the corporate network, so they don’t pose security risks.||Devices use the re-purposed Job Seeker VLAN with connectivity restricted to approved Azure, Microsoft, and APM-managed service dependencies only. No general access to corporate systems, internal business applications, or personal device connectivity is permitted.||Must
+END
+H3 |3.2.2 Kiosk Bookmarks
+TBL|1592,6483,1285
+TH |**Link Name**||**URL**||**Comments**
+TR |@3@**Workforce Australia Online for Individuals**
+TR |Video - Your Workforce Australia Homepage||https://www.youtube.com/watch?v=AFnNpzrBGbg||
+TR |Video - Link Workforce Australia account in myGov||https://youtu.be/lVLdwUecxhc?si=cs11EOO2N-rgPk75||
+TR |Video - How to create your profile on Workforce Australia Online for Individuals||https://www.youtube.com/watch?v=Ac04__5k2xk&pp=0gcJCcUKAYcqIYzv||
+TR |Compliance Framework||https://www.workforceaustralia.gov.au/individuals/obligations/learn/dont-meet-your-obligations/compliance-demerits||
+TR |Contact Us||https://www.workforceaustralia.gov.au/individuals/contact-us/||
+TR |How to submit multiple Job Search efforts||https://youtu.be/xSyU4Y8B1I4?si=gemhL8Odn4FTQt0Y||
+TR |Your Workforce Australia Job Plan explained||https://www.youtube.com/watch?v=1YTeDgjivcw||
+TR |Video - Your Points Target Explained (for Workforce Australia Services only)||https://www.youtube.com/watch?v=kzK5JBN8eUw||
+TR |Video - Earning and reporting points (for Workforce Australia Services only)||https://www.youtube.com/watch?v=PErET8hpo-I||
+TR |Video - How to gain points for study and training (only for Workforce Australia Services)||https://www.youtube.com/watch?v=rXjUN_xW7t4&pp=0gcJCcUKAYcqIYzv||
+TR |Video - How to gain points for paid work (only for Workforce Australia Services)||https://www.youtube.com/watch?v=OwsyN6Tsqsw||
+TR |@3@**Centrelink/Services Australia Website**
+TR |Centrelink Medical Certificate form (SU415)||https://www.servicesaustralia.gov.au/su415||
+TR |Verification of medical conditions form (SU684)||https://www.servicesaustralia.gov.au/su684||
+TR |Centrelink online account help - Report employment income||https://www.servicesaustralia.gov.au/centrelink-online-account-help-report-employment-income#:~:text=a%20mobile%20device.-,Step%201:%20get%20started,information%2C%20go%20to%20Step%203.||
+TR |@3@**Job Search and Job Application Resources**
+TR |Resume Templates (various themes and designs)||https://create.microsoft.com/en-us/templates/resumes||
+TR |Cover Letter Templates (various themes and designs)||https://create.microsoft.com/en-us/templates/cover-letters||
+TR |Improve Your Job Search||https://www.workforceaustralia.gov.au/individuals/coaching/job-search||
+TR |Seek.com (for Job Search)||https://www.seek.com.au/||
+TR |Jora (for Job Search)||https://au.jora.com/||
+TR |Indeed (for Job Search)||https://au.indeed.com/||
+TR |Gumtree (for Job Search)||https://www.gumtree.com.au/||
+TR |Ethical Jobs (for Job Search)||https://www.ethicaljobs.com.au/||
+TR |APS Jobs (for Job Search)||https://www.apsjobs.gov.au/s/||
+TR |Facebook (for Job Search)||https://www.facebook.com/||
+TR |Workforce Australia Online for Individuals - Job Search||https://www.workforceaustralia.gov.au/individuals/jobs/search||
+TR |National Police Check Australia||https://cvcheck.com/national-police-check/||
+TR |@3@**Essential Support Services**
+TR |Ask Izzy||https://askizzy.org.au/||
+TR |Beyond Blue||https://www.beyondblue.org.au/||
+TR |Headspace||https://headspace.org.au/||
+TR |Drug Foundation Help and Support||https://adf.org.au/resources/druginfo/||
+TR |Financial Counselling||Financial counselling - Moneysmart.gov.au||
+TR |@3@**Other Services**
+TR |Fair Work - Home Page||https://www.fairwork.gov.au/||
+TR |Fair Work - Pay and Conditions Tool||https://calculate.fairwork.gov.au/||
+TR |Volunteering Australia||https://govolunteer.com.au/||
+TR |Transport Canberra||https://www.transport.act.gov.au/||ACT
+TR |Transport for NSW||https://www.transport.nsw.gov.au/||NSW
+TR |Department of Transport NT||https://nt.gov.au/driving||NT
+TR |Department of Transport and Main Roads - QLD||https://www.tmr.qld.gov.au/||QLD
+TR |Department of Infrastructure and Transport - SA||https://www.dit.sa.gov.au/||SA
+TR |Department of Transport and Planning - VIC||https://www.vic.gov.au/department-transport-and-planning||VIC
+TR |Department of Transport WA||https://www.transport.wa.gov.au/||WA
+TR |Transport Services - TAS||https://www.transport.tas.gov.au/||TAS
+TR |@3@**Training**
+TR |Duke||https://duke.co/||
+TR |MCI||https://www.mciinstitute.edu.au/||
+TR |Alffie||https://www.alffie.com/||
+TR |TAFE QLD||https://tafeqld.edu.au/||QLD
+TR |TAFE ACT||https://www.tafecourses.com.au/courses/act/||ACT
+TR |TAFE NSW||https://www.tafensw.edu.au/||NSW
+TR |TAFE VIC||https://www.vic.gov.au/tafe||VIC
+TR |TAFE WA||https://www.tafe.wa.edu.au/||WA
+TR |TAFE NT||https://www.tafecourses.com.au/courses/northern-territory/||NT
+TR |TAFE SA||https://www.tafesa.edu.au/||SA
+TR |TAFE TAS||https://www.tastafe.tas.edu.au/||TAS
+END
+H2 |3.3 Decision Register
+P |The following design decisions have been raised during the requirements and design process. Items marked Pending require formal sign-off before build. The design documents the most likely resolution and can accommodate either outcome without architectural change.
+TBL|575,2103,1483,1717,1414,2068
+TH |**ID**||**Decision**||**Status**||**Proposed Resolution**||**Stakeholder Comments**||**Design Treatment**
+TR |DR-001||Include Excel on kiosk devices?||Pending||Include Excel. Low additional cost; allows job seekers to practise Excel skills.||APM Digital lead: “Could probably live without it, but is it a big deal or additional cost?”||Excel will be provisioned for web use using the approved Microsoft 365 licensing model for kiosk devices
+TR |DR-002||Printing approach for kiosks||Agreed||No direct printing from kiosk devices is provided. Users email required documents to their case worker for printing via webmail. This operating model was approved by the APM Business Owner.||APM Digital lead: “Not ideal. Need to drill into this further. Thought RFFR requires printers isolated from non-staff access.”||Email-to-case-worker printing is the agreed model. No direct kiosk-to-printer workflow is required. Approved by the APM Business Owner.
+TR |DR-003||Bookmark consolidation||Agreed||Combine bookmarks across kiosk and CTA into single list with clear folders. CTA gets separate Eskilled folder.||APM Digital lead: “As long as folders are clearly visible.” Claire: “Happy to combine. CTA requires separate Eskilled folder.”||Implemented. Unified bookmark set with categorised folders.
+TR |DR-004||Password rotation frequency||Agreed||12-month rotation for kiosk device credentials.||Per requirements document.||Individual password per account. The password can be rotated at any frequency if required.
+TR |DR-005||Data wipe notice on screensaver||Under consideration||Add data wipe notice to screensaver in addition to wallpaper.||APM Digital lead: “We could also look at putting this on a screensaver.”||Wallpaper implemented. Screensaver noted as build-phase enhancement.
+TR |DR-006||Wi-Fi-VLAN||Agreed||Re-use VLAN for kiosk devices.<br>- Re-use VLAN<br>- Existing single subnet for all sites<br>- Wi-Fi will no longer be public; the APM-KIOSK SSID will be hidden and access will be controlled through a pre-shared key deployed via Intune policy||Previous timing constraints related to direct kiosk printing no longer apply under the agreed email-to-case-worker printing model.||The APM-KIOSK network is reserved for kiosk devices only and is no longer available for personal use. Users requiring internet access must do so via a kiosk device.
+TR |DR-007||PDF Viewer||Agreed||PDFs will be viewed via Edge||No other applications are being installed||
+TR |DR-008||SSID Naming Convention||Approved - APM Infrastructure lead||Rename current Job Seeker SSID to APM-KIOSK<br>SSID will be hidden and accessed via a pre-shared key deployed to kiosk devices through Intune policy||Hidden SSID and pre-shared Key||The APM-KIOSK network is reserved for kiosk devices only and is no longer available for personal use. Users requiring internet access must do so via a kiosk device.
+TR |DR-009||Available IP Addresses||Agreed||We will need for the project, in total 135 available IP addresses on the Subnet||253 will be available, 256 in total||Up to 5 devices per site, 540 devices in total
+TR |DR-010||Domain for kiosk identities||Approved - APM Digital lead, APM Cyber lead, APM Infrastructure lead||Use a dedicated cloud-only domain apmkiosk.net.au for kiosk service accounts. Added to the tenant as a managed domain, not federated and not directory-synced.||Domain change approved by APM Digital lead, APM Cyber lead and APM Infrastructure lead. apm.net.au is federated to ADFS, which blocks cloud account creation and cloud password rotation by the automation.||All kiosk UPNs move to apmkiosk.net.au. Domain hardened as non-mailing (SPF -all, DMARC p=reject, null MX, mail flow block). See Cloud-Only Identity Domain and Domain Management.
+TR |==DR-011==||==Network posture for the credential pipeline==||==Approved==||==A dedicated IPSec tunnel had been built to the private app carrying credential-pipeline traffic (Key Vault and Credential Proxy access). That tunnel is removed. The credential pipeline is instead reached over public endpoints: the Key Vault is published with public network access governed solely by Azure RBAC, and the Credential Proxy Function App is internet-facing with SCEP client-certificate mTLS. This affects the credential plane only. The Zscaler ZIA tunnel carrying kiosk web traffic (5.3.3) is unrelated and unchanged; the Zscaler agent remains on every kiosk device for web filtering.==||==Raised by APM Cyber Security. The position accepted is that the secrets in the vault do not warrant a private network path: each is a single device's passphrase, it is already published in plain sight on that device's lock screen, it is rotated automatically, and Conditional Access binds it to one physical kiosk so it cannot be used anywhere else. A leaked secret grants a session on one kiosk in a tenant that holds no corporate information and has no route to APM systems. Exposing the endpoint therefore exposes nothing of value, and the private-connectivity build cost and ongoing complexity are not justified.==||==Documented in 5.1.1.1.7, including the options considered and the residual risk accepted. Any later change to this posture is a design change requiring APM Cyber Security approval under RFFR.==
+END
+H1 |4. Application Architecture
+H2 |4.1 Solution Overview
+P |The kiosk solution is a single tier: a physical kiosk device running Windows 11 Enterprise as a locked-down multi-app Assigned Access kiosk. The device is Entra-joined and Intune-managed. All user-facing applications (Edge and Office for the web) run locally on the device.
+P |No job seeker data is retained after a session ends. Local session state is cleared on the device (browser data, downloads, user profile).
+H2 |4.2 Solution Component Inventory
+TBL|2399,1541,1541,1541,2338
+TH |**Component**||**Product / Service**||**Version**||**Licensing**||**Purpose**
+TR |Physical device OS||Windows 11 Enterprise||Latest||Installed on Imaging||Kiosk device operating system
+TR |Office suite online||Microsoft 365 Online Apps||Current Channel||Microsoft 365 F3 (web apps; no device-based licensing)||Word, Excel and PowerPoint for document creation and editing via web access
+TR |Browser||Microsoft Edge||Stable channel||Included with Windows||Job search, government services, webmail access
+TR |Endpoint protection||• Defender for Endpoint P2<br>• Defender for Office 365 P2<br>Defender for Identity||Latest||APM Licenced||Real-time protection; feeds compliance policy
+TR |Endpoint protection (Kiosk Device)||• Defender for Endpoint P2<br>• Network policy||Latest||APM Licenced||Real-time protection; feeds compliance policy.<br>Network connectivity will be restricted to approved Azure, Microsoft, and APM-managed service dependencies required to deliver the kiosk solution
+TR |Device management||Microsoft Intune||Current||APM M365 F3||Configuration profiles, app deployment, compliance
+TR |Identity provider||Microsoft Entra ID||Current||APM M365 F3||Device join, user auth, conditional access, groups
+TR |Web filtering||Zscaler with IPSEC Tunnel||Existing APM standard||APM licensed||Category-based web filtering and logging
+END
+H2 |4.3 Intune Configuration Profiles
+P |The following Intune configuration profiles are applied to the kiosk solution. All profiles target the physical kiosk device group SG-APM-Kiosk-Devices.
+H3 |4.3.1 Assigned Access (Multi-App Kiosk)
+P |**• Setting Name**: APM-Kiosk-AssignedAccess
+P |• **Setting Type**: Custom OMA-URI
+P |**• Scope**: SG-APM-Kiosk-Devices
+P |• **OMA-URI:** ./Vendor/MSFT/AssignedAccess/Configuration
+P |• **Data type:** Custom XML (see Appendix A - kiosk-multiapp-launcher.xml)
+P |This is the primary control enforcing the locked-down kiosk experience on the device. Multi-app Assigned Access presents Edge, File Explorer (removable drives only), the Zscaler tray and TeamViewer to every non-admin user via GlobalProfile. Local administrators are structurally exempt and retain a full desktop for break-glass. Office (Word, Excel, PowerPoint) is reached for the web through Edge.
+TBL|2348,7012
+TH |**Allow/Block**||**Applications**
+TR |Allowed||Microsoft Edge, Zscaler tray, TeamViewer, Explorer (USBs only)
+TR |Blocked||Everything else
+END
+H3 |4.3.2 Idle Sign-Out
+B |**Setting Name**: APM-Kiosk-IdleSignOut
+B |**Setting Type**: Intune Proactive Remediation / platform script (registers a per-user scheduled task; the idle monitor runs as the interactive user, not SYSTEM)
+B |**Scope**: SG-APM-Kiosk-Devices
+B |**Setting**: after 10 minutes with no keyboard or mouse input, sign the interactive user out (shutdown /l)
+P |Multi-app Assigned Access has no native inactivity sign-out, and existing tools are wrong for this use case: the Windows “Machine inactivity limit” and the screen saver only lock the session. The kiosk therefore must sign the user out on idle, which triggers the User Profile Cleanup wipe (below) and the next-logon OneDrive purge, so every session starts clean.
+P |Mechanism: An idle-monitor script reads keyboard/mouse inactivity via the Win32 GetLastInputInfo API and runs as the interactive user through a scheduled task (a logon trigger plus a 60-second repetition). When idle time reaches the 10-minute threshold it calls a sign-out; a 60-second warning is shown first so an active job seeker can dismiss it. This is the control behind user story 05 (auto sign-out after inactivity).
+H3 |4.3.3 Logon Lockdown
+P |• **Setting Name:** APM-Kiosk-LogonLockdown
+P |• **Setting** Type: Intune Proactive Remediation (runs as system)
+P |• **Scope**: SG-APM-Kiosk-Devices
+P |• **Setting**: Restrict the "Allow log on locally" user right to BUILTIN\Administrators and the device's kiosk user (kiosk-<serial>@apmkiosk.net.au)
+P |==The only member of the local Administrators group on a kiosk device is that device's own dedicated support account (4.3.10). The built-in Administrator account is disabled and renamed by the inherited Windows 11 OS baseline, and no privileged-tier (xy or zz) identity is permitted to sign in locally on a kiosk, consistent with the "Deny Local Log On" position in the APM Windows SOE Hardening Standard. A support operator therefore reaches a full desktop only through a non-privileged, device-scoped account, and still cannot install software because App Control is enforced at the device level (4.3.9).==
+P |Assigned Access locks the session down but cannot express "deny a session to every other account" - it has no logoff default. Logon Lockdown supplies that: an Intune remediation restricts interactive logon to the assigned kiosk user and local administrators, so any other account is refused at the credential screen. This is prevention by design, and replaces the earlier Shell Launcher logoff-default, which relied on fragile SID matching to rescue the administrator after the fact. The remediation is fail-safe - it never removes Administrators and makes no change if the kiosk user's SID cannot be resolved.
+H3 |4.3.4 Edge Browser Policies
+P |• Setting Name: APM-Kiosk-EdgeHardening
+P |• **Setting Type**: Settings Catalog
+P |• Scope: SG-APM-Kiosk-Devices
+TBL|2621,3113,3626
+TH |**Policy Key**||**Value**||**Purpose**
+TR |RestoreOnStartup||4 (Open a list of URLs)||Launch to bookmarks/start page
+TR |ClearBrowsingDataOnExit||Enabled||Deletes all browsing data when Edge closes
+TR |ForceEphemeralProfiles||Enabled||Edge profile is temporary and discarded on close
+TR |PasswordManagerEnabled||Disabled||No password saving
+TR |AutofillAddressEnabled||Disabled||No address autofill
+TR |AutofillCreditCardEnabled||Disabled||No credit card autofill
+TR |SavingBrowserHistoryDisabled||Enabled||No history retention
+TR |SearchSuggestEnabled||Disabled||No search suggestions
+TR |BrowserSignin||0 (Disabled)||No Edge sign-in
+TR |SyncDisabled||Enabled||No profile sync
+TR |DefaultGeolocationSetting||2 (Block)||Block location permission prompts
+TR |PrintingEnabled||Disabled||Printing is handled by emailing documents to the case worker via webmail
+TR |DownloadRestrictions||0 (No restrictions)||Allow downloads to desktop (cleaned on session end)
+TR |ManagedFavorites||JSON config - see 4.3.5||Preloaded managed bookmarks
+END
+H3 |4.3.5 Edge Managed Favourites
+P |Bookmarks deployed via the ManagedFavorites Edge policy as JSON. Unified across kiosk and CTA device types with clear folder separation.
+TBL|2281,5709,1370
+TH |**Folder**||**Contents**||**Count**
+TR |Favourites Bar||Word Online, PowerPoint Online, Excel Online||3
+TR |Workforce Australia||WA portal, Provider Portal, jobactive, DES, ParentsNext, Transition to Work, videos, compliance, contact||10
+TR |Centrelink / Services Australia||myGov, Centrelink medical forms (SU415, SU684), report employment income||3
+TR |Job Search||SEEK, Jora, Indeed, Gumtree, Ethical Jobs, APS Jobs, Facebook Jobs, WA Job Search||8
+TR |Essential Support||Ask Izzy, Beyond Blue, Headspace, Drug Foundation, Financial Counselling Australia||5
+TR |Other Services||Fair Work Ombudsman, Pay Calculator, GoVolunteer||3
+TR |Transport||State-by-state: ACT, NSW, NT, QLD, SA, VIC, WA, TAS||8
+TR |Training||Duke, MCI, Alffie, TAFE by state (QLD, ACT, NSW, VIC, WA, NT, SA, TAS)||10
+TR |Resume & Cover Letter||Microsoft resume templates, cover letter templates||2
+TR |CTA Training||Eskilled (apm.eskilled.com.au) - separate folder per Claire McArdle||1
+TR |National Police Check||CVCheck national police check||1
+END
+H3 |4.3.6 Office 365 Application Access
+P |Access to Microsoft Office is by web only. Bookmarks are added to Edge for access.
+H3 |4.3.7 User Profile Cleanup
+P |• **Setting Name**: APM-Kiosk-ProfileCleanup
+P |• **Setting Type**: ADMX
+P |• **Scope**: SG-APM-Kiosk-Devices
+P |• **Setting:** Delete user profiles older than 0 days on system restart
+P |Runs on the kiosk device. The Edge session is ephemeral and disk access is via USB only, so deleting the user profile on sign-out/restart is a backup data-hygiene control: it ensures no job-seeker profile data survives between restarts.
+H3 |4.3.8 Password Rotation Proactive Remediation
+P |A proactive remediation runs hourly on each kiosk to detect a credential change and refresh the lock-screen image. The password itself is rotated on a separate 12-month schedule by the rotation runbook, not by this remediation.
+H3 |==4.3.9 Application Control (App Control for Business)==
+P |==The kiosk fleet is excluded from the estate App Control policy assignment and receives its own pair, because the kiosk allow-list is a fraction of the size of a staff device's and can therefore be far tighter. Application control is the control that stops an executable brought in on a USB drive from running, so it carries the compensating weight for the removable-media exclusions in 7.3.3 and is enforced, not audited.==
+P |==Two policies are deployed, matching the estate pattern: an audit policy for the pilot and an enforced policy for production. The pilot ring runs the audit policy for the duration of Phase 3 so that any unforeseen block is caught before the fleet moves to enforcement.==
+TBL|2340,3120,3900
+TH |==**Field**==||==**Value**==||==**Purpose**==
+TR |==Policy names==||==APM-Kiosk-SEC-AppControl-Audit-P-1.0<br>APM-Kiosk-SEC-AppControl-Enforced-P-1.0==||==Audit for the pilot ring, enforced for the fleet==
+TR |==Assignment==||==Audit: SG-APM-Kiosk-UpdateRing-Pilot<br>Enforced: SG-APM-Kiosk-Devices==||==Pilot validates before fleet enforcement==
+TR |==Base policy==||==Windows built-in trusted signers (Inherit Default Policy enabled)==||==Trusts Windows and Microsoft-signed components only==
+TR |==Delivery==||==Intune endpoint security, App Control for Business==||==Same delivery mechanism as the estate policy==
+END
+P |==**Rule options.** The kiosk policy differs from the estate policy in two respects, both tightenings.==
+TBL|3120,1560,1560,3120
+TH |==**Rule option**==||==**Estate**==||==**Kiosk**==||==**Reason for the difference**==
+TR |==Enabled: UMCI==||==Yes==||==Yes==||==Applies control to user-mode applications and DLLs==
+TR |==Enabled: Inherit Default Policy==||==Yes==||==Yes==||==Inherits the Microsoft default trusted rules==
+TR |==Required: Enforce Store Applications==||==Yes==||==Yes==||==Store applications are in scope. The Store itself is turned off on the kiosk==
+TR |==Enabled: Revoked Expired As Unsigned==||==Yes==||==Yes==||==Revoked or expired signatures are treated as unsigned==
+TR |==Enabled: Boot Audit On Failure==||==Yes==||==Yes==||==Falls back to audit rather than failing to boot==
+TR |==**Disabled: Script Enforcement**==||==**Yes (script control off)**==||==**No (script control ON)**==||==**The estate policy leaves PowerShell, HTA and similar unconstrained, which the standard itself flags as an item to close. On the kiosk this is enabled, because a kiosk runs no line-of-business scripting and the removable-media exclusions make script execution from USB the most likely attack path. Without it, application control does not constrain a script carried in on a USB drive**==
+TR |==Enabled: Managed Installer==||==Yes==||==No==||==The kiosk installs no applications after provisioning, so a managed installer would only widen the trust surface==
+TR |==Enabled: Allow Supplemental Policies==||==Yes==||==No==||==Nothing extends the kiosk base policy. Any change is a change to the base policy itself, under change control==
+TR |==Enabled: Advanced Boot Options Menu==||==Yes==||==No==||==The F8 advanced boot menu is not appropriate on an unattended device in a public area==
+TR |==Enabled: Unsigned System Integrity Policy==||==Yes==||==No, the policy is signed==||==The kiosk policy is signed with the APM code-signing certificate, so it cannot be replaced or removed by an attacker with local access. This uses the same certificate as the script-signing dependency in SOE-02==
+END
+P |==**Allow-list.** Only the four applications presented by multi-app Assigned Access are permitted to execute, plus the Windows and Intune components required for the device to manage itself. Everything else is denied, including any installer.==
+TBL|2340,3510,3510
+TH |==**Application**==||==**Rule basis**==||==**Notes**==
+TR |==Microsoft Edge==||==Publisher rule, Microsoft Corporation signer==||==Delivered with Windows and serviced by Windows Update==
+TR |==File Explorer==||==Inherited from the Windows built-in signer set==||==Scoped by Assigned Access to removable drives only==
+TR |==Zscaler client==||==Publisher rule, Zscaler Inc. signer==||==Tray application only==
+TR |==TeamViewer==||==Publisher rule, TeamViewer Germany GmbH signer, pinned to the deployed major version==||==Remote support, see 4.3.10==
+TR |==Windows and Intune platform components==||==Inherit Default Policy plus the Microsoft signer set==||==Intune management extension, Defender, PowerShell host for the signed kiosk scripts==
+TR |==APM kiosk scripts==||==Publisher rule, APM code-signing certificate==||==Idle monitor, OneDrive purge, device rename, lock-screen remediation. All must be signed (SOE-02)==
+TR |==Everything else, including all installers==||==Denied by default==||==No application installation is possible on a kiosk device, by any user, including a local administrator==
+END
+P |==Application installation is therefore blocked twice: by App Control, which denies execution of any unlisted binary including MSI and EXE installers, and by Assigned Access, which does not expose a shell from which one could be launched. A local administrator signing in for support gets a full desktop but still cannot install software, because App Control is a kernel-enforced device policy and is not scoped by user.==
+H3 |==4.3.10 Remote support access model==
+P |==Remote support is required. Site staff cannot troubleshoot a kiosk in a public area, and the fleet is national, so the alternative to remote support is a truck roll for every fault. TeamViewer is retained as the remote-support tool and is allow-listed in both Assigned Access and App Control. Because the estate hardening standard disables every other remote-access path (Remote Assistance, Remote Shell, inbound Remote Desktop), this is a documented variation to that position rather than an oversight, and the controls below are what make it acceptable.==
+TBL|2730,6630
+TH |==**Aspect**==||==**Design**==
+TR |==Support scenarios==||==Two. Assisted support, where a support operator joins the session the job seeker is signed in to, with the job seeker present. Administrative support, where a support operator signs in with a support account to a device with no job seeker session, for diagnosis and remediation==
+TR |==Consent for assisted support==||==Attended only. The job seeker must accept the incoming connection at the device. Unattended access is not enabled for the kiosk user session==
+TR |==Unattended access==||==Permitted only for the administrative scenario, on a device with no interactive job-seeker session. It is the mechanism that allows a support operator to reach a device that is at the lock screen==
+TR |==Support account==||==A dedicated, non-privileged local support account per device, not a privileged-tier (xy or zz) identity and not the device's kiosk user. The account is a member of the local Administrators group on that device only, so that a support operator can read logs and restart services. It has no Entra ID role and no access to any other kiosk device==
+TR |==Support account credentials==||==Unique per device, generated and rotated by the same Key Vault and Automation pipeline as the kiosk passphrase, and never displayed on the lock screen. Retrieved by the support operator from the Key Vault at the point of use, under Azure RBAC, which produces an access record per retrieval==
+TR |==Operator authentication==||==Support operators authenticate to the TeamViewer tenant with their own named account and multi-factor authentication. Device access is granted by group membership, not by a shared connection password. No shared or per-device TeamViewer password is used==
+TR |==Authorised operators==||==A named support group. Membership is reviewed quarterly by the service owner==
+TR |==Session logging==||==TeamViewer connection reports (who connected, to which device, when, for how long) are exported to Microsoft Sentinel alongside the Windows security log, so a remote session is correlatable with what happened on the device. Windows audit policy already records the interactive logon under the inherited OS baseline==
+TR |==File transfer==||==Disabled in the TeamViewer policy for kiosk devices. Support operators have no file-transfer path onto or off a kiosk==
+TR |==Network position==||==TeamViewer egress is permitted only to the vendor's published endpoints through the Zscaler tunnel, in the same default-deny egress model as all other kiosk traffic (5.3). Inbound connections to the device are not permitted; the session is always device-initiated outbound==
+TR |==Version control==||==A single deployed major version, pinned in the App Control publisher rule and updated through the image lifecycle (5.2.4), so an attacker cannot side-load a different build==
+END
+P |==The residual risk is that a compromised TeamViewer operator account, or a compromise of the vendor's platform, yields access to a kiosk device. The blast radius of that is one kiosk device or the fleet of kiosk devices, in a tenant that holds no corporate information, on a network segment with default-deny egress and no route to APM corporate systems (5.3). Multi-factor authentication on operator accounts, no shared connection passwords, no file transfer, per-device support credentials and Sentinel session logging are the controls that reduce the likelihood; the tenant and network separation are what limit the consequence.==
+H1 |5. Technology Architecture
+H2 |5.1 Physical Kiosk Device
+H3 |5.1.1 Hardware Specification
+P |Dell kiosk device running Windows 11 Enterprise. All kiosk devices connect via Wi-Fi as no ethernet capability is available close to these devices. Each device is equipped with TPM 2.0 for Autopilot (self-deploying) enrolment and BitLocker.
+H4 |5.1.1.1 Credential Management
+P |This is a per-device unique-credential model. Each kiosk device holds its own unique, automatically generated and rotated password. Figure 1 sets out the pipeline end to end, from account creation to the credentials shown on the lock screen.
+FIG|credential-pipeline.png|Figure 1. Per-device credential pipeline - account creation, Key Vault storage and lock-screen delivery|1520|1840
+H5 |5.1.1.1.1 Summary of Design
+TBL|3411,5949
+TH |**Aspect**||**Design**
+TR |Account Creation||Account created based on device serial number on addition to Kiosk device group
+TR |Password scope||Unique password per device/user
+TR |Password generation||Azure Automation Runbook generates per-user
+TR |Lock screen display||Device-specific password shown on each device
+TR |Rotation||Rotate all passwords individually per schedule or as required
+TR |Blast radius on compromise||Single kiosk only
+TR |Credential storage||Per-device entry in Azure Key Vault
+END
+H5 |5.1.1.1.2 Cloud-Only Identity Domain (apmkiosk.net.au)
+P |Kiosk identities live in a dedicated cloud-only tenant whose primary domain is apmkiosk.net.au. It is a managed (standard) domain, separate from the APM corporate tenant. It is not federated with ADFS and not synchronised from on-premises Active Directory.
+P |apm.net.au is federated to ADFS. For a federated domain, Entra ID hands sign-in to ADFS and expects the account to exist and authenticate on-premises. Two problems follow for kiosk accounts:
+P |• Account creation. The kiosk accounts are created in the cloud by the Account Creation runbook through Microsoft Graph. A cloud-created account in a federated domain has no matching on-premises identity, so ADFS cannot authenticate it and the account cannot sign in.
+P |• Password rotation. The rotation runbook and the Credential Proxy Function App set and read the account password in the cloud. A federated domain delegates password validation to ADFS, so a cloud-set password fails. Rotation cannot then drive the kiosk sign-in.
+P |A managed domain removes both problems. Entra ID authenticates apmkiosk.net.au accounts directly, with no ADFS or on-premises dependency. The runbook creates each account, then sets and rotates its passphrase through Graph. The device signs in with that passphrase to Windows on the kiosk. Password expiration is disabled on the account, and rotation is driven only by the runbook.
+P |The domain carries kiosk service identities only. No human users, no mailboxes and no mail flow. Email handling and ongoing management for the domain are set out in the Domain Management section.
+H5 |5.1.1.1.3 Account Creation
+P |Each kiosk device has its own Microsoft 365 F3 account. The account is created automatically by an Azure Automation Runbook when the device first joins the dynamic security group SG-APM-Autopilot-Kiosk-Devices on Entra ID-join completion.
+P |**UPN Format**
+P |The kiosk user account format is Kiosk-[SERIAL]@apmkiosk.net.au where the {serialnumber} is the BIOS serial number of the kiosk device, in lowercase, with non-alphanumeric characters removed. For example, a kiosk device with the serial number 1ABC345 becomes Kiosk-1abc345@apmkiosk.net.au.
+P |**Domain change note:** The kiosk UPN suffix was changed to apmkiosk.net.au. The kiosk- prefix, serial normalisation and one-to-one device mapping do not change. See Cloud-Only Identity Domain above for why the suffix must be a managed, non-federated domain.
+P |This format provides:
+P |• A clear visual indicator that the account is a kiosk account, not a human account
+P |• A one-to-one mapping between the physical device and identity, support per-device security controls
+P |• A namespace separation (the kiosk- prefix) that supports filtering, dynamic groups, conditional access policy targeting and identity governance reporting
+P |**Trigger**
+P |The Account Creation runbook is triggered when a new device joins SG-APM-Autopilot-Kiosk-Devices. The group is set to dynamic membership, so any device successfully provisioned through the kiosk Autopilot profile falls into scope automatically. The runbook polls the group via Microsoft Graph at a five-minute interval. When a new member is detected, it proceeds to the steps below:
+TBL|3033,6327
+TH |**Property**||**Value**
+TR |UPN||Kiosk-{serialnumber}@apmkiosk.net.au
+TR |Display Name||Kiosk {serialnumber}
+TR |Mail Nickname||Kiosk-serialnumber
+TR |Usage Location||AU
+TR |License||M365 F3, via group-based licensing on SG-APM-Kiosk-Users. Least-privilege service plans - Entra ID P1, Intune, Office for the web, OneDrive. All other plans disabled.
+TR |Password||ANIMAL-noun passphrase (uppercase animal + dash + lowercase noun, e.g. PANTHER-blanket, minimum 14 characters guaranteed), generated per the Credential Storage section
+TR |ForceChangePasswordNextSignIn||False
+TR |PasswordPolicies||DisablePasswordExpiration (password rotation is managed by the runbook)
+TR |AccountEnabled||True
+TR |Job Title||Kiosk Device
+TR |Department||Kiosk Fleet
+TR |Group Membership||Added to SG-APM-Kiosk-Users
+END
+P |**Domain change note:** UPN uses the apmkiosk.net.au suffix. Because this domain is cloud-managed, the runbook-set password and DisablePasswordExpiration take effect. On the federated apm.net.au domain neither would apply, as ADFS controls sign-in and password policy.
+P |**Runbook Steps**
+P |**1.** Detect a new member of SG-APM-Autopilot-Kiosk-Devices via GET /groups/{id}/members on Microsoft Graph
+P |**2.** For each new device member, read the device’s serial number from the Intune managed-device resource: GET /deviceManagement/managedDevices/{id} and retrieve the serialNumber property
+P |**3.** Normalise the serial number converting to lowercase and removing non-alphanumeric characters
+P |**4.** Compose the UPN kiosk-{serialnumber}@apmkiosk.net.au
+P |**5.** Generate the kiosk passphrase - an uppercase animal, a dash and a lowercase noun (for example PANTHER-blanket), a guaranteed minimum of 14 characters, that a job seeker can read from the lock screen and type. It meets Entra complexity via uppercase, lowercase and the dash.
+P |**6.** Create the user via POST /users on Microsoft Graph with the properties in the table above
+P |**7.** Store the password in the Key Vault **auea-kv-apm-kiosk-001** as a secret named kiosk-{serialnumber}. The runbook executes in the Azure Automation sandbox under the Automation Account managed identity.
+P |**8.** Add the new user to SG-APM-Kiosk-Users via POST /groups/{id}/members/$ref. Group-based licensing then automatically assigns the M365 F3 licence.
+P |**9.** Log the event to Azure Log Analytics
+P |**10.** The lockscreen Proactive Remediation script (section 5.1.1.1.8) detects the new credential within its next hourly cycle and renders the per-device lockscreen image on the device
+P |**Lifecycle and Retirement**
+P |When a kiosk device is retired, a paired retirement runbook:
+P |**1.** Disables the kiosk user account
+P |**2.** Removes the kiosk user from SG-APM-Kiosk-Users (which removes the F3 license too)
+P |**3.** Soft deletes the Key Vault secret. The 90-day soft delete retention on the Key Vault provides recovery cover
+P |**4.** After a 90-day period and confirmation that the device is not being recommissioned, the password is hard deleted from the Key Vault
+H5 |5.1.1.1.4 Password Generation
+P |Each kiosk user account passphrase is generated by the Azure Automation Runbook that creates the M365 F3 account. The Runbook generates a readable ANIMAL-noun passphrase (uppercase animal + dash + lowercase noun) drawn from word lists constrained so every generated passphrase is at least 14 characters, meeting the minimum device password length in the APM Windows SOE Hardening Standard. For example, PANTHER-blanket (15 characters).
+H5 |5.1.1.1.5 Credential Storage
+P |Passwords are stored in an Azure Key Vault (auea-kv-apm-kiosk-001). The Key Vault provides Azure RBAC access control, automatic soft-delete and purge protection, audit logging, and versioning. Its network posture is a public endpoint governed solely by Azure RBAC, as set out under Key Vault Network Posture below.
+TBL|4324,5036
+TH |**Key Value Setting**||**Value**
+TR |Key Vault Name||auea-kv-apm-kiosk-001
+TR |SKU||Standard
+TR |Soft-delete retention||90 days
+TR |Purge protection||Enabled
+TR |Network access||Public endpoint enabled; access governed solely by Azure RBAC
+TR |Access model||Azure RBAC
+END
+H5 |5.1.1.1.6 Credential Proxy (Azure Function)
+P |Kiosk devices at sites never reach the Key Vault directly. A Credential Proxy Azure Function App mediates all access. The kiosk-side Proactive Remediation script calls the Function App over HTTPS (client-certificate mTLS) to retrieve its device-specific rendered lock screen without exposing the Key Vault. The Function App reaches the Key Vault over its public endpoint using its own managed identity; no VNet integration is required.
+P |Device authentication to the Credential Proxy is by SCEP client-certificate mTLS. Each kiosk holds a device certificate (CN = the Entra device ID) issued by Microsoft Cloud PKI in the apmkiosk.net.au tenant - root CA APM-Kiosk-Root-CA, issuing CA APM-Kiosk-Issuing-CA-01. The proxy validates the certificate and derives the device serial from it (via Microsoft Graph), then returns that device’s rendered lock-screen image. There are no embedded secrets and no shared keys.
+P |Runbook Execution
+P |All credential-pipeline runbooks execute directly in the Azure Automation sandbox under the Automation Account managed identity, which holds the required Get/Set Secret permissions on the Key Vault. No Hybrid Runbook Worker, VNet integration or shared-services VM is required.
+H5 |5.1.1.1.7 Key Vault and Credential Proxy Network Posture
+P |==**Decision (DR-011, approved).** A dedicated IPSec tunnel had been built to the private app carrying credential-pipeline traffic. That tunnel is removed: the credential pipeline is now reached over public endpoints, and no private endpoint, VNet, private DNS zone or Hybrid Runbook Worker replaces it. This is separate from the Zscaler ZIA tunnel that carries kiosk web traffic (5.3.3), which is unchanged and still required on every kiosk device. The rationale is set out in the options assessment below and the residual risk is accepted in the decision register.==
+P |The Key Vault is the only pipeline component the credential automation must reach. The fleet runs in a dedicated apmkiosk.net.au tenant that holds only kiosk identities, devices and the supporting automation, and the stored secrets are per-device passphrases that are displayed on the device lock screen and bound off-device by Conditional Access. The Credential Proxy Function App is device-facing - kiosks call it over the internet with client-certificate mTLS - and is never placed behind a private endpoint.
+P |==**Options assessed**==
+TBL|1400,2000,2100,1930,1930
+TH |==**Option**==||==**Network path**==||==**Additional build**==||==**Security benefit**==||==**Assessment**==
+TR |==A. Private endpoint and private connectivity==||==Key Vault private endpoint only, public access disabled. Automation reaches it from inside the VNet; device traffic reaches the proxy over a dedicated IPSec tunnel==||==VNet, subnet, private endpoint, private DNS zone, Hybrid Runbook Worker VM, NAT gateway for a stable egress IP, and an IPSec tunnel per site or a hub tunnel with routing to every site==||==Removes the vault control plane from the internet==||==**Not selected.** The benefit protects secrets that are already published on the lock screen by design. The build introduces an always-on VM, a NAT gateway, a private DNS plane and site-to-Azure tunnels, each of which is a new failure mode and a new patching and monitoring obligation for a fleet whose whole premise is that it holds nothing==
+TR |==B. Public endpoint with a Key Vault IP firewall==||==Public endpoint restricted to named source addresses==||==Hybrid Runbook Worker and NAT gateway for a stable egress IP; the Credential Proxy egress address allow-listed and maintained==||==Narrows who can reach the vault control plane==||==**Not selected.** Requires the same always-on VM and NAT gateway as Option A for a partial benefit, and creates a standing operational task: any change to Azure Functions egress addressing silently breaks the credential pipeline==
+TR |==C. Public endpoint governed by Azure RBAC==||==Key Vault public network access enabled, no IP restriction. Credential Proxy internet-facing with SCEP client-certificate mTLS==||==None. Runbooks execute in the Azure Automation sandbox under the Automation Account managed identity==||==Every call requires a valid Entra ID token and an RBAC role assignment; no anonymous access is possible==||==**Selected.** Matches the sensitivity of the secrets and the blast radius of the dedicated tenant, removes four classes of supporting infrastructure, and is the configuration proven in the test tenancy==
+END
+P |**Public Endpoint with Azure RBAC**
+P |The key vault has public network access enabled; access is governed solely by Azure RBAC. Only the Automation Account managed identity (Key Vault Secrets Officer) and the Credential Proxy Function App managed identity (Key Vault Secrets User) hold roles. No anonymous access is possible - every call requires a valid Entra ID token.
+P |The credential proxy reaches the Key Vault over its public endpoint using its managed identity; no VNet integration is required.
+P |The runbooks execute directly in the Azure Automation sandbox under the Automation managed identity. No Hybrid Runbook Worker is required.
+P |Supporting infrastructure is not required. No VNet, no private endpoint, no private DNS, no Hybrid Runbook Worker VM and no NAT gateway.
+P |Azure RBAC, Entra ID authentication, Key Vault diagnostic and audit logging, 90-day soft-delete and purge protection controls are retained.
+P |In a single-purpose dedicated tenant there is no adjacent corporate network to protect and no lateral-movement target, and the secrets are low-sensitivity (publicly displayed and device-bound). The design therefore requires no always-on VM, NAT gateway, VNets or private-endpoint plane, reducing cost, attack surface and operational complexity. It also matches the configuration validated in a test tenancy.
+P |The Key Vault control plane is reachable from the internet, though authenticated and RBAC-gated. Accepted on the basis of the secret sensitivity and the dedicated-tenant blast radius.
+P |Additional hardening would be to lock the public vault down with a Key Vault IP firewall, however, this would require the inclusion of a Hybrid Runbook Worker and a NAT gateway for a stable egress IP. The credential proxy's access would need allow-listing too.
+P |**Rationale**
+P |This posture is selected for the dedicated tenant on the balance of secret sensitivity, blast radius and operational simplicity, and it is the configuration proven in the test tenancy. Any subsequent change to the Key Vault network posture is a design change subject to APM Cyber approval under RFFR.
+P |==The argument in one line: the vault holds per-device passphrases that are already published on the device lock screen, are rotated automatically, and are bound by Conditional Access to a single physical kiosk in a tenant that holds no corporate information. There is nothing behind the endpoint that a private network path would protect.==
+H5 |5.1.1.1.8 Lock Screen Image Generation
+P |The Credential Proxy renders the per-device lock-screen PNG server-side (showing the device UPN and current passphrase), so no password is exposed to the device as text. The Intune Proactive Remediation on each kiosk asks the proxy for the current secret version, compares it to a local version marker, and on a change fetches and applies the freshly rendered image via PersonalizationCSP. Device authentication to the proxy is by SCEP client-certificate mTLS.
+H5 |5.1.1.1.9 Rotation Schedule
+P |Kiosk credentials are managed using a per-device credential model. Each kiosk device has a unique Entra ID account and password, stored as a per-device secret in Azure Key Vault. Password rotation is performed individually for each kiosk account by an Azure Automation Runbook running in the Azure Automation sandbox under the Automation Account managed identity.
+P |The password rotation Runbook iterates through the kiosk user accounts in scope, generates a new ANIMAL-noun passphrase for each device, updates it in Entra ID, writes the updated secret to Azure Key Vault, and logs the event to Azure Log Analytics. Rotation runs on a 12-month schedule and on demand for operational or security need.
+P |Each kiosk device retrieves its per-device lock-screen image through the Credential Proxy Azure Function App, which renders it server-side showing the device-specific sign-in credentials. The Intune Proactive Remediation detects a credential change by comparing a local version marker (version.txt) with the current secret version reported by the proxy, and where they differ it fetches and applies the newly rendered lock-screen image.
+P |The lock screen image is rendered server-side by the Credential Proxy and fetched to C:\APM\Kiosk\lockscreen.png, with a local version marker in C:\APM\Kiosk\version.txt recording the applied secret version. This keeps the displayed credentials aligned to the device's currently assigned password.
+P |The lock screen wallpaper specifications are:
+B |The wallpaper is APM-branded and approved
+B |The wallpaper displays:
+B |– The kiosk device’s Entra ID username
+B |– The kiosk device’s Entra ID password
+B |– A user notice advising that data is not retained after the session and that documents must be saved to USB or personal email before ending the session
+B |When a password is rotated, the device lock screen is updated during the next Intune Proactive Remediation cycle
+P |The detection script:
+B |Verifies that the wallpaper image exists
+B |Presents the device SCEP client certificate to the Credential Proxy (the proxy derives the serial from the validated certificate)
+B |Reads the local version marker from C:\APM\Kiosk\version.txt
+B |Calls the Credential Proxy Function App for the current secret version (mode=version)
+B |Compares the current secret version with the locally stored version marker
+B |exits with code 0 if no update is required
+B |exits with code 1 if remediation is required
+P |The remediation script:
+B |Presents the device SCEP client certificate to the Credential Proxy
+B |Fetches the current secret version and, on a change, fetches the server-rendered lock-screen image from the Credential Proxy Function App
+B |Creates C:\APM\Kiosk if it does not already exist
+B |Applies the server-rendered lock-screen image (APM branding, the device-specific username and password, and the approved user notice) via PersonalizationCSP
+B |Writes the image to C:\APM\Kiosk\lockscreen.png
+B |Writes the updated version marker to C:\APM\Kiosk\version.txt
+B |Applies the updated lock screen; on an image change (not first provision) the device reboots to re-render
+B |Logs the update event to the approved monitoring platform
+H3 |5.1.2 CompNow - Device Wipe and Prep Process:
+B |Check the locations device allocation list, validate how many devices are required per site and take note of the **site Loc#.**
+B |Unpack device, power on and assess if DOA
+B |Add/update device in asset register
+B |Trigger full device wipe (not Autopilot Refresh, etc).
+B |Confirm TPM 2.0 and UEFI support
+B |Prepare USB image with Windows 11 Enterprise
+B |Install Windows 11
+B |Connect to Ethernet (if available), otherwise connect to Wifi during the OOBE using Shift+F10 then start ms-settings: to config Wi-Fi
+B |Confirm the device is in autopilot and assigned the correct profile
+B |– If the device is not in Autopilot, install and run the Get-WindowsAutopilotInfo PowerShell script to push the hardware hash into Autopilot or store on a CSV to be provided back to APM
+B |– E.g. Get-WindowsAutopilotInfo -OutputFile C:\AP\hash.csv -GroupTag KIOSKTAGIncLOCATION
+B |Assign device to EntraID group based on location
+B |– Naming convention applied based on location (EntraID Group)
+B |Restart device to kick off provisioning using Autopilot
+B |Validate device logs in via username and password
+B |Validate Wi-Fi is operational
+B |Repackage device
+B |Create label with device name and stick on outside of the box
+B |Insert instruction sheet inside box
+B |Send to location
+H3 |5.1.3 Autopilot Self-Deploying Mode
+P |Kiosk devices are provisioned through Windows Autopilot in self-deploying mode. Provisioning is near-hands-off:
+P |**1.** Device is registered in Autopilot at point of procurement (hardware hash upload)
+P |**2.** Device boots and connects to Wi-Fi; OOBE detects Autopilot registration
+P |3. Autopilot joins the device to the apmkiosk.net.au tenant using TPM-backed device attestation; no user signs in during OOBE
+P |**4.** Device is Entra ID joined and enrolled into Intune
+P |**5.** Intune applies the security baseline, the multi-app Assigned Access profile and the device configuration
+P |**6.** Enrolment Status Page (ESP) blocks until all required apps and policies are applied
+P |**7.** Device reboots into kiosk mode
+TBL|2672,6688
+TH |**Setting**||**Value**
+TR |Name||APM-Kiosk-SelfDeploying
+TR |Deployment mode||Self-deploying
+TR |Join type||Microsoft Entra ID join
+TR |User sign-in||Not required (self-deploying joins the device via TPM-backed device attestation; no user signs in during OOBE)
+TR |Skip EULA / privacy settings||Yes
+TR |Convert all targeted devices to Autopilot||Yes
+TR |Assigned to||SG-APM-Autopilot-Kiosk-Devices
+END
+H3 |5.1.4 Naming Convention
+P |The device naming format is KI-[SITECODE]-[SERIAL], e.g. KI-0021-63TFTJ4. The device name is capped at the 15-character Windows hostname limit: KI- (3) + a 4-character site code + hyphen + up to a 7-character Dell service tag = 15. The APM- prefix used in earlier drafts is dropped to stay within the limit; the dedicated apmkiosk.net.au tenant holds only kiosk devices, so the KI- prefix remains unambiguous.
+TBL|1897,3479,3984
+TH |**Component**||**Value**||**Example**
+TR |KI||Kiosk device type identifier||KI
+TR |SITECODE||4-character site code||0021
+TR |SERIAL||Dell BIOS service tag, up to 7 characters||63TFTJ4
+TR |Full device name||KI-[SITECODE]-[SERIAL], 15 characters maximum||KI-0021-63TFTJ4
+END
+P |Naming is enforced via an Intune device rename script during Autopilot provisioning. The Autopilot device-name template cannot embed a site code, so the device is first named KI-[SERIAL] by the template (matching the KI- group filter from enrolment) and the rename script injects the site code once the device is assigned to its location. Dynamic device groups filter on the KI- prefix.
+H3 |5.1.5 End-to-End Device Experience
+P |When a provisioned device is powered on at the site:
+NUM|Device boots; the kiosk user signs in to Windows using the passphrase shown on the lock screen
+NUM|Multi-app Assigned Access presents the locked kiosk (Edge, File Explorer, Zscaler tray, remote-support tool). ==The device’s dedicated support account gets a full desktop for troubleshooting (4.3.10); it still cannot install software, because App Control is enforced at the device level and is not scoped by user (4.3.9)==
+NUM|The job seeker uses Edge to reach the approved job-search, government, support and training sites
+NUM|Office (Word, Excel and PowerPoint) is available for the web through Edge managed favourites
+NUM|After the idle timeout the device signs the user out and clears local session state. Figure 2 sets out the full provisioning sequence behind this experience.
+FIG|provisioning-flow.png|Figure 2. Kiosk device provisioning flow - CompNow preparation through to the kiosk shell|1520|1800
+H2 |5.2 Image Configuration
+H3 |5.2.1 Kiosk Image Specification
+TBL|2196,7164
+TH |**Operating system**||**Windows 11 Enterprise**
+TR |Microsoft Edge||Managed browser with hardened policies and preloaded bookmarks
+TR |Microsoft 365 Apps||Word, PowerPoint and Excel via the web only; accessed through Edge, no local install and no device-based licensing
+TR |Microsoft Defender||Enabled; feeds Intune compliance policy
+TR |Zscaler IPSEC Tunnel||Included as required by APM standard
+TR |Custom wallpaper||Data wipe notice informing job seekers that all data is cleared on session end
+TR |Accessibility tools||Narrator, Magnifier, high contrast, font scaling, speech-to-text, on-screen keyboard
+END
+H3 |5.2.2 Printing
+P |No direct printing from kiosk devices is provided. Users must email required documents to their case worker via webmail for printing. This operating model was approved by the APM Business Owner.
+H3 |5.2.3 USB Storage
+P |The Kiosk devices will require access to USB storage devices and require an exception to be able to read and write to these devices to load or save resumes. As these USB devices are expected to be client-owned devices, and accessibility will need to be maintained from these devices to client-owned computers of varying types and operating systems, BitLocker and BitLocker-to-Go encryption cannot be enabled as compatibility cannot be guaranteed between these and the client-owned computers.
+P |To support this, two additional policies will be created using the existing security configuration for Windows, with the settings modified from the default policies per the tables below.
+P |All other existing security layers, including Zscaler and Defender will remain applied.
+H4 |5.2.3.1 USB Configuration Exception Policy
+TBL|5590,3770
+TH |**Setting**||**Value**
+TR |Name||APM-W11-SEC-USB Exception-P-1.0
+TR |Removable Disk Deny Write Access||Disable
+TR |Removable Disk Deny Write Access (User)||Disable
+TR |Deny write access to removable drives not protected by Bitlocker||Disabled
+TR |Control use of Bitlocker on removable drives||Disabled
+END
+H4 |5.2.3.2 BitLocker configuration exception policy
+TBL|5590,3770
+TH |**Setting**||**Value**
+TR |Name||APM-W11-SEC-Bitlocker Exception-P-1.0
+TR |Write access to removable data-drive not protected by Bitlocker||Not configured (Enabled)
+END
+H3 |5.2.4 Kiosk Image Lifecycle
+NUM|Image built from Windows 11 Enterprise + Intune.
+NUM|Image patched monthly (OS, Edge, Defender definitions).
+H2 |5.3 Network & Infrastructure
+P |The Jobseeker kiosk solution reuses the existing Job Seeker network to securely support walk-in participants accessing online job services directly via Microsoft Edge on the kiosk device.
+P |Kiosk devices are connected to the existing Job Seeker VLAN, which will be repurposed for kiosk use and renamed to APM-KIOSK. This is not a new network deployment; rather, the existing wireless service is being updated to support the kiosk solution, including an increase to 20Mbps bandwidth per site and the removal of the existing CAPTCHA requirement to allow a smoother kiosk user experience. The APM-KIOSK SSID will not be publicly visible, and access to it will be controlled through a pre-shared key deployed to kiosk devices via Intune policy. The network remains tightly controlled and restricted to the connectivity required to support the APM Azure tenant, Microsoft endpoints, and other approved service dependencies, including Azure Key Vault and Azure Function App.
+P |The design uses the organisation’s existing public internet breakout, complemented by the renamed APM-KIOSK SSID. Job-seeker web traffic and Microsoft 365 endpoints are reached directly from the kiosk VLAN via Zscaler. The credential-pipeline Azure resources (Key Vault, Credential Proxy Function App, Automation) live in the apmkiosk.net.au tenant subscription.
+P |As part of this design, the existing Job Seeker VLAN is dedicated exclusively to kiosk devices and does not permit personal mobile internet connectivity or personal device access. The capability for personal devices to connect to this network will be removed. Should a user require internet access, they can use a kiosk device. All kiosk endpoints will connect solely to the renamed APM-KIOSK network, ensuring controlled access and appropriate separation from standard corporate and personal connectivity use cases.
+P |The solution does not provide general access to APM corporate systems, internal business applications, or unrestricted internet services. All permitted traffic is subject to inspection and policy enforcement through APM-managed network security controls, including Palo Alto east-west firewalls and approved egress paths to internet and Zscaler. All other traffic is blocked.
+P |Figure 3 shows the logical network and security zones end to end, from the kiosk device at the site to the approved destinations and the credential pipeline subscription.
+FIG|network-zones.png|Figure 3. Kiosk logical network and security zones|1520|1848
+H3 |5.3.1 Physical Kiosk Device Network Configuration
+P |The physical kiosk device network uses the existing Job Seeker VLAN, repurposed as APM-KIOSK, with tightly controlled connectivity to approved Azure, Microsoft, and APM-managed service dependencies required for kiosk operation. Access is restricted through firewall and policy enforcement, and the network does not permit general corporate access, personal device connectivity, or unrestricted internet usage.
+H4 |5.3.1.1 Network Design
+TBL|1520,2723,5117
+TH |**Element**||**Specification**||**Rationale**
+TR |Network Type||Re-purposed Job Seeker VLAN (APM-KIOSK)||Provides a controlled kiosk access network with restricted connectivity and no general corporate or personal device access
+TR |Supernet||10.73.0.0/16||A unique /26 from 10.73.0.0/16 will be assigned to each site through Meraki template use.
+TR |VLAN ID||73||
+TR |Segmentation||Layer 3 segmentation with firewall enforcement||Prevents unrestricted internet usage while allowing required service access
+TR |Internet Access||Restricted to approved destinations only||Prevents unrestricted internet usage while allowing access to approved service destinations required for kiosk operation.
+TR |Security Model||Default-deny with explicitly permitted connectivity||Only explicitly allowed services are reachable
+END
+H4 |5.3.1.2 Connectivity Controls
+TBL|1558,5670,2132
+TH |**Element**||**Specification**||**Rationale**
+TR |Allowed Destinations||Entra ID, Intune, approved Microsoft 365 endpoints, Azure Key Vault, the Credential Proxy Function App, Zscaler, all allowed web URLs in section 3.2.2 and other approved APM-managed dependencies||Enables required functionality only
+TR |Blocked Destinations||All non-approved internet, corporate, and unrelated service destinations||Enforces strict access control
+TR |DNS||Restricted resolution for approved Microsoft, Azure, and APM-managed service dependencies||Prevents access to unauthorised domains
+TR |Traffic Direction||Device-initiated outbound connectivity only||No inbound exposure to kiosks
+END
+H4 |5.3.1.3 Firewall & Filtering (Meraki)
+TBL|1426,5800,2134
+TH |**Element**||**Specification**||**Rationale**
+TR |Policy Model||Default Deny (Egress Filtering)||Strong security baseline
+TR |Allowed Ports||TCP 443 (HTTPS only)||Minimises attack surface
+TR |Filtering Method||FQDN/IP-based allow rules for approved Microsoft, Azure, Zscaler, and APM-managed service dependencies||Fine-grained control
+TR |Inspection||TLS inspection subject to APM standard internet security policy and service compatibility requirements.||Enhances monitoring and compliance
+END
+TBL|1312,7311,737
+TH |**Source**||**Destination**||**Action**
+TR |10.73.0.0/16||Microsoft 365 and Entra ID endpoints (login.microsoftonline.com, *.office.com, *.microsoftonline.com), Microsoft Update, Defender, the Credential Proxy Function App, and the approved web URLs in the Favourites list.||Allow
+TR |10.73.0.0/16||Any||Deny
+END
+H4 |5.3.1.4 Rate Limiting (Meraki)
+TBL|1615,1440,6305
+TH |**Element**||**Specification**||**Rationale**
+TR |Per Site Bandwidth||20Mbps||Direct web browsing and Microsoft 365 for the kiosk devices at a site
+END
+H4 |5.3.1.5 Endpoint & Device Management
+TBL|2020,3063,4277
+TH |**Element**||**Specification**||**Rationale**
+TR |Device Management||Microsoft Intune||Centralised governance
+TR |Compliance||Intune device compliance policies||Enforces security posture
+TR |Updates||Managed via Intune policies||Controlled patching via approved Microsoft Update endpoints
+TR |Authentication||Microsoft Entra ID||Secure identity integration
+END
+H4 |5.3.1.6 Device Restrictions
+TBL|1274,3569,4517
+TH |**Element**||**Specification**||**Rationale**
+TR |OS Mode||Kiosk Mode (locked down)||Prevents user tampering
+TR |Peripheral Access||Peripheral Access - Restricted to approved use cases (USB storage permitted, other peripheral access limited by policy)||Minimises misuse while allowing approved job seeker functions
+TR |Local Storage||No persistent data||Protects sensitive information
+END
+H4 |5.3.1.7 Monitoring & Logging
+TBL|1970,2450,4940
+TH |**Element**||**Specification**||**Rationale**
+TR |Logging||Intune / Azure monitoring||Operational visibility
+TR |Network Monitoring||Firewall logs||Detect anomalies
+TR |Device Monitoring||Intune device and Entra sign-in diagnostics||Track user activities
+END
+H4 |5.3.1.8 Ethernet Port Configuration (Re-Imaging)
+P |Although kiosks operate on Wi-Fi, Ethernet ports must remain enabled to support operational servicing activities.
+B |Ethernet connectivity is required by CompNow for device recovery, re-imaging, troubleshooting, and Autopilot or Intune remediation where Wi-Fi is unavailable or unstable during staging.
+P |Purpose:
+B |Ensures devices can be serviced without bypassing security controls
+B |Avoids ad-hoc cabling to corporate networks
+H3 |5.3.2 DNS Configuration
+H4 |5.3.2.1 DNS Architecture Overview
+P |The physical kiosk devices at APM sites connect to the local site network. DNS resolution for these devices is provided by the site's standard DNS forwarders (typically the site network appliance). The kiosk devices do not join the APM corporate domain and do not require resolution of Active Directory domain names; all required FQDNs are public Internet endpoints (Microsoft 365, Entra ID, Microsoft Update, Defender).
+H3 |5.3.3 Zscaler IPSEC Tunnel (Recommended)
+P |Zscaler IPSEC tunnel is the proposed solution for web filtering and logging of traffic
+P |**Requirements for recommendation:**
+P |• Sites will need a Zscaler IPSEC tunnel configured for this to work
+P |**Changes made from ZCC to IPSEC tunnel**
+P |• IPSEC tunnel should be used rather than ZCC as the traffic flows through the Palos and there are no internal resources that the ZCC is protecting against once the Palo checks occur.
+P |**Traffic Flow**
+P |• Palo will forward the traffic from the kiosk VLAN to ZIA edge from the IPSEC tunnel
+H4 |5.3.3.1 Interaction flow
+FIG|zscaler-sequence.png|Figure 4. Kiosk to internet interaction sequence|1520|1448
+H4 |5.3.3.2 Key Components
+TBL|4680,4680
+TH |**Component**||**Purpose**
+TR |Zscaler IPSEC Tunnel||• Responsible for:<br>• Forwarding user traffic to ZIA
+TR |Zscaler Internet Access (ZIA)||• Central policy enforcement platform<br>• Provides:<br>• URL filtering<br>• Threat protection<br>• SSL inspection
+END
+P |==**Firewall Policies (Palo Alto) (To Be Confirmed by Network Team)**==
+TBL|897,841,1052,1273,1273,1272,895,908,949
+TH |**Rule Name**||**Source Zone**||**Source Address**||**Destination Zone**||**Destination Address**||**Application**||**Service**||**Action**||**Rule Type**
+TR |Allow To Azure Key Vault||EW-Private||(Kiosk Subnet)||EW-Private||(Key Vault FQDN)||SSL, Web browsing||App Default||Allow||Intrazone
+TR |Zscaler Web Proxy Access||||(Add Kiosk Subnet)||||||||||||Existing Policy
+TR |Zscaler PBF - Excluded Sources||||(Add Kiosk Subnet to address group)||||||||||||Address group
+END
+H4 |5.3.3.3 Monitoring & Logging
+P |All logs are sent to Microsoft Sentinel, per the current state.
+P |Retention period for these logs is currently set to 180 days.
+TBL|1328,3092,4940
+TH |**Element**||**Specification**||**Rationale**
+TR |Logging||Sentinel ~ 180 days||Operational visibility<br>Detect anomalies
+TR |Logging||ZIA(Zscaler) ~ 180 days||IP address specific logs<br>User activity
+END
+H3 |5.3.4 Zscaler Tenant Configuration (apmkiosk.net.au)
+P |==The following is the Zscaler tenant configuration for the Job Seeker Kiosk fleet, provided by the network delivery team and reproduced here as supplied, in the same order, for review.==
+H4 |5.3.4.1 Overview
+P |==The kiosk fleet connects through Zscaler Client Connector on the device, forwarding via a PAC file. Zscaler Cloud is the single internet egress point: it forwards general internet traffic to the internet and authenticates against Azure/M365 via SCIM, while APM Office and the kiosk device reach Zscaler Cloud over HTTPS.==
+FIG|zscaler-tenant-overview.png|Figure 5. Zscaler tenant overview - kiosk device, PAC forwarding, Zscaler Cloud and Azure/M365 authentication|1520|1680
+H4 |5.3.4.2 Azure Configuration
+H5 |5.3.4.2.1 Entra Groups
+TBL|3800,5980
+TH |**Group Name**||**Purpose**
+TR |apm-js-kiosk-users-internet||Group to apply Zscaler configuration to kiosk users and devices.
+END
+P |Configure: Entra ID -&gt; Groups
+H5 |5.3.4.2.2 Enterprise Application
+TBL|3200,6580
+TH |**Setting**||**Value**
+TR |Enterprise App Template||Zscaler Internet Access ZSCloud
+TR |Assigned Users||apm-js-kiosk-users-internet
+TR |Single Sign-On||SAML
+TR |Basic SAML Config - Identifier||https://login.zscloud.net/sfc_sso/38777108
+TR |Basic SAML Config - Reply URL||https://login.zscloud.net/sfc_sso
+TR |Basic SAML Config - Sign on URL||https://login.zscloud.net/sfc_sso
+TR |Basic SAML Config - Users and groups||apm-js-kiosk-users-internet
+TR |Provisioning - Tenant URL||https://scim.zscloud.net/38777108/4349816/scim
+TR |Provisioning - Secret Token||&lt;from Zscaler&gt;
+TR |Provisioning - Mappings||Default
+TR |Provisioning - Scope||Sync only assigned users and groups
+TR |Provisioning - Status||On
+END
+H4 |5.3.4.3 Zscaler Configuration
+H5 |5.3.4.3.1 Identity Provider
+TBL|3200,6580
+TH |**Setting**||**Value**
+TR |Name||apmkiosk idp
+TR |Status||Enabled
+TR |SAML Portal URL||https://login.microsoftonline.com/fa7adf0d-de2d-4570-8f5f-4bca4772988f/saml2
+TR |Login Name Attribute||NameID
+TR |Org-Specific Entity ID||Enabled
+TR |IDP SAML Certificate||&lt;from Entra&gt;
+TR |Vendor||Microsoft Entra ID
+TR |Authentication Domains||apmkiosk.net.au
+TR |Enable SCIM Provisioning||On
+END
+H5 |5.3.4.3.2 PAC File
+TBL|2400,3200,2100,2080
+TH |**PAC File Name**||**Description**||**Domain**||**Obfuscate URL**
+TR |apm-js-kiosk-users||Jobseeker Kiosk Users||apmkiosk.net.au||Yes
+END
+P |Configure: Infrastructure -&gt; Internet &amp; SaaS -&gt; Traffic Forwarding -&gt; Traffic Steering -&gt; Hosted PAC Files. Content: the PAC file script at the end of this section.
+H5 |5.3.4.3.3 Forwarding Profile
+TBL|3200,6580
+TH |**Setting**||**Value**
+TR |Profile Name||apm-js-kiosk-users-fp
+TR |Trusted Network Criteria||None
+TR |Trusted Network Evaluation||All disabled
+TR |Windows Driver Selection||Packet Filter-Based
+TR |On-Trusted Network||Tunnel
+TR |Tunnel version selection||Z-Tunnel 2.0
+TR |Primary Transport Selection||DTLS
+TR |DTLS Connection Timeout||9
+TR |TLS Connection Timeout||5
+TR |MTU for Zscaler Adapter||0
+TR |Path MTU Discovery||On
+TR |Allow TLS Fallback||On
+TR |Z-Tunnel 2 setup failure||Fallback to Z-Tunnel 1.0 and Bypass non-web traffic
+TR |Redirect Web Traffic to ZCC||No
+TR |Use Z-Tunnel 2.0 for Proxied Web Traffic||Not selected
+TR |Block Unreachable domains Traffic||On
+TR |Drop IPv6 in Dual Stack||On
+TR |Drop IPv6 in IPv6 Only||Off
+TR |Dynamic ZIA Service Edge||Off
+TR |VPN Trusted Network||Select same as "On-Trusted Network"
+TR |Off-Trusted Network||Select same as "On-Trusted Network"
+END
+P |Configure: Infrastructure -&gt; Connectors -&gt; Client -&gt; Forwarding Profiles -&gt; Forwarding Profile for Platforms
+H5 |5.3.4.3.4 App Profile
+TBL|3200,6580
+TH |**Setting**||**Value**
+TR |Name||apm-js-kiosk-users-ap
+TR |Rule Order||2
+TR |Forwarding Profile||apm-js-kiosk-users-fp
+TR |Status||Enabled
+TR |ZIA Posture Profile||Leave blank
+TR |Install Zscaler SSL Certificate||On
+TR |Install WFP Driver||On
+TR |Location Policy Override||Off
+TR |Notification Template||Legacy Notification Template
+TR |User groups||apm-js-kiosk-users-internet
+TR |Users||None
+TR |Follow Global Settings for Partner Login||Off
+TR |Allow Users of this Tenant to Login to Other Tenants||Off
+TR |Custom PAC URL||{TBC - from apm-js-kiosk-users PAC file - generated at creation}
+TR |Fallback to gateway domain||Selected
+TR |Use Preferred port from PAC for Tunnel 1.0||Not selected
+TR |Use Preferred port from PAC for Tunnel 2.0||Not Selected
+TR |Strict Enforcement Mode||Not Selected
+TR |Override WPAD||On
+TR |Disable Loopback Restriction||Off
+TR |Restart WinHTTP Service||On
+TR |V8 Javascript-based PAC Parser||On
+TR |Cache System proxy on startup||Off
+TR |App Failover Settings - ZIA Cloud Not reachable||Follow Global Config
+TR |App Failover Settings - Z-Tunnel Failover||Follow Global Config
+TR |Firewall||All Off
+TR |Passwords (all)||{set - record in passwordstate}
+TR |Authentication - Prevent Auto Reauth During Device Lock||Off
+TR |Authentication - Follow Global Settings for ZPA Reauth||On
+TR |Notification and Logging - Log mode||Default
+TR |Notification and Logging - Log File Size||100 (MB)
+TR |Notification and Logging - Use Zscaler Notification Framework||Off
+TR |Notification and Logging - Captive Portal Detection||On
+TR |Notification and Logging - Captive portal disable web security||10 (minutes)
+TR |Notification and Logging - Embedded Captive Portal||Off
+TR |Notification and Logging - Packet Capture Captive Portal||On
+TR |Client Connect UI - Default Language||Use System Language
+TR |Client Connect UI - SCCM Client Configuration||Off
+TR |Client Connect UI - Command Line Interface||Off
+TR |Advanced - Enable Anti Tampering||On
+TR |Advanced - Override Anti-tampering install parameter||Off
+TR |Advanced - Send Disable Service Reason||On
+TR |Advanced - Enable Client Connector Revert||Off
+TR |Advanced - Highlight Active Control||On
+TR |Advanced - Clear Kerberos DC||Off
+TR |Description||Jobseeker Kiosk Users Zscaler App Profile.
+END
+P |Configuration: Infrastructure -&gt; Connectors -&gt; Client -&gt; Platform Settings -&gt; Windows -&gt; App Profiles
+H5 |5.3.4.3.5 URL Filtering
+TBL|420,1780,780,4780,1200,780,2860
+TH |**Order**||**Name**||**Enabled**||**Categories / Groups**||**Groups**||**Action**||**Description**
+TR |1||js-kiosk-allow||Yes||Business and Economy, Education, Entertainment/Recreation, Government and Politics, Health, Advertising [TBC], CDN, FileHost, General AI &amp; ML Applications, Generative AI and ML Applications, Other Information Technology, Portals, Safe Search Engine, Translators, Web Search, Blogs, Discussion Forums, Internet Services, Online Chat, Other Internet Communication, Web Conferencing, Webmail, Zscaler Proxy Ips, Job Search, News and Media, Social and Family Issues, Society and Lifestyle, Special Interests/Social Organisations, Travel, Vehicles||apm-js-kiosk-users-internet||Allow||Allowed JS Kiosk users internet access.
+TR |2||js-kiosk-deny-all||Enabled||All||apm-js-kiosk-users-internet||Block||Block all unapproved JS Kiosk user internet access
+END
+P |Configuration: Policies -&gt; Internet &amp; SaaS -&gt; URL Control -&gt; URL Filtering. Note: Policies are applied top down; allowed categories will be permitted, all others will be blocked.
+H5 |5.3.4.3.6 Appendix A - PAC File
+P |function wssBypass(url, host) {
+P |    return (
+P |        shExpMatch(host, '*.ad.apm.net.au') || shExpMatch(host, 'ad.apm.net.au') ||
+P |        shExpMatch(host, '*.apm.net.au') || shExpMatch(host, 'apm.net.au')
+P |    );
+P |}
+P |
+P |    function FindProxyForURL(url, host) {
+P |    
+P |    // APM Bypass
+P |    if (wssBypass(url, host)) return "DIRECT";
+P |    
+P |    // Microsoft Update Exceptions
+P |    if (((localHostOrDomainIs(host, "download.visualstudio.microsoft.com"))||
+P |        (localHostOrDomainIs(host, "au.download.windowsupdate.com"))||
+P |        (localHostOrDomainIs(host, "download.windowsupdate.com")) ) && 
+P |        (url.substring(0,5) == "http:" || url.substring(0,6) == "https:"))
+P |    return "DIRECT";
+P |    
+P |    //  Azure Bypass 
+P |    if(dnsDomainIs(host,"login.microsoft.com")||
+P |        dnsDomainIs(host,"login.microsoftonline.com")||
+P |        dnsDomainIs(host,"manage.microsoft.com")||
+P |        dnsDomainIs(host,"r.manage.microsoft.com")||
+P |        dnsDomainIs(host,"login.windows.net")||
+P |        dnsDomainIs(host,"microsoftonline-p.com")||
+P |        dnsDomainIs(host,"devices.myki.io")||
+P |        dnsDomainIs(host,"login.live.com")||
+P |        dnsDomainIs(host,"intunendes3-advancedpersonnelmanagement.msappproxy.net")||
+P |        dnsDomainIs(host,"msftauth.net"))
+P |        return "DIRECT";
+P |
+P |    var privateIP = /^(0|10|127|192\.168|172\.1[6789]|172\.2[0-9]|172\.3[01]|169\.254|192\.88\.99)\.[0-9.]+$/;
+P |    var resolved_ip = dnsResolve(host);
+P |   // var country = "${COUNTRY}";
+P |
+P |    /* Don't send non-FQDN or private IP auths to us */
+P |    if (isPlainHostName(host) || isInNet(resolved_ip, "192.0.2.0","255.255.255.0") || privateIP.test(resolved_ip))
+P |        return "DIRECT";
+P |
+P |    /* FTP goes directly 
+P |    if (url.substring(0,4) == "ftp:")
+P |        return "DIRECT"; */
+P |            
+P |    /* test with ZPA */
+P |    if (isInNet(resolved_ip, "100.64.0.0","255.255.0.0"))
+P |        return "DIRECT";
+P |            
+P |    /* Updates are directly accessible */
+P |    if (((localHostOrDomainIs(host, "trust.zscaler.com")) ||
+P |            (localHostOrDomainIs(host, "trust.zscaler.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zscalerone.net")) ||
+P |           (localHostOrDomainIs(host, "trust.zscalertwo.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zscalerthree.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zscalergov.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zsdemo.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zscloud.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zsfalcon.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zdxcloud.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zdxpreview.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zdxbeta.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zsdevel.net")) ||
+P |            (localHostOrDomainIs(host, "trust.zsbetagov.net")) ||
+P |        (localHostOrDomainIs(host, "trust.zspreview.net")) ||
+P |        (localHostOrDomainIs(host, "trust.zscalerten.net")) || 
+P |        (localHostOrDomainIs(host, "trust.zdxten.net")) ||
+P |        (localHostOrDomainIs(host, "trust.zdxdevel.net")) || 
+P |        (localHostOrDomainIs(host, "trust.zdxgov.net")) || 
+P |        (localHostOrDomainIs(host, "trust.zscaler.us")) || 
+P |        (localHostOrDomainIs(host, "trust.zsqa.net")) ) && 
+P |            (url.substring(0,5) == "http:" || url.substring(0,6) == "https:"))
+P |        return "DIRECT";
+P |
+P |    /* for users of Canada if you want to direct traffic to only canada gateways*/
+P |//  if (shExpMatch(country, "Canada")) {
+P |//      return "PROXY ${COUNTRY_GATEWAY_FX}:80; PROXY ${COUNTRY_SECONDARY_GATEWAY_FX};DIRECT";
+P |//  }
+P |
+P |    /* for all users if you want to direct traffic to country gateways by default */
+P |//  return "PROXY ${COUNTRY_GATEWAY_FX}:80; PROXY ${COUNTRY_SECONDARY_GATEWAY_FX};DIRECT";
+P |
+P |
+P |    /* Default Traffic Forwarding. Forwarding to Zen on port 80, but you can use port 9400 also */
+P |    return "PROXY ${GATEWAY_FX}:80; PROXY ${SECONDARY_GATEWAY_FX}:80; DIRECT";
+P |}
+H3 |5.3.5 Fall back option:
+H4 |5.3.5.1 Traffic Routing
+B |All internet traffic from:
+B |– Kiosk device web traffic
+B |Routed through existing Zscaler infrastructure
+H4 |5.3.5.2 Web Filtering Enforcement
+P |Zscaler policies enforce:
+B |Blocked categories:
+B |– Adult
+B |– Gambling
+B |– Explicit content
+B |– Violence
+B |– Illegal content
+B |Explicitly allowed:
+B |– Facebook
+B |– Approved public AI tools (unless categorised unsafe)
+B |Whitelisted:
+B |– All URLs defined in managed Edge bookmarks
+P |No additional logging depth beyond existing APM standards.
+H4 |5.3.5.3 Authentication Model
+B |Zscaler authentication based on:
+B |– Network location
+B |– Device identity
+B |EntraID logins will authenticate via username and set password
+H3 |5.3.6 Printing Network Considerations
+P |No direct printing from kiosk devices is provided. Documents are emailed to the case worker via webmail for printing (see section 5.2.2).
+H3 |5.3.7 Network Responsibilities & Dependencies
+TBL|4230,5130
+TH |**Area**||**Responsibility**
+TR |Kiosk Wi-Fi SSID||Network team
+TR |VLAN / segmentation||Network team
+TR |IP addressing & DHCP||Network team
+TR |Zscaler routing & policy||Network / Cyber
+TR |Entra ID Named Locations||Identity / Endpoint
+TR |Credential-pipeline VNet design (apmkiosk.net.au)||Cloud / Azure
+END
+H3 |5.3.8 Network Items Out of Scope
+P |• Site cabling remediation
+P |• Switch hardware upgrades
+P |• Wi-Fi coverage optimisation
+P |• Internet bandwidth upgrades
+P |• Printer physical placement
+H1 |6. Information & Data Architecture
+H2 |6.1 Information Model
+P |The kiosk solution does not introduce a persistent data store. All data exists transiently on the kiosk device during a session and is cleared when the session ends. The information model is defined by the data that flows through the session:
+P |• Job seeker input: resumes, cover letters, job applications, form submissions
+P |• Browser data: browsing history, cookies, cached pages, autofill data, download files
+P |• Session metadata: sign-in logs, session duration, sign-out events
+P |• Authentication tokens: Entra ID session tokens, Edge profile data
+H2 |6.2 Information Classification
+P |The kiosk solution processes job seekers' personally identifiable information (PII) with short-term retention only. No data is persisted beyond the active session.
+TBL|2689,1561,1703,3407
+TH |**Data Element**||**Classification**||**Retention**||**Protection Mechanism**
+TR |Resume/cover letter content||PII - Sensitive||Session only||Profile & OneDrive cleanup on sign-out/restart + Edge data cleared on exit
+TR |Job applications||PII - Sensitive||Session only||Profile & OneDrive cleanup on sign-out/restart
+TR |Centrelink medical forms||PII - Health||Session only||Profile & OneDrive cleanup on sign-out/restart
+TR |Webmail credentials (if entered)||PII - Credentials||Session only||Edge ephemeral profile + no password manager
+TR |Financial information||PII - Financial||Session only||Ephemeral profile + no autofill
+TR |Browsing history||Activity data||Session only||ClearBrowsingDataOnExit + profile cleanup
+TR |Zscaler web logs||Activity data||Per APM retention policy||Retained in Zscaler per existing standard
+TR |Kiosk device & credential-pipeline logs||Operational data||Per Azure retention policy||Intune, Entra sign-in and Credential Proxy logs in Azure Monitor
+END
+H2 |6.3 Analytics and reporting Patterns
+P |Job seeker data follows a strictly ephemeral lifecycle with three independent destruction mechanisms:
+NUM|Job-seeker data exists only on the kiosk device during the session (browser data, the local profile & OneDrive); it is cleared on sign-out
+NUM|When the session ends: Edge data is cleared, the user profile is deleted on sign-out/restart, and the kiosk account's OneDrive scratch content is purged at logon, logoff and nightly (see 6.4 and 6.5).
+NUM|USB storage allows job seekers to take their own documents
+H2 |6.4 OneDrive Session Purge
+P |Each kiosk account's own OneDrive for Business is enabled as ephemeral scratch storage so Office for the Web can create and edit documents; the SharePoint/OneDrive service plan (SHAREPOINTDESKLESS) is enabled on the F3 licence for this purpose. Because Office for the Web autosaves continuously and cannot be turned off, a job seeker's document is present in that OneDrive during the session; three layered controls then guarantee that no job-seeker file survives between sessions. All three permanently delete items (bypassing the 93-day OneDrive recycle bin) and all three are fail-safe by design. Figure 6 places the three layers on the session timeline.
+FIG|onedrive-purge.png|Figure 6. OneDrive session purge - three layers across the session timeline|1520|1080
+H3 |6.4.1 Logon Purge (Primary)
+P |A scheduled task (APM-Kiosk-OneDrive-Purge) runs Clear-KioskOneDrive.ps1 as the interactive user at every logon. It acquires a delegated Microsoft Graph token through the WAM broker with the scope Files.ReadWrite - a delegated grant, so it can only ever touch the signed-in account's own drive - and permanently deletes every top-level OneDrive item. Because it fires at logon, every session begins with a clean drive regardless of how the previous session ended; this is the reliable layer, since a logoff script never runs after a hard power-off. The task is registered once per device (as system) by an Intune platform script, Register-KioskOneDrivePurge.ps1, and the payload is delivered as a Win32 app. Any token or purge error is logged and the script exits 0, so it can never block logon.
+H3 |6.4.2 Logoff Purge (Secondary)
+P |The same scheduled task also fires on user-initiated logoff (Security event 4647), running the identical purge as the session tears down. Authentication during sign-out is fragile, so this layer is best-effort - it complements the logon purge rather than replacing it.
+H3 |6.4.3 Nightly Fleet-Wide Purge (Tertiary)
+P |An Azure Automation runbook, Clear-AllKioskOneDrive.ps1, runs nightly as a fleet-wide catch-all. Using app-only Microsoft Graph via the Automation managed identity (the application permission Files.ReadWrite.All, which in the dedicated apmkiosk.net.au tenant can only reach kiosk drives because the directory holds no other identities productivity identities), it enumerates SG-APM-Kiosk-Users and permanently deletes each account's top-level OneDrive items. It catches any device that never ran its own logon or logoff purge - a hard power-off, an extended offline period, or a disabled task. The runbook touches no Key Vault, so it runs in the Azure Automation sandbox like the other credential-pipeline runbooks. It is scheduled nightly at approximately 02:00, before the 03:00 patch and restart window. Per-user isolation means one account's failure is logged and the batch continues; accounts with no provisioned OneDrive are skipped, so under the default OneDrive-suppressed posture the runbook is a safe no-op.
+P |The two device-side layers use a delegated grant (own drive only); the runbook uses an app-only grant that the dedicated tenant confines to kiosk drives. All three use the Graph permanentDelete operation so purged content bypasses the recycle bin and cannot be recovered by the kiosk account.
+H2 |6.5 Office for the Web Storage Model
+P |Word, Excel and PowerPoint on the web are cloud-storage-backed applications so they edit a document in place in OneDrive for Business or SharePoint Online, and their AutoSave writes every change to that store continuously and cannot be turned off (per the Microsoft Office for the Web service description). There is no browser-only editing mode that keeps a document off the cloud, so a store is a prerequisite for document creation - without one, the web apps are view-only and cannot create or edit a resume.
+P |User story 08 requires job seekers to create resumes and documents in Microsoft Office on the kiosk. To meet it, each kiosk account's own OneDrive for Business (2 GB under the F3 licence) is enabled as ephemeral scratch storage - Posture B. The alternative, suppressing OneDrive entirely (Posture A), would guarantee that nothing is ever written to OneDrive but would reduce the web apps to view-only and fail the resume-creation requirement, and was rejected for that reason.
+P |Because AutoSave cannot be disabled, a job seeker's document is present in the kiosk account's OneDrive for the duration of the session. The design does not attempt to prevent this; it prevents persistence between job seekers. The three-layer OneDrive Session Purge (section 6.4) is the enforcing control: the logon purge guarantees every session starts with an empty drive, and the logoff and nightly-runbook layers are catch-alls; all three permanently delete content, bypassing the 93-day recycle bin. The guarantee the design makes is therefore that no job-seeker file persists between sessions - not that nothing is written to OneDrive during a session.
+P |The only store any kiosk identity can reach is its own OneDrive. The kiosk fleet is in the dedicated apmkiosk.net.au tenant, which holds no corporate content, and the Purview Information Barrier and Conditional Access confine kiosk accounts to their own OneDrive as the Office-for-the-Web storage layer (section 7). Corporate SharePoint and OneDrive for Business are not reachable from a kiosk.
+H1 |7. Cyber & Security Architecture
+H2 |7.1 RFFR Overview
+P |APM operates under the Workforce Australia Service Deed, which requires compliance with the Right Fit for Risk (RFFR) cybersecurity accreditation framework administered by DEWR. RFFR is based on ISO 27001 and the ASD ISM.
+P |RFFR compliance is managed under APM’s existing ISMS with the Compliance Manager as responsible, Cyber Security is consulted and provides assurance. This document supports the accreditation process but does not constitute the ISMS.
+H2 |7.2 Identity and Access Control
+H3 |7.2.1 F3 Licence Assignment
+P |As part of the Entra ID provisioning process each kiosk identity receives a single licence, Microsoft 365 F3, configured on a default-deny model: every service plan is disabled except the minimum the kiosk needs. Enabled from F3:
+B |Microsoft Entra ID P1 (required for Conditional Access)
+B |Microsoft Intune
+B |Office for the Web (Word, Excel, PowerPoint)
+B |OneDrive for Business (the ephemeral scratch store, section 6.5).
+P |==Microsoft Defender for Endpoint P2, Defender for Office 365 P2 and Defender for Identity are licensed by APM separately and do not form part of the kiosk user licence. The solution does not include Microsoft Entra ID P2, so risk-based Conditional Access (Entra ID Protection) is not available; the compensating controls are the device-binding and protocol gates in section 7.2.4.==
+P |Everything else, such as Exchange Online and mail, Teams, Defender for Office 365, Defender for Identity, Defender for Cloud Apps, Yammer, Sway, Bookings, Forms, the Power Platform, Whiteboard, Stream and the remainder stay disabled.
+P |This enforces least-privilege access at the identity layer and reduces the attack surface associated with the kiosk account. If a kiosk user credential or device is compromised, the account is technically constrained from being used to access unauthorised Microsoft 365 workloads, data repositories, or adjacent tenant resources, thereby limiting lateral movement and containing the blast radius of compromise.
+P |Kiosk accounts on apmkiosk.net.au still receive the F3 licence through group-based licensing on SG-APM-Kiosk-Users. The default-deny service plan model keeps Exchange Online disabled, so no mailbox is created for a kiosk account. Domain-level mail blocking and anti-spoofing are covered in Domain Management.
+H3 |7.2.2 Entra ID Groups
+TBL|2340,1560,2340,3120
+TH |**Group Name**||**Type**||**Membership**||**Purpose**
+TR |SG-APM-Autopilot-Kiosk-Devices||Device (dynamic)||Dynamic: device name starts with KI-||Target the Autopilot deployment profile. Membership is keyed on the Autopilot group tag applied at registration (device.devicePhysicalIds -any (_ -eq "[OrderID]:KIOSK")), so devices fall in scope before they are renamed - not on device name.
+TR |SG-APM-Kiosk-Devices||Device (dynamic)||Dynamic: device name starts with KI-||Target kiosk Intune configuration profiles (Assigned Access, Edge, profile cleanup, logon-lockdown)
+TR |SG-APM-Kiosk-Users||User (assigned)||Per-device kiosk Entra ID accounts||Group-based F3 licensing and Conditional Access for the kiosk accounts
+TR |APM-JS-[LOCATION]-Devices||Device (assigned)||Per-location Job Seeker devices||Apply location specific policies, auto naming convention, asset management assistance
+END
+H3 |7.2.3 Kiosk User Accounts
+TBL|2808,6552
+TH |**Property**||**Value**
+TR |UPN format||Kiosk-[SERIAL]@apmkiosk.net.au
+TR |Example||kiosk-cu9g7h2@apmkiosk.net.au
+TR |Password delivery||Kiosk lock screen (username, password, data wipe notice)
+TR |Password rotation||Every 12 months
+TR |MFA||Not required - device is trust anchor; conditional access restricts sign-in - The device is authenticated via its hardware hash and TPM attestation during initial device enrolment
+TR |Group membership||SG-APM-Kiosk-Users
+END
+P |UPN format and example use the apmkiosk.net.au suffix. MFA stays not required, and the device trust anchor and Conditional Access controls do not change.
+H3 |7.2.4 Conditional Access Policies
+P |The kiosk solution signs in with fixed per-device usernames and passwords, so kiosk identities cannot satisfy multi-factor authentication. This policy set removes MFA for the kiosk population only and replaces it with layered compensating controls: access is bound to known, compliant, Entra-joined kiosk hardware, on approved applications only, with every credential-theft pathway (legacy authentication, device-code phishing) explicitly blocked.
+P |All policies target the kiosk user group SG-APM-Kiosk-Users, except CA-APM-Kiosk-BlockLegacyAuth, which targets all users. Device conditions use device enrolment profile (device.enrollmentProfileName -eq "APM-Kiosk-SelfDeploying"), because Conditional Access device filters cannot reference an Entra security group. The device group SG-APM-Kiosk-Devices continues to drive Intune policy assignment. ==APM sites do not present dedicated or static egress IP ranges, so a site-level IP allow-list is not possible. Instead, CA-APM-Kiosk-BlockNonAU blocks any sign-in presenting a non-Australian IP address - legitimate kiosk traffic always egresses via Zscaler’s Australian datacentres - and device binding (CA-APM-Kiosk-RequireCompliantDevice and CA-APM-Kiosk-BlockNonKioskDevices) carries the primary compensating role a trusted-location control would otherwise provide.==
+TBL|341,2812,1760,4447
+TH |**#**||**Policy**||**Control layer**||**Function in the environment**
+TR |1||CA-APM-Kiosk-WebOnlyOffice||Application||Denies all cloud applications except Office for the web and SharePoint Online/OneDrive, constraining kiosk identities to the resume-editing surface
+TR |2||CA-APM-Kiosk-RequireCompliantDevice||Device trust and health||Restricts access to Entra ID-joined, Intune-managed kiosk devices assessed as compliant; session controls limit token lifetime
+TR |3||CA-APM-Kiosk-BlockNonKioskDevices||Device identity||Denies kiosk identities on any device not carrying the kiosk enrolment profile, including unregistered devices
+TR |4||CA-APM-Kiosk-BlockNonWindows||Platform||Denies sign-ins from Android, iOS, macOS and Linux platforms
+TR |5||CA-APM-Kiosk-BlockLegacyAuth||Protocol||Denies legacy authentication protocols that bypass device-based evaluation
+TR |6||CA-APM-Kiosk-BlockAuthFlows||Authentication flow||Denies device code flow and authentication transfer
+TR |==7==||==CA-APM-Kiosk-BlockNonAU==||==Location==||==Denies sign-ins presenting a non-Australian IP address; kiosk traffic always egresses via Zscaler’s Australian datacentres==
+END
+P |No single policy carries the design. Each policy addresses a distinct control layer, and access is granted only where every layer is satisfied concurrently: approved kiosk hardware, a modern authentication client, and approved applications. Policies 2 and 3 bind each kiosk identity to APM kiosk hardware, substituting the possession factor MFA would otherwise provide; policies 5 and 6 close the credential-theft pathways that bypass device evaluation; and policy 1 constrains the blast radius of any compromised session to the resume-editing surface. ==Microsoft Entra ID P2 is not licensed in this solution, so no Identity Protection risk-based Conditional Access is used; the compensating position is that device binding makes a stolen credential unusable off approved kiosk hardware regardless of sign-in behaviour. Policy 7 adds a coarse deterministic outer ring in its place: a leaked passphrase cannot be used from outside Australia. It does not stop a domestic attacker - that remains the role of the device-binding gates - and Zscaler’s shared egress ranges are deliberately not allow-listed, as they are common to every Zscaler customer and would add a maintenance dependency for little control gain.== Figure 7 shows the gates in evaluation order alongside the network controls that precede them.
+FIG|ca-control-gates.png|Figure 7. Conditional Access and network control flow - layered gates from site network to application access|1520|2288
+P |**CA-APM-Kiosk-WebOnlyOffice**
+P |This Conditional Access policy restricts kiosk user identities to Microsoft 365 web-based productivity services required for resume and document creation (Word, Excel, and PowerPoint Online) and blocks access to all other Microsoft 365 workloads and third-party cloud applications.
+P |The policy enforces device-bound access by requiring the session to originate from an APM-managed, Entra ID-joined, Intune-compliant kiosk device provisioned via the approved Autopilot profile.
+P |Access to services outside the approved Office Online scope (including Exchange Online, Teams, and non-business SaaS applications) is explicitly denied.
+P |SharePoint Online and OneDrive for Business remain reachable for kiosk identities solely as the storage layer required by Office for the Web and for staging files from USB media; content exposure within these services is controlled by the Information Barrier and scratch-OneDrive controls described in this design (see section 6.5, Office for the Web storage model).
+TBL|3000,6360
+TH |**Field**||**Value**
+TR |Name||CA-APM-Kiosk-WebOnlyOffice
+TR |Users / Groups||Include: SG-APM-Kiosk-Users
+TR |Cloud Apps||Include: All cloud apps<br>Exclude: Microsoft Office Web Apps Service, Office 365 SharePoint Online
+TR |Conditions > Device platforms||Include: Windows
+TR |Conditions > Device filter||Include: device.trustType -eq "AzureAD" -and device.enrollmentProfileName -eq "APM-Kiosk-SelfDeploying"
+TR |Grant||Block access
+END
+P |**CA-APM-Kiosk-RequireCompliantDevice**
+P |Allows kiosk sign-in only from devices that are Entra ID joined, carry the kiosk self-deploying enrolment profile and are assessed as compliant by Intune. A valid username and password cannot be used from any other machine, because the sign-in cannot present a compliant kiosk device claim. Session controls limit token lifetime and prevent persistent browser sessions.
+TBL|3000,6360
+TH |**Field**||**Value**
+TR |Name||CA-APM-Kiosk-RequireCompliantDevice
+TR |Users / Groups||Include: SG-APM-Kiosk-Users
+TR |Cloud Apps||Include: All resources (all cloud apps)
+TR |Conditions > Device platforms||Include: Windows
+TR |Conditions > Device filter||Include: device.trustType -eq "AzureAD" -and device.enrollmentProfileName -eq "APM-Kiosk-SelfDeploying"
+TR |Grant||Require device to be marked as compliant
+TR |Session||Sign-in frequency: 12 hours<br>Persistent browser session: Never persistent
+END
+P |**CA-APM-Kiosk-BlockNonKioskDevices**
+P |Explicit deny that closes the gap left by the compliant-device grant: kiosk identities are blocked on every device that does not carry the kiosk self-deploying enrollment profile, including unregistered and unknown devices, which present no attribute and therefore match the filter. This policy and the compliant-device grant together hard-bind each kiosk identity to APM kiosk hardware, so a stolen password cannot be used from any other device.
+TBL|3000,6360
+TH |**Field**||**Value**
+TR |Name||CA-APM-Kiosk-BlockNonKioskDevices
+TR |Users / Groups||Include: SG-APM-Kiosk-Users
+TR |Cloud Apps||Include: All resources (all cloud apps)
+TR |Conditions > Device filter||Include: device.enrollmentProfileName -ne "APM-Kiosk-SelfDeploying"
+TR |Grant||Block access
+END
+P |**CA-APM-Kiosk-BlockNonWindows**
+P |Denies kiosk sign-ins from Android, iOS, macOS and Linux platforms. Platform detection is evaluated independently of device filters, so an anomalous or spoofed device record still fails on platform.
+TBL|3000,6360
+TH |**Field**||**Value**
+TR |Name||CA-APM-Kiosk-BlockNonWindows
+TR |Users / Groups||Include: SG-APM-Kiosk-Users
+TR |Cloud Apps||Include: All resources (all cloud apps)
+TR |Conditions > Device platforms||Include: Android, iOS, macOS, Linux
+TR |Grant||Block access
+END
+P |**CA-APM-Kiosk-BlockLegacyAuth**
+P |Legacy authentication protocols (IMAP, POP, SMTP AUTH, Exchange ActiveSync) do not carry device claims and bypass device-based Conditional Access evaluation. For password-only accounts this is the primary credential-spray attack path; it is closed unconditionally.
+TBL|3000,6360
+TH |**Field**||**Value**
+TR |Name||CA-APM-Kiosk-BlockLegacyAuth
+TR |Users / Groups||Include: All users
+TR |Cloud Apps||Include: All resources (all cloud apps)
+TR |Conditions > Client apps||Include: Exchange ActiveSync clients, Other clients
+TR |Grant||Block access
+END
+P |**CA-APM-Kiosk-BlockAuthFlows**
+P |Denies device code flow and authentication transfer. Device-code phishing is the leading technique used against fixed-credential accounts, and authentication transfer moves an authenticated session onto another device. Neither flow has a legitimate use on a kiosk.
+TBL|3000,6360
+TH |**Field**||**Value**
+TR |Name||CA-APM-Kiosk-BlockAuthFlows
+TR |Users / Groups||Include: SG-APM-Kiosk-Users
+TR |Cloud Apps||Include: All resources (all cloud apps)
+TR |Conditions > Authentication flows||Include: Device code flow, Authentication transfer
+TR |Grant||Block access
+END
+P |==**CA-APM-Kiosk-BlockNonAU**==
+P |==Blocks any kiosk sign-in presenting a non-Australian IP address. Kiosk sign-ins always arrive from Zscaler’s Australian datacentre egress, so the gate is deterministic, needs no per-site configuration and no Entra ID P2, and is immune to site IP churn. This is the licensable substitute for the risk-based sign-in policies that Entra ID P2 would provide: it removes the offshore abuse of a leaked passphrase outright.==
+TBL|3000,6360
+TH |**Field**||**Value**
+TR |==Name==||==CA-APM-Kiosk-BlockNonAU==
+TR |==Users / Groups==||==Include: SG-APM-Kiosk-Users==
+TR |==Cloud Apps==||==Include: All resources (all cloud apps)==
+TR |==Conditions > Locations==||==Include: Any location<br>Exclude: Named location "Australia" (country, determined by IP address)==
+TR |==Grant==||==Block access==
+END
+P |The kiosk Conditional Access policies target the SG-APM-Kiosk-Users group and device filters, not a domain, so targeting does not change. Two items to manage: new accounts must be members of SG-APM-Kiosk-Users, which the Account Creation runbook handles, and any tenant-wide policy scoped to All users  evaluates apmkiosk.net.au accounts. Confirm no tenant policy forces interactive MFA or user conditions a kiosk account cannot meet.
+H4 |7.2.4.1 Existing Policy Modifications
+P |In the dedicated apmkiosk.net.au tenant there are no pre-existing corporate MFA policies to exclude the kiosk users from. Security defaults are disabled and replaced by the kiosk Conditional Access set above; a separate policy requires MFA for the tenant’s administrative accounts only.
+H4 |7.2.4.2 Base and administrative Conditional Access policies
+P |The policies above secure the kiosk population. A base set secures the tenant's own administrative and service identities. Because the tenant contains only kiosk users and a small number of administrators, the base set targets all users and excludes the kiosk group and the emergency-access accounts. Security defaults are disabled; this set replaces them. The exclusion of SG-APM-Kiosk-Users is essential: kiosk identities are password-only by design (they cannot satisfy MFA), so any all-users MFA policy that did not exclude them would lock the fleet out.
+B |CA-Base-RequireMFA - Require multi-factor authentication for all interactive sign-ins. Assignment: All users, excluding SG-APM-Kiosk-Users and the emergency-access accounts. Grant: require MFA (Microsoft Authenticator or a phishing-resistant method). This is the primary control protecting the tenant administrators.
+B |CA-Base-RequirePhishResistantMFA-Admins - For privileged directory roles (Global Administrator, Privileged Role Administrator, Security Administrator, Intune Administrator and equivalents), require phishing-resistant MFA (FIDO2 security key, passkey or certificate-based authentication) via an authentication-strength grant.
+B |CA-Base-AdminSessionControls - For administrative roles, set a sign-in frequency (for example 8 hours) and disable persistent browser sessions, so an unattended administrative session does not remain valid indefinitely.
+B |Emergency access (break-glass) - Two cloud-only Global Administrator emergency-access accounts are excluded from every Conditional Access policy above, so a policy or MFA-service failure cannot lock all administrators out of the tenant. They are protected with long (25+ character) passphrases held offline under change control (or FIDO2 keys), are kept out of routine use, and every sign-in raises an alert. This follows Microsoft's emergency-access account guidance.
+H3 |7.2.5 Compliance Policy
+P |Policy: CMP-APM-Kiosk-Devices | Scope: SG-APM-Kiosk-Devices
+TBL|4680,4680
+TH |**Setting**||**Required Value**
+TR |Operating system||Windows 11
+TR |==Minimum OS version==||==Pinned to the validated Windows 11 Enterprise feature version (see 9.3)==
+TR |Microsoft Defender||Enabled
+TR |==Microsoft Defender antimalware security intelligence up to date==||==Required==
+TR |==Real-time protection==||==Required==
+TR |==Antispyware==||==Required==
+TR |BitLocker||Enabled
+TR |==Secure Boot==||==Required==
+TR |Firewall||Enabled
+TR |TPM||Required
+END
+P |==The kiosk compliance policy mirrors the nine device-health and system-security gates in the Windows compliance policy of the APM Windows SOE Hardening Standard V3.0, so a kiosk device is assessed on the same basis as a staff device. The standard records one open observation against its own staff policy, that no minimum OS version is enforced; the kiosk policy closes that observation, because the fleet is already pinned to a validated feature version by the update rings in 9.3.==
+H3 |7.2.6 Microsoft Office Hardening
+P |As Microsoft Office is available online only, the organisation acknowledges that Microsoft Word, Excel, and PowerPoint Online do not support endpoint-level application hardening controls such as macro configuration, Protected View enforcement, OLE/DDE restrictions, or application allow-listing. This limitation is inherent to Microsoft’s SaaS delivery model and cannot be mitigated through Intune or endpoint configuration. In the Job Seeker Kiosk environment, this risk is accepted on the basis that kiosk devices are single-purpose, locked-down endpoints with restricted user interaction, hardened browser configuration, enforced device compliance, and ephemeral user sessions that do not persist data locally. Access to Microsoft 365 services is constrained through Conditional Access, network and device trust controls, and Microsoft-managed service security, rather than individual user authentication factors such as MFA, which are not appropriate for anonymous or assisted kiosk use.
+H3 |7.2.7 Information Barrier
+P |APM kiosk users in the dedicated apmkiosk.net.au tenant retain full use of the Office for the Web applications (Word, Excel and PowerPoint in the browser), including the ability to create and edit their own documents in OneDrive. Because the kiosk fleet is in a separate, dedicated tenant, there are no APM corporate SharePoint sites present for kiosk users to reach; the Information Barrier below is retained as defence-in-depth.
+P |A conventional Conditional Access block against the SharePoint Online service is deliberately **not** used here. Office for the Web, Teams and Office.com all depend on the SharePoint Online service, and OneDrive shares that same service and Conditional Access application - there is no separate OneDrive app to target. Blocking at the service level would therefore disable the very web apps and OneDrive editing the kiosk role relies on; the control cannot be drawn where it is needed.
+P |Instead, we implement Microsoft Purview Information Barriers. The kiosk users are placed in a dedicated segment, and a block policy isolates that segment from all others. Information Barriers operates at the site and segment level rather than the service level, so kiosk users are denied access to corporate SharePoint sites while their own OneDrive - and therefore the Office web applications - continues to function normally.
+H2 |7.3 Security Controls Alignment
+TBL|1872,2340,5148
+TH |**Control Area**||**Solution Component**||**Implementation Detail**
+TR |Access Control||Entra ID + Conditional Access||Device-based auth; a compliant, Entra-joined kiosk device is required. ==Sign-ins from outside Australia are blocked (CA-APM-Kiosk-BlockNonAU); a site-level IP allow-list is not possible as APM sites present no dedicated egress IP ranges.==
+TR |Session Management||Device idle sign-out + profile cleanup||Idle auto sign-out; user profile deleted on sign-out/restart
+TR |Data Protection||Zero persistence architecture||Edge data cleared on exit, user profile deleted on sign-out/restart; no data persists on the device
+TR |Data at Rest||BitLocker||Required on all kiosk devices via compliance policy
+TR |Web Filtering||Zscaler (existing APM standard)||Category-based filtering, whitelist for approved sites
+TR |Endpoint Protection||Microsoft Defender||Real-time protection, feeds compliance policy
+TR |Logging||Zscaler + Intune + Entra sign-in logs||Web activity, connection events, compliance state
+TR |Physical Security||Data wipe notice||Wallpaper notice
+TR |Information Barrier||Information Barrier||Defence-in-depth Purview Information Barrier isolating the kiosk segment. The kiosk fleet is in a dedicated apmkiosk.net.au tenant, so APM corporate SharePoint, Email and Teams are in a separate tenant and not reachable by kiosk accounts.
+TR |Network Segmentation||Re-used Job Seeker VLAN (now APM-KIOSK)||Kiosk devices use the re-purposed Job Seeker VLAN with controlled access to approved Azure, Microsoft, and APM-managed service dependencies only; no general access to corporate systems or personal device connectivity
+TR |Patch Management||Windows Update for Business update rings||Monthly quality/security updates via pilot and prod rings; daily 03:00 restart
+TR |==SOE Hardening Standard==||==APM Windows SOE Hardening Standard V3.0==||==The kiosk inherits the standard's device hardening policies. Inheritance, exclusions and compensating controls are set out in 7.3.1 to 7.3.5==
+END
+H3 |==7.3.1 Relationship to the APM Windows SOE Hardening Standard==
+P |==The kiosk is a Windows 11 Enterprise endpoint and is governed by the same document as every other APM Windows device: the APM Windows SOE Hardening Standard V3.0 (internal), which carries 748 controls across 11 Intune policies, benchmarked against the ASD Windows Hardening Guidelines, the Microsoft Windows 11 v24H2 baseline and the Microsoft Edge security baseline v139. The kiosk is not a new hardening baseline. It inherits the standard, excludes a small number of controls that the kiosk use case cannot satisfy, compensates for each exclusion, and adds controls the standard does not need to carry for a staffed device.==
+P |==This position matters for RFFR. An assessor does not audit the controls that were applied; those are already evidenced by the standard. An assessor audits the exclusions. Every exclusion below is therefore named, justified, compensated and given an owner and a review point. Figure 7 sets out the inheritance model.==
+FIG|soe-inheritance.png|Figure 8. SOE Hardening Standard inheritance model - inherited, excluded and compensated, and kiosk-additional controls|1520|1904
+H3 |==7.3.2 Policies inherited without change==
+P |==The following policies from the standard apply to SG-APM-Kiosk-Devices as written. No kiosk variant of these policies is created, so the fleet stays on the same policy objects as the rest of the estate and inherits future revisions automatically. Application control is the single exception and is treated separately in 7.3.4, because the kiosk needs a tighter policy than the estate one rather than the same policy.==
+TBL|2600,2900,3860
+TH |==**Policy (standard)**==||==**Intune profile**==||==**Relevance to the kiosk**==
+TR |==Windows 11 security baseline (OS)==||==APM-W11-SEC-Baseline-P-1.2==||==594 controls. Carries the AutoPlay and AutoRun blocks on all drives, Credential Guard with UEFI lock, virtualisation-based security, SMB v1 disabled, anonymous SAM enumeration denied, PowerShell signed-scripts-only execution policy with script block logging, Remote Assistance and Remote Shell disabled, the audit policy set, and the built-in Administrator and Guest accounts disabled and renamed==
+TR |==Attack surface reduction rules==||==APM-WIN-SEC-ASR-P-1.0==||==20 controls. Includes "Block untrusted and unsigned processes that run from USB", which is the primary compensating control for the kiosk USB exception, plus LSASS credential-theft blocking, obfuscated-script blocking and prevalence-based executable blocking==
+TR |==BitLocker drive encryption==||==APM-W11-SEC-Bitlocker-P-1.1==||==20 controls. XTS-AES 256-bit on the OS drive, pre-boot authentication required, recovery key escrowed to Entra ID before encryption with client-driven rotation. Applies in full to the fixed drive; the removable-drive control is excluded (see 7.3.3)==
+TR |==Microsoft Edge security baseline==||==APM-W11-SEC-Edge Baseline-P-1.2==||==Password Manager disabled, about:flags blocked, certificate error overrides prevented, SmartScreen enforced with no override, DNS-over-HTTPS off so that Zscaler retains visibility, extension install allow-list and block-list enforced==
+TR |==Developer tools restriction==||==APM-W11-SEC-Edge Dev Baseline-P-2.0==||==Developer Tools availability disabled. The kiosk is never in the developer exception group==
+TR |==Windows compliance policy==||==CMP-APM-Kiosk-Devices==||==Mirrors the nine staff gates and additionally pins a minimum OS version (see 7.2.5)==
+END
+P |==Two places where the kiosk is deliberately stricter than the staff SOE. The standard records the Microsoft Store as set below the benchmark, because some government contracts require Store-delivered applications; the kiosk has no such requirement, so "Turn off the Store application" is enabled on the kiosk and the deviation does not carry across. The standard sets an interactive logon machine inactivity limit of 900 seconds; the kiosk signs the user out after 600 seconds and clears the profile, rather than locking the session (see 4.3.2).==
+H3 |==7.3.3 Excluded controls and compensating controls==
+P |==Three controls in the standard are incompatible with the approved kiosk use case. All three relate to removable media, and all three exist because job seekers must be able to carry a resume to and from the device on a USB drive: this is an approved business requirement (user story 15) and there is no printing capability on the fleet to substitute for it.==
+TBL|2400,1500,1400,4060
+TH |==**Control excluded**==||==**Standard**==||==**Kiosk**==||==**Compensating controls**==
+TR |==All Removable Storage classes: Deny all access==||==Enabled (ASD, Met)==||==Not enabled==||==Removable storage is the only document transfer path on the fleet. Compensated by: AutoPlay and AutoRun disabled on all drives; "Scan removable drives" enabled in Defender; ASR "Block untrusted and unsigned processes that run from USB" enforced; the kiosk App Control policy in enforced mode with script enforcement enabled (4.3.9), so neither an executable nor a script carried in on USB is on the trusted-signer list and neither will run; Assigned Access exposes File Explorer scoped to removable drives only, with no shell, command prompt or task manager==
+TR |==Removable Disks: Deny write access==||==Enabled (ASD, Met)==||==Disabled==||==As above. Write access is required to save a resume. The device holds no corporate data and the tenant holds no corporate content, so the exfiltration surface is the job seeker's own document==
+TR |==Write access to removable data-drive not protected by BitLocker==||==Block (Microsoft baseline, Met)==||==Not configured==||==Job seekers bring personal, unencrypted USB drives; requiring BitLocker would make the transfer path unusable and would encrypt a member of the public's own media. Compensated by the controls above, and by the fact that the data written is the job seeker's own document, created by them, in their possession==
+END
+P |==The exclusions are delivered by assignment, not by editing the estate policies. SG-APM-Kiosk-Devices is excluded from the assignment of APM-WIN-SEC-USB Baseline-P-1.0 and from the removable-drive settings of APM-W11-SEC-Bitlocker-P-1.1, and receives the two purpose-built exception profiles in 5.2.3 instead (APM-W11-SEC-USB Exception-P-1.0 and APM-W11-SEC-Bitlocker Exception-P-1.0). The estate policies are unchanged and no other device population is affected. They are recorded as accepted risks in the kiosk RFFR Statement of Applicability, owned by APM Cyber Security, and reviewed at each annual review of the hardening standard.==
+P |==Identity policy exclusions are separate and are covered in 7.2.4.1: kiosk identities are excluded from the tenant's MFA and phishing-resistant MFA policies because a password-only kiosk account cannot satisfy them. Kiosk devices are not excluded from any device hardening control other than the three above. In particular they are not excluded from application control, which is the control most relevant to an unattended device in a public area.==
+H3 |==7.3.4 Controls the kiosk adds beyond the standard==
+TBL|2800,1800,4760
+TH |==**Control**==||==**Value**==||==**Purpose**==
+TR |==Application Control - kiosk variant==||==APM-Kiosk-SEC-AppControl-Audit-P-1.0 and APM-Kiosk-SEC-AppControl-Enforced-P-1.0, replacing the estate policy assignment==||==The one policy where the kiosk does not stay on the estate policy object. The estate policy trusts 18 signers, permits supplemental policies and a managed installer, and leaves script enforcement off. The kiosk installs no applications, so its policy trusts four publishers, forbids supplemental policies and a managed installer, enables script enforcement and is itself signed. Application control carries the compensating weight for the removable-media exclusions, so it must be tighter here than on a staff device. Full specification in 4.3.9==
+TR |==Multi-app Assigned Access==||==Edge, File Explorer (removable drives only), Zscaler tray, TeamViewer==||==Removes the shell, Settings, command prompt and Task Manager. The standard has no equivalent, because a staff device needs a full desktop==
+TR |==Logon Lockdown==||=="Allow log on locally" restricted to the device's own kiosk user and its dedicated support account==||==Binds each credential to one physical device. Extends the standard's "Deny Local Log On" user-right approach from a deny-list to an allow-list==
+TR |==Idle sign-out==||==600 seconds, sign-out not lock==||==Stricter than the standard's 900-second inactivity limit, and terminates the session rather than locking it==
+TR |==User profile deletion==||==Delete profiles older than 0 days on restart==||==Guarantees no job-seeker data survives a session==
+TR |==Turn off the Store application==||==Enabled==||==Closes the one control the standard records as set below the benchmark==
+TR |==OneDrive session purge==||==Three layers (see 6.4)==||==Removes autosaved job-seeker documents that Office for the web creates and cannot be prevented from creating==
+END
+H3 |==7.3.5 Alignment items to close before build==
+P |==Reading the kiosk design against the standard raised four items that are not exclusions. Two (SOE-01, SOE-03) are closed in this version; the remaining two must be resolved rather than accepted.==
+TBL|700,4200,4460
+TH |==**Ref**==||==**Finding**==||==**Action**==
+TR |==SOE-01==||==**Closed in this version.** The standard sets a minimum device password length of 14 characters. The ANIMAL-noun passphrase format was described as approximately 14 characters, and worked examples fell short: "OTTER-blanket" was 13==||==The generator's word lists are now constrained so every generated passphrase is at least 14 characters. 5.1.1.1.4 states the guaranteed minimum and gives a corrected example, PANTHER-blanket (15 characters)==
+TR |==SOE-02==||==The Windows 11 baseline sets the PowerShell execution policy to allow only signed scripts. The kiosk depends on several device-side scripts (idle monitor, OneDrive purge, device rename, lock-screen remediation)==||==Every kiosk script must be signed with the APM code-signing certificate, as must the kiosk App Control policy itself (4.3.9). Both are gated on that certificate being issued, which is a shared program dependency. Owner: AVD Build Engineer (Twiki Corp)==
+TR |==SOE-03==||==**Closed in this version.** The standard disables all remote-access paths (Remote Assistance, Remote Shell, Remote Desktop). The kiosk allow-lists TeamViewer, which reintroduces one==||==Remote-support access model documented in 4.3.10: attended consent for assisted support, unattended access limited to the administrative scenario at the lock screen, a dedicated non-privileged per-device support account with Key Vault-managed credentials that are never displayed, operator authentication by named account with multi-factor authentication and no shared connection password, file transfer disabled, and session logging to Microsoft Sentinel. Submitted to APM Cyber Security as a documented variation to the standard's remote-access position==
+TR |==SOE-04==||==The baseline enables "Block user from showing account details on sign-in", while the kiosk deliberately displays the device UPN and passphrase on the lock screen==||==Record as an explicit, argued deviation rather than leaving it as a contradiction: the credential is per-device, device-bound by Conditional Access, useless off the device, and displaying it is what removes the need for staff to hand out passwords. Owner: Shaun Struik, for APM Cyber Security acceptance==
+END
+P |==The standard records an open item on application control: script enforcement is disabled in both the estate Audit and Enforced App Control policies, which the standard's own assessment flags for attention. That item is **not** carried into the kiosk. The kiosk App Control policy in 4.3.9 enables script enforcement, because application control is the compensating control for the removable-media exclusions and would not otherwise constrain a script carried in on a USB drive. The estate item remains open for the standard's owner (End User Computing Manager) and is not resolved by this design.==
+H2 |7.4 Web Filtering
+TBL|2340,7020
+TH |**Action**||**Categories / Sites**
+TR |Block||Adult, gambling, explicit, violence, illegal content
+TR |Block||TikTok, Instagram, X (Twitter)
+TR |Allow||Facebook (community job boards), public AI tools (unless high risk)
+TR |Whitelist||All URLs in managed bookmarks (section 4.3.5)
+END
+H2 |7.5 Azure Runbooks
+P |Per the per-device credential model described in the Credential Management section, the design is updated:
+B |Password rotation is now per-device, iterating over members of SG-APM-Kiosk-Users and updating both Entra ID and the device's Key Vault secret
+B |All runbooks, including those that touch the Key Vault, execute in the Azure Automation sandbox under the Automation Account managed identity; no Hybrid Runbook Worker is required
+B |The lock screen image generation moves from runbook-driven to device-side Intune Proactive Remediation, reading the password via the Credential Proxy Function App.
+P |Azure runbooks support several kiosk functions: creation of the kiosk user Entra ID accounts, per-device passphrase rotation, and, where OneDrive is enabled, the nightly fleet-wide OneDrive purge (section 6.4). The lock-screen image itself is generated device-side by the Proactive Remediation, not by a runbook.
+P |The account-creation and password-rotation runbooks depend on the kiosk domain being cloud-managed, not federated. Graph account creation, Update-MgUser password set and ForceChangePasswordNextSignIn = false only take effect for a cloud-authenticated account. On apm.net.au these calls would create an account that cannot sign in and set a password ADFS would ignore. Key Vault secret names stay keyed to the device serial, so storage and retrieval do not change.
+H3 |7.5.1 Kiosk User Password Rotation
+P |This runbook performs the following steps:
+B |Generates a new ANIMAL-noun passphrase per kiosk account that meets APM complexity requirements
+B |Retrieves the members of the SG-APM-Kiosk-Users group
+B |Runs the Update-MgUser for each member of the group ensure ForceChangePasswordNextSignIn is set to $false
+B |For each user, updates the corresponding Key Vault secret kiosk-[serialnumber] in auea-kv-apm-kiosk-001 with the new password. Soft delete retains the previous version for 90 days as rollback cover. The lock screen on the device is updated by the kiosk-site Proactive Remediation on its next 60-minute cycle.
+B |Log the password rotation event in Azure Log Analytics for auditing
+B |Send notification email to APM service desk
+H3 |7.5.2 Entra ID User Account Creation
+P |This runbook performs the following steps:
+B |Monitors the APM kiosk device user group for changes
+B |When a change is detected, queries MSGraph for the serial number of the new device
+B |Creates an F3 user with the specific UPN format (kiosk-[serialnumber]@apmkiosk.net.au)
+B |Assigns the F3 licence with only the least-privilege service plans enabled (section 7.2.1)
+B |Generates a readable ANIMAL-noun passphrase (uppercase animal + dash + lowercase noun, e.g. PANTHER-blanket, minimum 14 characters guaranteed) and stores it in the Key Vault auea-kv-apm-kiosk-001 as a secret kiosk-[serialnumber]
+B |Adds the newly created user to the SG-APM-Kiosk-Users group
+H3 |7.5.3 Kiosk OneDrive Nightly Purge
+P |This runbook (Clear-AllKioskOneDrive.ps1) is the nightly, fleet-wide layer behind the device-side logon and logoff OneDrive purge described in section 6.4. It performs the following steps:
+B |Authenticates as the Automation Account managed identity using app-only Microsoft Graph (Files.ReadWrite.All - confined to kiosk drives because the dedicated apmkiosk.net.au tenant holds only kiosk identities)
+B |Enumerates the members of SG-APM-Kiosk-Users
+B |For each kiosk account, retrieves the OneDrive root and permanently deletes every top-level item, recursing into folders and bypassing the 93-day recycle bin
+B |Skips any account with no provisioned OneDrive, so it is a safe no-op for accounts whose drive has not yet initialised
+B |Runs in the Azure Automation sandbox (Graph only, no Key Vault)
+B |Logs each per-account result to Azure Log Analytics; per-account isolation means one failure does not stop the batch
+P |It is scheduled nightly at approximately 02:00, before the 03:00 patch and restart window. See section 6.4 for the full three-layer OneDrive hygiene model.
+H1 |8. Service Availability and Disaster Recovery
+H2 |8.1 Business Service Tiering
+P |The kiosk solution supports job seeker access to employment services. The service availability directly affects APM’s ability to meet Workforce Australia service deed obligations. The solution is classified as a Tier 3 service - important but not mission-critical, where an outage is disruptive but does not immediately stop core business operations.
+H2 |8.2 Service Availability
+TBL|2340,2340,4680
+TH |**Component**||**Availability Target**||**Dependency**
+TR |Credential pipeline (Key Vault, Credential Proxy, Automation)||99.9% (Microsoft SLA)||apmkiosk.net.au tenant; affects credential rotation only, not device browsing
+TR |Microsoft Entra ID||99.99% (Microsoft SLA)||Microsoft cloud services
+TR |Microsoft Intune||99.9% (Microsoft SLA)||Microsoft cloud services
+TR |Physical kiosk device||Hardware-dependent||Dell hardware warranty; Wi-Fi connectivity at site
+TR |Zscaler web filtering||Per existing APM SLA||Zscaler cloud platform
+END
+H2 |8.3 Disaster recovery & Resilience
+P |The kiosk architecture is inherently resilient due to its stateless design:
+B |No persistent data: There is nothing to recover. Every session starts from clean device state.
+B |Physical device failure: Replace the device, register the hardware hash in Autopilot, and it self-provisions. No data migration required.
+B |The only Azure dependency is the credential pipeline (Key Vault, Credential Proxy, Automation) in the apmkiosk.net.au tenant.
+H1 |9. Service Management
+H2 |9.1 Service Management principles
+B |All changes to the kiosk solution follow APM’s existing change management process
+B |Intune policy changes are deployed to a pilot device group before broad rollout
+B |Operational runbooks are maintained for routine tasks (password rotation, image patching)
+H2 |9.2 Monitoring, Logging, Reporting and Alerting
+TBL|1560,3900,3900
+TH |**Platform**||**Metrics**||**Alerting**
+TR |Entra / Intune sign-in diagnostics||Sign-in success/failure, device compliance, credential-rotation events||Alert on sign-in failure rate exceeding threshold
+TR |Intune||Device compliance state, policy sync, app install status||Alert on compliance drift or policy failure
+TR |Zscaler||Web activity logs per existing APM standard||Per existing APM alerting policy sending logs to Microsoft Sentinel
+TR |==Microsoft Sentinel (sign-in anomaly)==||==Entra ID sign-in logs exported to Log Analytics: non-AU sign-in attempts, sign-ins outside site operating hours, one kiosk account from two source IPs in a short window==||==Analytics rule alerts and a playbook disables the kiosk account pending passphrase rotation==
+END
+P |==The Sentinel sign-in anomaly rule provides the detection-and-response half of what Entra ID Protection would otherwise deliver. Kiosk accounts suit deterministic anomaly rules: legitimate behaviour is uniform (one device, one site, Australian egress, site operating hours), so any deviation is actionable. Entra ID P2 is not required; the rule runs on exported sign-in logs.==
+H2 |9.3 Kiosk Patching Lifecycle
+P |The kiosk devices are added to dedicated Windows Update ring policies, APM-Kiosk-UPD-Ring-Pilot-P-1.0 and APM-Kiosk-UPD-Ring-Prod-P-1.0, which install quality and security updates and restart on a daily 03:00 cycle. Feature updates are deferred and pinned to a validated feature version through the ring policy.
+P |Windows 11 Enterprise on the kiosk fleet receives monthly quality and security updates through Windows Update for Business, managed by the ring policies above. Feature updates also apply on Windows 11 Enterprise; they are deferred and pinned to a validated feature version so the kiosk build changes only after APM validation.
+P |**Update Ring Design**
+P |Two rings. A pilot validates each monthly update before the fleet receives it, matching the pilot-before-rollout principle in 9.1.
+TBL|1096,2513,2843,875,2033
+TH |**Ring**||**Intune policy name**||**Assigned group**||**Quality deferral**||**Purpose**
+TR |Pilot||APM-Kiosk-UPD-Ring-Pilot-P-1.0||SG-APM-Kiosk-UpdateRing-Pilot (approx. 10 devices: staging lab plus one or two low-traffic sites)||0 days||Validate the monthly update before fleet rollout
+TR |Production||APM-Kiosk-UPD-Ring-Prod-P-1.0||SG-APM-Autopilot-Kiosk-Devices, excluding SG-APM-Kiosk-UpdateRing-Pilot||3 days||Fleet rollout after pilot validation
+END
+P |Pilot devices install at the first 03:00 after release. The fleet follows after the three-day deferral. Full fleet compliance lands inside about four days of release, within the ISM and Essential Eight two-week window for operating system patching.
+P |**Ring Settings**
+P |Settings for the Intune Update rings for Windows 10 and later profile. Where a value differs between the pilot and production rings it is shown in the value.
+P |**Update Settings**
+TBL|2913,2816,3631
+TH |**Setting**||**Value**||**Purpose**
+TR |Microsoft product updates||Allow||Patches Edge, the Defender platform and other Microsoft components
+TR |Windows drivers||Allow||Delivers Dell firmware and driver updates. The pilot ring validates them before the fleet.
+TR |Quality update deferral period||Pilot 0 days, Production 3 days||Pilot validates first, the fleet follows
+TR |Feature update deferral period||Deferred; feature version pinned to a validated build||Feature updates apply on Windows 11 Enterprise and are deferred/pinned so the kiosk build changes only after APM validation
+TR |Upgrade to latest Windows 11 release||No||The fleet is held to a validated Windows 11 Enterprise feature version
+TR |Set feature update uninstall period||Configured (default feature-update uninstall window)||Retains the feature-update rollback window on Windows 11 Enterprise
+TR |Enable pre-release builds||No||No Insider builds on kiosks
+END
+P |**User Experience Settings**
+TBL|2913,2816,3631
+TH |**Setting**||**Value**||**Purpose**
+TR |Automatic update behaviour||Auto install and restart at a scheduled time||Installs pending updates and restarts at the set time
+TR |Scheduled install day||Every day||Daily cycle
+TR |Scheduled install time||03:00 local||Restarts outside business hours (Requirement 06)
+TR |Restart checks||Allow||Windows runs safety checks before restart
+TR |Option to pause Windows updates||Disable||No end user on a kiosk
+TR |Option to check for Windows updates||Disable||Hides update UI
+TR |Change notification update level||Turn off all notifications, including restart warnings||Suppresses update messages on the public display
+END
+P |**Deadline Settings**
+TBL|2913,2816,3631
+TH |**Setting**||**Value**||**Purpose**
+TR |Use deadline settings||Not configured||The daily 03:00 install and restart is the enforcement mechanism
+END
+P |Devices stay powered on overnight. Each device downloads updates during the day, then installs and restarts at 03:00 local time. No restart occurs during business hours or while a job seeker is using the device. The device is back in the kiosk shell before the site opens. This meets Requirement 06.
+P |Windows diagnostic data is set to Required through the device configuration baseline to enable Intune update compliance reporting. It is a prerequisite for reporting, not for update installation.
+P |On Windows 11 Enterprise these feature-update controls are configured to hold the kiosk fleet on a validated feature version: feature-update deferral and deadline are set, pre-release builds are disabled, and the target feature version is pinned. The kiosk device group is assigned a Feature updates for Windows 10 and later profile that pins the validated version.
+P |**Expedited Updates**
+P |A separate expedite policy covers actively exploited vulnerabilities. It bypasses the deferral and the 03:00 cycle to meet the ISM 48-hour requirement for known-exploited vulnerabilities.
+TBL|2913,6447
+TH |**Setting**||**Value**
+TR |Policy name||APM-Kiosk-UPD-Expedite-P-1.0
+TR |Type||Expedite Windows quality updates
+TR |Assigned group||SG-APM-Autopilot-Kiosk-Devices
+TR |Behaviour||Bypasses deferral and the 03:00 cycle. Forces install and restart within a short window.
+END
+P |**Delivery Optimization**
+P |Each site has 20 Mbps and up to five devices. Delivery Optimization caches the monthly update between peers at a site to reduce WAN downloads.
+TBL|2913,6447
+TH |**Setting**||**Value**
+TR |Policy name||APM-Kiosk-UPD-DeliveryOpt-P-1.0
+TR |Download mode||Group (site peers)
+TR |Assigned group||SG-APM-Autopilot-Kiosk-Devices
+END
+P |**Windows Update Endpoints**
+P |The APM-KIOSK VLAN is default-deny on TCP 443. The following endpoints are added to the Meraki egress allow-list so devices can download updates. Confirm the current set against Microsoft’s published Windows Update endpoint list at build.
+TBL|9360
+TH |**Endpoint (add to Meraki egress allow-list)**
+TR |*.windowsupdate.com, download.windowsupdate.com
+TR |*.dl.delivery.mp.microsoft.com, *.delivery.mp.microsoft.com
+TR |*.update.microsoft.com, *.windowsupdate.microsoft.com
+TR |*.prod.do.dsp.mp.microsoft.com (Delivery Optimization)
+END
+H2 |9.4 Domain Management (apmkiosk.net.au)
+P |The solution runs in a dedicated apmkiosk.net.au Microsoft 365 tenant, separate from the APM corporate tenant. A dedicated tenant isolates the kiosk identities, devices and automation from the corporate directory and removes the federation and policy-collision problems of hosting them in the APM tenant. This section sets out what must be registered, hardened and maintained.
+H3 |9.4.1 Registration and Ownership
+B |Purchase apmkiosk.net.au through APM’s existing GoDaddy account, in line with current domain practice.
+B |.net.au requires an eligible Australian presence. Register in APM’s legal entity with a matching ABN. Keep registrant, admin and technical contacts on APM-controlled mailboxes, not personal accounts.
+B |Enable auto-renew and registrar lock. A lapsed kiosk domain breaks sign-in and password rotation across the whole fleet.
+B |Record the domain in the APM asset register and CMDB with Cyber Security as owner.
+H3 |9.4.2 Establish the apmkiosk.net.au Tenant
+B |apmkiosk.net.au is the primary domain of a NEW dedicated Microsoft 365 tenant. Verify it in that tenant with the TXT record Microsoft provides.
+B |Do not federate the domain and do not include it in Entra Connect sync scope. It must stay cloud-only. This is the control that lets the runbook create accounts and rotate passwords.
+B |The tenant default domain is its .onmicrosoft.com; apmkiosk.net.au is verified as the primary domain for kiosk UPNs. There is no apm.net.au in this tenant.
+H3 |9.4.3 Block Email on the Domain
+P |The domain sends and receives no mail. Two layers enforce this:
+B |Licence layer: the F3 default-deny model leaves Exchange Online disabled on kiosk accounts, so no mailbox is provisioned.
+B |Domain layer: publish the anti-spoof DNS records below and add an Exchange Online mail flow rule that rejects any message sent to or from *@apmkiosk.net.au.
+P |Do not publish an MX record that points to Exchange Online. Publish a null MX to state the domain accepts no mail.
+H3 |9.4.4 Anti-Spoofing DNS (SPF, DMARC, DKIM)
+P |Even with no mailboxes, the domain name can be spoofed. Publish records that tell receivers no mail from apmkiosk.net.au is legitimate.
+B |SPF: v=spf1 -all. States that no server is authorised to send from the domain.
+B |DMARC: v=DMARC1; p=reject; at host _dmarc. Tells receivers to reject anything claiming to be from the domain.
+B |DKIM: Microsoft advises against DKIM for a non-mailing domain, as it signs mail that will never be sent. DKIM is documented below as optional and deferred. If a future workflow needs to send from the domain, enable DKIM then and move DMARC through p=none and p=quarantine before p=reject.
+B |Null MX: publish 0 . to signal no mail acceptance (RFC 7505). If GoDaddy will not accept a null MX, publish no MX record at all.
+B |Add matching SPF and DMARC records for the tenant onmicrosoft.com domain if they are not already present.
+TBL|1538,2183,3836,1803
+TH |**Type**||**Host / Name**||**Value**||**Purpose**
+TR |TXT||@||MS=msXXXXXXXX (value from Entra)||Domain ownership verification in Entra ID
+TR |MX||@||0 . (null MX)||Declares the domain accepts no mail (RFC 7505). If unsupported, publish no MX.
+TR |TXT||@||v=spf1 -all||No server is authorised to send mail from the domain
+TR |TXT||_dmarc||v=DMARC1; p=reject;||Receivers reject any mail claiming to be from the domain
+TR |CNAME||selector1._domainkey||selector1-apmkiosk-net-au._domainkey.<tenant>.onmicrosoft.com||DKIM selector 1 (optional, deferred - only if the domain ever sends mail)
+TR |CNAME||selector2._domainkey||selector2-apmkiosk-net-au._domainkey.<tenant>.onmicrosoft.com||DKIM selector 2 (optional, deferred)
+END
+P |Values in angle brackets are placeholders. The Entra verification value and the DKIM host format are generated by Microsoft when the domain is added.
+H3 |9.4.5 Device enrolment DNS (Intune / MDM Autodiscovery)
+P |Two CNAME records published on apmkiosk.net.au let Windows devices discover the Intune enrolment and Microsoft Entra device-registration endpoints from the kiosk UPN suffix. They are added to the DNS provider alongside the anti-spoofing records above. The domain must already be verified in the tenant (the Entra verification TXT, section 9.4.2) before enrolment will work.
+B |CNAME enterpriseregistration.apmkiosk.net.au > enterpriseregistration.windows.net (TTL 1 hour). Microsoft Entra ID device-registration autodiscovery (device registration/Workplace Join).
+B |CNAME enterpriseenrollment.apmkiosk.net.au > enterpriseenrollment-s.manage.microsoft.com (TTL 1 hour). Intune MDM enrolment autodiscovery points the device at the Intune enrolment service from the UPN domain.
+H3 |9.4.6 Firewall, Gateway and Filtering Impact
+P |The kiosk domain is an identity namespace, not a new network destination. Sign-in traffic still goes to the Microsoft endpoints already allowed for the solution, such as login.microsoftonline.com. No new outbound firewall rule is needed for authentication. Check and, where needed, adjust:
+B |Zscaler and web filtering: no new destinations, but confirm no rule blocks the new UPN suffix during SSO or URL inspection. If any proxy rule keys on the apm.net.au user identity, extend it to apmkiosk.net.au.
+B |Credential Proxy Function App and Key Vault: unchanged. Both are keyed to the device serial, not the domain, and are reached over their public endpoints with Entra ID authentication and Azure RBAC. No firewall change.
+B |Inbound mail gateway or connector: if APM runs one, add apmkiosk.net.au to its reject or non-routable list so it does not attempt delivery.
+B |SIEM and Sentinel: extend any sign-in or identity detection that filters on apm.net.au to include apmkiosk.net.au, so kiosk sign-ins and failures are captured.
+B |Certificate and UPN suffix references: confirm no gateway, VPN or device policy pins the apm.net.au UPN suffix in a way that would exclude kiosk accounts.
+H3 |9.4.7 Maintenance and Monitoring
+P |• Domain expiry: monitor renewal. A lapse breaks fleet sign-in. Check quarterly and alert 60 days out. Owner: Cyber Security.
+P |• DNS records: review SPF, DMARC, DKIM (if enabled) and MX at each design review and after any tenant email change.
+P |• DMARC reports: if an rua address is set, review aggregate reports for spoof attempts. Optional given the domain sends no legitimate mail.
+P |• Domain verification TXT: safe to leave in place after verification. Do not remove records that ongoing controls depend on.
+P |• Add the domain and its controls to the annual RFFR and ISMS review so they stay documented.
+H3 |9.4.8 Operational Overhead Summary
+P |The net business impact is modest: one extra domain to renew and monitor, a handful of DNS records to maintain and monitoring scope extended to a second UPN suffix. The alternative, forcing kiosk accounts onto the federated apm.net.au domain, would need ongoing on-premises AD account management and manual password handling for every device. That removes the automation this design relies on.
+TBL|3121,3120,3119
+TH |**Task**||**Frequency**||**Owner**
+TR |Domain renewal and registrar lock||Annual, checked quarterly||Cyber Security
+TR |DNS record review (SPF, DMARC, MX)||Each design review||Cyber Security
+TR |Mail flow block validation||After any tenant email change||IT Operations
+TR |Sign-in and spoof monitoring||Continuous (Sentinel)||Security Operations
+TR |Documentation in ISMS and RFFR||Annual||Compliance Manager
+END
+H2 |9.5 Implementation Sequence
+P |The implementation is structured in six phases:
+H3 |9.5.1 Phase 1 - Kiosk Device Foundation
+NUM|Register hardware in Autopilot
+NUM|Create Entra ID groups and kiosk user accounts
+NUM|Configure Autopilot self-deploying profile
+NUM|Configure compliance policy and conditional access policies
+H3 |9.5.2 Phase 2 - Kiosk Image and Credential Pipeline
+NUM|Stand up the credential pipeline (Key Vault, Credential Proxy, Automation runbooks) and Cloud PKI in the apmkiosk.net.au tenant
+H3 |9.5.3 Phase 3 - Physical Device Provisioning
+NUM|Deploy the multi-app Assigned Access and logon-lockdown profiles
+NUM|Provision 5-10 pilot devices across 2-3 sites
+NUM|Validate end-to-end flow, USB, bookmarks, accessibility
+H3 |9.5.4 Phase 4 - Penetration Testing
+NUM|Conduct pre-production penetration testing on the kiosk device
+H3 |9.5.5 Phase 5 - National Rollout
+NUM|Deploy all 540 devices site-by-site with priority sites first
+NUM|Monitor device enrolment, compliance and credential rotation under production load
+NUM|Resolve site-specific issues
+H3 |9.5.6 Phase 6 - Operational Handover
+NUM|Document operational runbooks
+NUM|Hand over to APM
+NUM|Establish monitoring and alerting
+NUM|Conduct RFFR alignment review
+H1 |10. Appendix A - kiosk-multiapp-launcher.xml
+P |<?xml version="1.0" encoding="utf-8" ?>
+P |<!--
+P |APM JobSeeker Kiosk - multi-app Assigned Access launcher.
+P |-->
+P |<AssignedAccessConfiguration
+P |xmlns="http://schemas.microsoft.com/AssignedAccess/2017/config"
+P |xmlns:rs5="http://schemas.microsoft.com/AssignedAccess/201810/config"
+P |xmlns:v3="http://schemas.microsoft.com/AssignedAccess/2020/config"
+P |xmlns:v5="http://schemas.microsoft.com/AssignedAccess/2022/config">
+P |<Profiles>
+P |<Profile Id="{9A2A490F-10F6-4764-974A-43B19E722C23}">
+P |<AllAppsList>
+P |<AllowedApps>
+P |<App DesktopAppPath="%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" />
+P |<App DesktopAppPath="%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge_proxy.exe" />
+P |<App AppUserModelId="Microsoft.MicrosoftEdge.Stable_8wekyb3d8bbwe!App" />
+P |<App DesktopAppPath="%ProgramFiles%\Zscaler\ZSATray\ZSATray.exe" />
+P |<App DesktopAppPath="%ProgramFiles%\TeamViewer\TeamViewer.exe" />
+P |<App DesktopAppPath="%SystemRoot%\explorer.exe" />
+P |</AllowedApps>
+P |</AllAppsList>
+P |<rs5:FileExplorerNamespaceRestrictions>
+P |<v3:AllowRemovableDrives />
+P |</rs5:FileExplorerNamespaceRestrictions>
+P |<v5:StartPins><![CDATA[{"pinnedList":[{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\Microsoft Edge.lnk"},{"desktopAppLink":"%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\File Explorer.lnk"}]}]]></v5:StartPins>
+P |<Taskbar ShowTaskbar="true" />
+P |</Profile>
+P |</Profiles>
+P |<Configs>
+P |<v3:GlobalProfile Id="{9A2A490F-10F6-4764-974A-43B19E722C23}" />
+P |</Configs>
+P |</AssignedAccessConfiguration>

@@ -1,0 +1,416 @@
+H1 |1. Introduction
+H2 |1.1 Background
+P |This Technical Configuration Document is the build specification for the Standard User SOE on Azure Virtual Desktop. It is the companion to the Standard User SOE on AVD Detail Design Document V1.5, which holds the architecture, the decisions and the risk position. Where the two differ, the Detail Design Document is authoritative.
+P |Section references written as "DDD" followed by a number point into the Detail Design Document. Every other section reference points into this document.
+H2 |1.2 Purpose
+P |This document specifies every Azure, Nerdio, Intune, Entra ID and Zscaler object the solution creates, the value of every setting, the order they are built in, and the tests that must pass before production. An engineer builds the solution from this document in the order it is written.
+H2 |1.3 Audience
+TBL|3000,6360
+TH |**Role**||**Uses this document to**
+TR |APM AVD Build Engineer||Build the spoke, the image, the host pool, the Intune objects and the Zscaler components in the order in [[4.5]]
+TR |APM Network Management||Create the spoke network objects in [[6.1]] and the hub firewall rules in [[6.1.6]]
+TR |APM Cyber Security||Create CA-210 and the session host exclusions in [[11.4.2]], confirm the Zscaler tenant configuration, and approve the pilot result
+TR |Digital Operations||Run the test plan in [[14.3.1]] and accept the service
+TR |EUC Team||Create the application assignment groups in [[4.5.6.1]], and validate the compliance policy and configuration profiles in [[4.5.6.2]] and [[4.5.6.3]]
+END
+H1 |2. Overview
+H2 |2.1 Scope
+P |**In scope.** The AVD spoke network and its hub-side changes, the profile and App Attach storage, the Compute Gallery and golden image, the host pool, workspace and application groups in Nerdio Manager for Enterprise, the session host Intune objects, CA-210 and the session host exclusion on two existing Conditional Access policies, Zscaler Client Connector for VDI and the Zscaler Cloud Connector pair, and the pre-production test plan.
+P |**Out of scope.** The landing zone platform, the hub firewall build, the Nerdio Manager platform itself, the existing thick client SOE policies (assigned unchanged, DDD 7), and the test environment build in DDD Appendix B.
+H2 |2.2 Systems Impacted
+TBL|2600,1300,5460
+TH |**System**||**Impact**||**Change**
+TR |Azure landing zone, aus-sub-avd-controlled-001||New||Spoke virtual network, four subnets, four network security groups, one route table, two private endpoints, two storage accounts, a Compute Gallery and the Cloud Connector virtual machines
+TR |Hub, aus-sub-connectivity||Modify||Spoke peering, a return route to 10.40.90.0/23, and the firewall rules in [[6.1.6]]
+TR |Nerdio Manager for Enterprise||Modify||One host pool, one workspace, two desktop application groups, one validation pool
+TR |Microsoft Intune||Modify||One compliance policy and seven configuration profiles. Session hosts join the inherited thick client policy set
+TR |Microsoft Entra ID||Modify||Seven security groups, one new Conditional Access policy (CA-210), and a device filter exclusion on two existing policies
+TR |Zscaler||Modify||Client Connector for VDI enabled on the tenant; a VDI group, VDI template and VDI forwarding profile; a Cloud Connector group
+END
+H2 |2.3 Constraints, Assumptions, Dependencies and Risks
+H3 |2.3.1 Constraints
+TBL|3000,6360
+TH |**Constraint**||**Effect on the build**
+TR |Landing zone forced tunnel||Every spoke subnet takes 0.0.0.0/0 to the hub firewall. No public IP address and no NAT Gateway in the spoke
+TR |Zscaler Client Connector supports one user session per host||The standard agent is not installed. Zscaler Client Connector for VDI is the agent on every session host
+TR |Session hosts are Entra ID joined||No domain join step, no domain controller reachability, no ADFS
+TR |Every new spoke object is instance 002||The 001 instance of each name is already in use
+END
+H3 |2.3.2 Assumptions
+P |As DDD 2.3. No assumption is added by this document.
+H3 |2.3.3 Dependencies
+TBL|1000,4800,3560
+TH |**ID**||**Dependency**||**Blocks**
+TR |DEP-01||Zscaler Support enables Client Connector for VDI on the tenant and the tunnel ports are recorded (DDD G-10)||[[4.5.8]], and the port values in [[6.1.6]]
+TR |DEP-02||Network Management confirms auea-snet-avd-ctrl-zscc-002 at 10.40.91.64/26 (DDD G-11)||[[4.5.2]], [[4.5.8]]
+TR |DEP-03||The mapped network drive back end is recorded (DDD G-01)||Conditional forwarding in [[6.1.3]] and test T-16
+TR |DEP-04||The staff SOE application and desktop definitions are supplied (DDD G-08)||The image application list and two profiles in [[4.5.6]]
+TR |DEP-05||The print mechanism is chosen (DDD G-09)||Test T-17
+TR |DEP-06||CA-210 is confirmed unused in the tenant, and Cyber Security confirms the two points in [[11.4.2]] (DDD G-12)||[[4.5.7]]
+TR |DEP-07||Session host size and users per host are fixed at the end of the pilot (DDD G-06)||Production scaling in [[8]]
+END
+P |Phases 1 and 2 of [[4.5]] are prerequisites for every later phase.
+H3 |2.3.4 Risks
+P |The risk register is DDD 7. Build-order risks:
+TBL|4700,4660
+TH |**Risk**||**Control in this build**
+TR |The session host exclusion is added after the first host is provisioned, so Microsoft 365 fails in the first sessions||The exclusion is added in [[4.5.7]], before any user signs in
+TR |The profile container does not mount under the enforced policy set||T-15 proves the mount on a host carrying the full inherited policy set
+END
+H2 |2.4 Business Requirement Traceability Matrix
+H3 |2.4.1 Functional Requirements Validation
+TBL|1100,5200,3060
+TH |**Requirement**||**Built by**||**Proven by**
+TR |BR-01||[[4.5.5]]||T-01, T-03
+TR |BR-03||[[4.5.7]], [[11.4.2]]||T-09
+TR |BR-04||[[4.5.3]], [[4.5.6]]||T-03, T-04
+TR |BR-05||[[4.5.4]]||T-05, T-06
+TR |BR-06||[[6.1.3]]||T-16
+TR |BR-07||DEP-05||T-17
+TR |BR-08||[[11.1]]||T-07, T-08
+TR |BR-09||[[4.5.5]]||T-12
+TR |BR-13||[[6.1.6]]||T-18
+TR |BR-14||[[4.5.4]]||T-13
+END
+H3 |2.4.2 Non-Functional Requirements Validation
+TBL|1100,5200,3060
+TH |**Requirement**||**Built by**||**Proven by**
+TR |BR-02||[[4.5.6]], [[12.1]]||T-02, T-11
+TR |BR-10||[[4.5.5]]||T-13
+TR |BR-11||[[16]]||T-14
+TR |BR-12||[[4.5.6]], [[12.1]]||T-02, T-11, T-19
+END
+H1 |4. Solution Design
+H2 |4.1 Solution Overview
+P |Users reach a pooled Windows 11 Enterprise multi-session desktop through the Windows App. Session hosts are built from a golden image in the Compute Gallery, provisioned and scaled by Nerdio, Entra ID joined and Intune managed, and hold each user's profile in an FSLogix container on Azure Files Premium. Web traffic from each user session is tunnelled by Zscaler Client Connector for VDI to a Zscaler Cloud Connector pair in the spoke. All spoke egress is forced to the hub firewall. The architecture is in DDD 4 and DDD 5.
+H2 |4.2 Solution/Product Component Inventory
+TBL|3100,6260
+TH |**Component**||**Built in**
+TR |Spoke virtual network, subnets, network security groups, route table||[[4.5.2]], values in [[6.1]]
+TR |Profile and App Attach storage, private endpoints||[[4.5.3]], values in [[9]]
+TR |Compute Gallery and golden image||[[4.5.4]]
+TR |Host pool, workspace, application groups||[[4.5.5]]
+TR |Compliance policy and seven configuration profiles||[[4.5.6]]
+TR |CA-210 and the session host exclusions||[[4.5.7]], values in [[11.4.2]]
+TR |Zscaler Client Connector for VDI and Cloud Connector||[[4.5.8]]
+END
+H2 |4.3 Detailed Solution Interface Diagram
+FIG|session-sequence.png|Figure 1. Sign-in to working session - interface sequence|1520|1560
+H2 |4.4 Solution/Product Interface Catalogue
+P |The interface catalogue is DDD 4.4. The ports each interface uses are in [[6.1.6]].
+H2 |4.5 Build Sequence
+P |Build in this order. Each phase depends on the one before it.
+H3 |4.5.1 Phase 1 - Identity groups and estate exclusions
+NUM|**Entra admin centre > Groups > New group.** Create the groups in [[11.2.4]] with the type and membership shown there
+NUM|**Intune admin centre > Devices > Compliance > Staff-Windows-Compliance-Policy > Properties > Assignments > Exclude > Add group.** Add sg-dyn-dvc-avd-session-hosts. It is replaced by AVD-W11-COM-Session Host-P-1.0 in [[4.5.6]]
+NUM|Assign the 11 inherited thick client policies to sg-dyn-dvc-avd-session-hosts unchanged. The list is DDD 7
+NUM|**Intune admin centre > Devices > Windows > Update rings for Windows 10 and later > [each ring] > Properties > Assignments > Exclude > Add group.** Add sg-dyn-dvc-avd-session-hosts to each estate ring: ==[ring names to be confirmed]==
+NUM|Exclude sg-dyn-dvc-avd-session-hosts from the estate Windows Autopatch groups ==[group names to be confirmed, or not used]== and from the Patch My PC published application assignments ==[assignments to be confirmed]==. Session hosts are updated by image replacement only ([[14.1.1]])
+H3 |4.5.2 Phase 2 - Spoke network
+NUM|**Azure portal > Virtual networks > Create.** Subscription aus-sub-avd-controlled-001, region Australia East, name auea-vnet-avd-ctrl-002, address space 10.40.90.0/23
+NUM|Create the four subnets in [[6.1.2]]. Enable private endpoint network policies on auea-snet-avd-ctrl-avdpe-002
+NUM|**Azure portal > Network security groups > Create.** Create the four groups in [[6.1.6]] and associate each to its subnet
+NUM|**Azure portal > Route tables > Create.** Create auea-rt-avd-ctrl-002 with the route and settings in [[6.1.2]], and associate it to all four subnets
+NUM|**Azure portal > auea-vnet-avd-ctrl-002 > Peerings > Add.** Peer to auea-vnet-connectivity-001. Gateway transit disabled, use remote gateways disabled
+NUM|APM Network Management adds the return route to 10.40.90.0/23 on the hub side and the firewall rules in [[6.1.6]]
+NUM|Link privatelink.file.core.windows.net to auea-vnet-avd-ctrl-002 from the connectivity subscription ([[6.1.3]])
+H3 |4.5.3 Phase 3 - Storage
+NUM|**Azure portal > Storage accounts > Create.** Create aestacfslogix001 and aestacappattach001 with the settings in [[9]]
+NUM|Create the private endpoint for each in auea-snet-avd-ctrl-avdpe-002, named auea-pep-avd-ctrl-fslogix-002 and auea-pep-avd-ctrl-appattach-002. Disable public network access on both accounts
+NUM|Enable Microsoft Entra Kerberos authentication on aestacfslogix001, and grant sg-stc-usr-avd-standard-user the share-level role in [[9]]
+H3 |4.5.4 Phase 4 - Golden image
+NUM|**Azure portal > Azure compute galleries > Create.** Create aegalacstaff001 and the image definition auea-img-avd-ctrl-w11ms-002
+NUM|Build the image on a virtual machine in auea-snet-avd-ctrl-avdbuild-002 with the components in [[8]]. Do not enrol Zscaler Client Connector for VDI on the build virtual machine
+NUM|Capture the image as version 1.0.0 in the gallery. Write access is limited to sg-stc-usr-avd-image-builders
+H3 |4.5.5 Phase 5 - Host pool
+NUM|**Nerdio Manager for Enterprise, host pool creation.** Create auea-avdhp-avd-ctrl-staff-002 with the settings in [[8]], hosts in auea-snet-avd-ctrl-avdhosts-002, VM name prefix aevmacstd
+NUM|Create the workspace auea-avdws-avd-ctrl-staff-002 and the application groups auea-avdag-avd-ctrl-staff-managed-002 and auea-avdag-avd-ctrl-staff-unmanaged-002. Assign sg-stc-usr-avd-desktop-managed and sg-stc-usr-avd-desktop-unmanaged respectively
+NUM|Set the RDP properties of each application group per [[11.1]]
+NUM|Create the validation pool on the same image definition
+H3 |4.5.6 Phase 6 - Intune objects
+P |Owner: EUC Team. Every object is assigned to sg-stc-dvc-avd-session-hosts-ring1 first and extended to sg-dyn-dvc-avd-session-hosts in [[4.5.9]].
+NUM|**Intune admin centre > Devices > Compliance > Create policy > Windows 10 and later.** Create AVD-W11-COM-Session Host-P-1.0 with the settings in [[4.5.6.2]]
+NUM|**Intune admin centre > Devices > Configuration > Create > Settings catalog.** Create the seven profiles in [[11.3]]
+NUM|Create AVD-W11-CFG-Defender-P-1.0 with the values in [[12.1]]
+NUM|Create the application assignment groups and assign the applications in [[4.5.6.1]]
+H4 |4.5.6.1 Application groups
+P |**Entra admin centre > Groups > New group,** then **Intune admin centre > Apps > Windows > [application] > Properties > Assignments > Required > Add group.** Microsoft 365 Apps, Teams, OneDrive and Edge are in the image and take no assignment.
+TBL|2400,1900,2300,1300,1460
+TH |**Application**||**Delivery**||**Assignment group**||**Assignment**||**Source**
+TR |==[Application name]==||==[MSIX App Attach or Intune Win32]==||==[sg-stc-dvc-avd-app-[name]]==||Required||DDD G-08
+TR |==[Application name]==||==[MSIX App Attach or Intune Win32]==||==[sg-stc-dvc-avd-app-[name]]==||Required||DDD G-08
+END
+H4 |4.5.6.2 Compliance policy validation
+P |AVD-W11-COM-Session Host-P-1.0. Validate each value on a ring 1 host under **Intune admin centre > Devices > [host] > Device compliance**.
+TBL|3400,2600,1700,1660
+TH |**Setting**||**Value**||**Validated**||**Date**
+TR |BitLocker||Not required (DDD SOE-02). ==[Disk encryption at rest for session hosts, to be confirmed]==||==[Name]==||==[Date]==
+TR |Secure Boot||==[Require, to be confirmed]==||==[Name]==||==[Date]==
+TR |Code integrity||==[Require, to be confirmed]==||==[Name]==||==[Date]==
+TR |Minimum OS version||==[Build number, DDD G-05]==||==[Name]==||==[Date]==
+TR |Microsoft Defender Antimalware||==[Require, to be confirmed]==||==[Name]==||==[Date]==
+TR |Real-time protection||Require||==[Name]==||==[Date]==
+TR |Firewall||==[Require, to be confirmed]==||==[Name]==||==[Date]==
+TR |Device threat level (Defender for Endpoint)||==[Value to be confirmed]==||==[Name]==||==[Date]==
+TR |Actions for noncompliance||==[Mark noncompliant after N days, to be confirmed]==||==[Name]==||==[Date]==
+END
+H4 |4.5.6.3 Configuration profile validation
+P |Validate each profile on a ring 1 host under **Intune admin centre > Devices > [host] > Device configuration**. A profile passes when it reports Succeeded with no conflicting setting.
+TBL|3900,2100,1700,1660
+TH |**Profile**||**Expected state**||**Validated**||**Date**
+TR |AVD-W11-CFG-FSLogix Profile-P-1.0||Succeeded||==[Name]==||==[Date]==
+TR |AVD-W11-CFG-Session Time Limits-P-1.0||Succeeded||==[Name]==||==[Date]==
+TR |AVD-W11-CFG-Multi-Session Host-P-1.0||Succeeded||==[Name]==||==[Date]==
+TR |AVD-W11-CFG-Desktop Branding-P-1.0||Succeeded||==[Name]==||==[Date]==
+TR |AVD-W11-CFG-Edge Configuration-P-1.0||Succeeded||==[Name]==||==[Date]==
+TR |AVD-W11-CFG-Defender-P-1.0||Succeeded||==[Name]==||==[Date]==
+TR |The 11 inherited thick client policies||Succeeded, or Not applicable for DDD SOE-01 to SOE-05 only (T-02)||==[Name]==||==[Date]==
+END
+H3 |4.5.7 Phase 7 - Conditional Access
+NUM|Confirm DEP-06 is closed
+NUM|**Entra admin centre > Protection > Conditional Access > Create new policy.** Create CA-210 with the values in [[11.4.2]], state **Report-only**
+NUM|**Entra admin centre > Protection > Conditional Access > AllUsers_Office365_DeviceRequired > Conditions > Filter for devices > Exclude.** Enter the rule in [[11.4.2]]. Repeat on AllUsers_Sharepoint_DeviceRequired
+NUM|Set CA-210 to **On** in the same change as the two exclusions, so no session host is ever outside both
+H3 |4.5.8 Phase 8 - Zscaler
+NUM|Confirm DEP-01 is closed and the tunnel ports are recorded in [[6.1.6]]
+NUM|**Zscaler Admin Console > Infrastructure > Client Connector > App Store for VDI.** Download the 64-bit MSI and add it to the golden image as a new image version
+NUM|Deploy the Cloud Connector pair into auea-snet-avd-ctrl-zscc-002, then create the VDI group for the host pool, the VDI template and the VDI forwarding profile in the Zscaler Admin Console
+NUM|Add the Defender exclusions and App Control allowances for the Client Connector for VDI processes in [[12.1]]
+H3 |4.5.9 Phase 9 - Pilot, enforce, release
+NUM|Provision the pilot on sg-stc-dvc-avd-session-hosts-ring1 and run every test in [[14.3.1]]
+NUM|When every test passes, extend the entitlement group from the pilot users to the full user population
+NUM|Extend the Intune profile assignments from the ring 1 group to sg-dyn-dvc-avd-session-hosts, and reimage the production pool from the validated image version by drain mode
+H1 |5. Technology Architecture
+H2 |5.1 Technology Component Standards
+P |Component standards and the naming convention are DDD 5.1. Every object name in this document is resolved in full from that convention.
+H2 |5.2 Network &amp; Infrastructure Standards &amp; Patterns
+P |The network pattern is DDD 5.3. The values are in [[6.1]].
+H1 |6. Infrastructure Overview
+P |All network objects are in aus-sub-avd-controlled-001, Australia East, except where a row names the hub.
+H2 |6.1 Network and Firewall Specifications
+H3 |6.1.1 Network Communications Diagram
+FIG|network-topology.png|Figure 2. AVD spoke, subnet plan and forced tunnel egress|1520|1800
+H3 |6.1.2 IP Addressing
+P |Virtual network auea-vnet-avd-ctrl-002, address space 10.40.90.0/23, allocated by APM Network Management.
+TBL|2900,1700,900,3860
+TH |**Subnet**||**CIDR**||**Usable**||**Purpose**
+TR |auea-snet-avd-ctrl-avdhosts-002||10.40.90.0/24||251||Session host network interfaces. Sized for the target fleet plus concurrent reimaging
+TR |auea-snet-avd-ctrl-avdpe-002||10.40.91.0/27||27||Private endpoints for the profile share and the App Attach share
+TR |auea-snet-avd-ctrl-avdbuild-002||10.40.91.32/27||27||Image build. The only subnet permitted broad package download
+TR |auea-snet-avd-ctrl-zscc-002||10.40.91.64/26||59||Zscaler Cloud Connector management and service interfaces (DEP-02)
+TR |Reserved||10.40.91.128/25||-||Held for a second host pool or a personal desktop pool
+END
+P |Five addresses per subnet are reserved by Azure and are excluded from the usable counts.
+TBL|2100,1600,2100,3560
+TH |**Route name**||**Prefix**||**Next hop type**||**Next hop address**
+TR |Routes-to-Firewall||0.0.0.0/0||Virtual appliance||The internal load balancer frontend in auea-snet-private-001, fronting the east-west firewall backend pool. Verify the live frontend IP address before the first host is provisioned
+END
+TBL|3400,5960
+TH |**Route table setting**||**Value**
+TR |Name||auea-rt-avd-ctrl-002
+TR |Propagate gateway routes||Disabled
+TR |Subnet associations||All four subnets above
+END
+P |The hub route table carries a return route to 10.40.90.0/23. Private endpoint traffic stays inside the virtual network and does not follow the default route.
+H3 |6.1.3 DNS Information
+TBL|3400,5960
+TH |**Item**||**Value**
+TR |Resolver for session hosts||Azure-provided DNS in the spoke
+TR |Private DNS zones||privatelink.file.core.windows.net, linked from the connectivity subscription. Records are created by the private endpoints
+TR |Public name resolution||Forwarded by the platform resolver. No custom DNS server in the spoke
+TR |Conditional forwarding to on-premises||Only if DEP-03 resolves to an on-premises file server
+END
+H3 |6.1.4 Load Balancing Specification
+P |No load balancer is created in the spoke. The route table next hop is the existing hub internal load balancer in [[6.1.2]]. Session load balancing is breadth-first in the host pool ([[8]]).
+H3 |6.1.5 NAT Rules
+P |N/A. The spoke has no NAT Gateway and no public IP address.
+H3 |6.1.6 Firewall Rules
+P |Full firewall and routing connectivity requirements are in Std AVD FW and NSG Connectivity Requirements v0.1.xlsx.
+P |**Network security groups.**
+TBL|2900,2000,2000,2460
+TH |**Network security group**||**Inbound**||**Outbound**||**Note**
+TR |auea-nsg-avd-ctrl-avdhosts-002||Deny all inbound from the internet. Allow intra-virtual-network||Allow HTTPS to the AVD, Entra, Intune and Defender service tags. Allow SMB 445 to the avdpe subnet only. Allow the VDI agent tunnel ports to the zscc subnet only||No inbound rule is needed for session traffic. Reverse connect is outbound
+TR |auea-nsg-avd-ctrl-avdpe-002||Allow SMB 445 from the avdhosts and avdbuild subnets||Deny all outbound to the internet||Private endpoint subnet
+TR |auea-nsg-avd-ctrl-avdbuild-002||Deny all inbound from the internet||Allow HTTPS to Windows Update, the Microsoft CDN and the image package sources||Broad download is permitted here and nowhere else
+TR |auea-nsg-avd-ctrl-zscc-002||Allow the VDI agent tunnel ports from the avdhosts subnet only. Deny all inbound from the internet||Allow the Zscaler service edge ports to the hub firewall||No other source reaches it
+END
+P |The VDI agent tunnel ports and the Zscaler service edge ports are recorded here when DEP-01 closes. Until then, no rule referencing them is created.
+P |**Hub firewall, permitted egress from the AVD spoke.** Any destination not listed is denied and the denial is logged.
+TBL|3000,2200,4160
+TH |**Destination**||**Source subnet**||**Note**
+TR |Azure Virtual Desktop service tag||avdhosts||Agent registration, brokering and diagnostics
+TR |Entra ID and Microsoft Intune endpoints||avdhosts, avdbuild||Device join, token issue and policy channel
+TR |Microsoft 365 optimise and allow endpoints||avdhosts||Exchange Online, SharePoint Online, OneDrive, Teams signalling and Graph
+TR |Microsoft Defender for Endpoint endpoints||avdhosts||Detection and vulnerability telemetry
+TR |Zscaler service edge||zscc only||Cloud Connector tunnels. Permitted and not inspected. The firewall does not forward AVD spoke traffic over its own Zscaler tunnels
+TR |Windows Update and the Microsoft CDN||avdbuild only||Image build
+END
+H1 |7. Database Specification
+P |N/A. The solution creates no database.
+H1 |8. Compute Specifications
+TBL|3000,6360
+TH |**Item**||**Value**
+TR |Host pool||auea-avdhp-avd-ctrl-staff-002, pooled, breadth-first load balancing
+TR |Session host image||auea-img-avd-ctrl-w11ms-002, Windows 11 Enterprise multi-session
+TR |Session host SKU and users per host||Fixed at the end of the pilot (DEP-07)
+TR |Availability zones||Hosts distributed across the three Australia East zones
+TR |Auto-scale||Nerdio dynamic auto-scale on active session count, with a working-hours minimum and an out-of-hours floor
+TR |Session limits||Idle disconnect at 1 hour, disconnected sign-out at 4 hours, active session limit not set. Delivered by AVD-W11-CFG-Session Time Limits-P-1.0
+TR |Image contents||Microsoft 365 Apps with shared computer activation, Teams with AVD media optimisation, OneDrive, Edge, FSLogix agent, AVD agents, Defender for Endpoint onboarding, Zscaler Client Connector for VDI, and the line-of-business set from DEP-04
+TR |Cloud Connector||A pair of Zscaler Cloud Connector virtual machines in auea-snet-avd-ctrl-zscc-002. Size set under DEP-02
+END
+H1 |9. PaaS Specification
+TBL|3000,6360
+TH |**Item**||**Value**
+TR |aestacfslogix001||Azure Files Premium. FSLogix profile containers, VHDX, one per user. Microsoft Entra Kerberos. Public network access disabled. sg-stc-usr-avd-standard-user holds Storage File Data SMB Share Contributor on the profile share
+TR |aestacappattach001||Azure Files Premium. MSIX App Attach packages. Public network access disabled
+TR |aegalacstaff001||Azure Compute Gallery holding auea-img-avd-ctrl-w11ms-002
+TR |AVD control plane||auea-avdws-avd-ctrl-staff-002 and the two application groups in [[4.5.5]]
+END
+H1 |10. Information &amp; Data Architecture
+P |N/A. The information model is DDD 6.
+H1 |11. Cyber &amp; Security Architecture
+H2 |11.1 Data Security
+TBL|3000,3180,3180
+TH |**Redirection**||**Managed endpoint**||**Unmanaged endpoint**
+TR |Clipboard||Both directions||Disabled
+TR |Drive||Disabled||Disabled
+TR |Printer||Disabled. Printing is from the session host (DEP-05)||Disabled
+TR |Camera and microphone||Enabled||Enabled
+TR |USB device||Disabled||Disabled
+END
+H2 |11.2 RBAC Specification
+H3 |11.2.4 Azure Active Directory Groups
+TBL|3300,1600,4460
+TH |**Group**||**Type**||**Membership and use**
+TR |sg-dyn-dvc-avd-session-hosts||Dynamic device||Session host name prefix aevmacstd and Entra ID join type. Production policy target
+TR |sg-stc-dvc-avd-session-hosts-ring1||Assigned device||Pilot hosts. Policy and image changes land here first
+TR |sg-stc-usr-avd-standard-user||Assigned user||AVD entitlement and profile share access
+TR |sg-stc-usr-avd-desktop-managed||Assigned user||Managed endpoint desktop application group
+TR |sg-stc-usr-avd-desktop-unmanaged||Assigned user||Unmanaged endpoint desktop application group
+TR |sg-stc-usr-avd-operators||Assigned user||Nerdio and host pool operational access
+TR |sg-stc-usr-avd-image-builders||Assigned user||Write access to aegalacstaff001
+END
+H2 |11.3 Accounts
+P |No account is created by this build. The seven Intune configuration profiles are listed here for the build in [[4.5.6]].
+TBL|3600,5760
+TH |**Profile**||**Contents**
+TR |AVD-W11-CFG-FSLogix Profile-P-1.0||Profile container path on aestacfslogix001, size, redirections, fail closed, CloudKerberosTicketRetrievalEnabled
+TR |AVD-W11-CFG-Session Time Limits-P-1.0||Idle disconnect 1 hour, disconnected sign-out 4 hours, active session limit not set
+TR |AVD-W11-CFG-Multi-Session Host-P-1.0||Per-user Windows Search index, Teams optimisation, time zone redirection
+TR |AVD-W11-CFG-Desktop Branding-P-1.0||Desktop and lock screen image by local path, Start and taskbar layout, first sign-in prompts suppressed (DEP-04)
+TR |AVD-W11-CFG-Edge Configuration-P-1.0||Managed favourites, homepage, start-up behaviour, new tab page (DEP-04). Sets no security key
+TR |AVD-W11-CFG-Defender-P-1.0||Scan model and exclusions in [[12.1]]
+TR |AVD-W11-COM-Session Host-P-1.0||Compliance policy for session hosts
+END
+H2 |11.4 Authentication
+H3 |11.4.2 Conditional Access Rules
+P |Six policies apply to the AVD channel: five existing enforced policies and CA-210, which is created. The existing policies apply unchanged, except for the session host exclusion on the two hybrid-only grants.
+TBL|3700,5660
+TH |**Policy**||**Effect on this solution**
+TR |AllUsers_WVDApp_MFAtimeout||Existing. All users, the Azure Virtual Desktop application. Multi-factor authentication at session start
+TR |AllUsers_AllAccess_DeviceRequired||Existing. All users, all apps. Compliant or hybrid joined device. Blocks an unmanaged endpoint from Microsoft 365 directly. A session host satisfies it
+TR |CA-102 - All Users &amp; Guests - All Apps - Locations exc. AU, Corporate - Block||Existing. Blocks sign-in from outside Australia and the corporate locations
+TR |AllUsers_Office365_DeviceRequired||Existing. Office 365, hybrid joined device only. Session hosts excluded below
+TR |AllUsers_Sharepoint_DeviceRequired||Existing. SharePoint Online, hybrid joined device only. Session hosts excluded below
+TR |CA-210 - Org Users - Microsoft 365 - AVD Session Hosts - Allow - Require MFA and Compliant Device||New. Replaces the two hybrid-only grants for session hosts
+END
+P |**CA-210 - Org Users - Microsoft 365 - AVD Session Hosts - Allow - Require MFA and Compliant Device.**
+TBL|3000,6360
+TH |**Setting**||**Value**
+TR |Users, include||sg-stc-usr-avd-standard-user
+TR |Users, exclude||The two tenant emergency access accounts
+TR |Target resources||Office 365
+TR |Conditions > Filter for devices||Include filtered devices: device.displayName -startsWith "aevmacstd" -and device.trustType -eq "AzureAD" -and device.isCompliant -eq True
+TR |Grant||Grant access. Require multi-factor authentication **and** Require device to be marked as compliant. For multiple controls: Require all the selected controls
+TR |Session||Not configured
+TR |State||Report-only at creation, then On in the same change as the exclusions below
+END
+P |**Session host exclusion,** added to AllUsers_Office365_DeviceRequired and AllUsers_Sharepoint_DeviceRequired:
+TBL|3000,6360
+TH |**Setting**||**Value**
+TR |Conditions > Filter for devices||Exclude filtered devices: device.displayName -startsWith "aevmacstd" -and device.trustType -eq "AzureAD" -and device.isCompliant -eq True
+END
+P |The exclusion and the CA-210 inclusion use the identical rule, so every device excluded from the two hybrid-only grants is required to present multi-factor authentication and a compliant state instead.
+P |**Two points confirmed by Cyber Security before the build (DEP-06).** AllUsers_AllAccess_DeviceRequired excludes the Azure Virtual Desktop application, or an unmanaged endpoint is refused the session. The grant in AllUsers_WVDApp_MFAtimeout is multi-factor authentication or a managed device, not all of them, or an unmanaged endpoint cannot start a session. The existing administrator policies AdminAccounts_WVD_DomainDevice and CA-404 target the same application and do not apply to sg-stc-usr-avd-standard-user.
+H2 |11.5 IDP Specification
+P |Microsoft Entra ID is the identity provider for session sign-in, Conditional Access and Azure Files. Zscaler Client Connector for VDI authenticates the signed-in user against the existing Zscaler tenant identity provider configuration.
+H1 |12. Threat Management
+H2 |12.1 Endpoint Protection &amp; Antivirus
+P |**AVD-W11-CFG-Defender-P-1.0, scan settings.**
+TBL|4200,5160
+TH |**Setting**||**Value**
+TR |Real-time protection, on-access scanning||Enabled
+TR |Scheduled quick scan||Disabled
+TR |Scheduled full scan||Disabled
+TR |Catch-up scans||Disabled
+TR |Cloud-delivered protection and sample submission||Enabled
+END
+P |**Exclusions.**
+TBL|4200,5160
+TH |**Exclusion**||**Type**
+TR |Profile share VHDX and VHD files on the aestacfslogix001 share path||Path
+TR |App Attach share VHDX files on the aestacappattach001 share path||Path
+TR |%ProgramData%\FSLogix\Cache and %ProgramData%\FSLogix\Proxy VHD and VHDX files||Path
+TR |%TEMP% and %Windir%\Temp VHD and VHDX files||Path
+TR |frxdrv.sys, frxdrvvt.sys, frxccd.sys under the FSLogix install folder||Path
+TR |frxccd.exe, frxccds.exe, frxsvc.exe, frxrobocopy.exe||Process
+TR |%ProgramData%\ZCCVDI||Path
+TR |ZCCVDIService, ZCCVDIHelper, ZCCVDIUI and the ZCCVDI executable||Process
+END
+P |The share paths are fixed when the storage accounts are created in [[4.5.3]]. No user data path, application folder or download location is excluded. The Zscaler Client Connector for VDI processes are also allowed in App Control for Business.
+H1 |13. Disaster Recovery
+P |Recovery of a failed image is a drain-mode reimage to the previous gallery version, proven by T-13. The disaster recovery position is DDD 8.3.
+H1 |14 Build, Test and Release Management
+H2 |14.1 Repository and DevOps Tools
+H3 |14.1.1 Image update cycle
+P |Session hosts are updated by image replacement only. No Windows Update ring, Autopatch group or Patch My PC assignment applies to them ([[4.5.1]]).
+TBL|3000,6360
+TH |**Step**||**Action**
+TR |1. Build||New image version on a virtual machine in auea-snet-avd-ctrl-avdbuild-002 with the current cumulative update, Microsoft 365 Apps, Edge, Defender platform and application versions
+TR |2. Capture||Capture to auea-img-avd-ctrl-w11ms-002 as the next version. Retain the previous two versions
+TR |3. Validate||Provision the validation pool from the new version and run [[14.3.1]]
+TR |4. Release||Drain and reimage the production pool from the new version in Nerdio
+TR |Cadence||Monthly. Out-of-cycle for a critical security update. Build day ==[Patch Tuesday plus N days, to be confirmed]==
+END
+P |Images are versioned in aegalacstaff001. Host pools are built and reimaged through Nerdio Manager for Enterprise. Intune changes land on sg-stc-dvc-avd-session-hosts-ring1 before sg-dyn-dvc-avd-session-hosts.
+H2 |14.3 Test Management
+H3 |14.3.1 Test Strategy/Plan
+P |All 20 tests pass before the user population is extended in [[4.5.9]], and the set is re-run for every new image version and policy change.
+TBL|620,3400,5340
+TH |**ID**||**Test**||**Pass criterion**
+TR |T-01||Provision a session host from the shared gallery image||The host joins Entra ID, enrols in Intune, appears in the device group and reports compliant, with no manual step
+TR |T-02||Apply the 11 inherited policies||All 11 report as applied. The controls reporting not applicable match DDD SOE-01 to SOE-05 and nothing else
+TR |T-03||Sign in a test user||The profile container is created and mounted, and the desktop presents the published application set
+TR |T-04||Remove the test user's permission on the profile share, then sign in||Sign-in fails. No temporary profile is created and no user data is written to the host
+TR |T-05||Sign in a second user concurrently to the same host||Microsoft 365 Apps activate for both users through shared computer activation, and neither session is refused
+TR |T-06||Place a Teams call||The call reports as optimised, and processor use on the session host stays at idle levels
+TR |T-07||From the managed desktop, copy text into and out of the session, then attempt drive redirection||Clipboard succeeds in both directions. No endpoint drive is presented in the session
+TR |T-08||From the unmanaged desktop, attempt the same||Clipboard and drive redirection both fail. Camera and microphone still work
+TR |T-09||From a device that is neither compliant nor Entra ID joined, attempt Outlook on the web, SharePoint, Teams web and Graph||All are blocked by AllUsers_AllAccess_DeviceRequired. The Windows App to AVD succeeds with multi-factor authentication under AllUsers_WVDApp_MFAtimeout
+TR |T-10||Reach a destination not on the permitted egress list, then one on it||The first is denied at the hub firewall and the denial is visible in the log. The second succeeds
+TR |T-11||Run an unsigned test binary||App Control blocks execution and the block appears in Defender for Endpoint
+TR |T-12||Leave the pool idle past the session limits, then trigger scale-in||An idle session disconnects at 1 hour, a disconnected session signs out at 4 hours, the container dismounts, and the emptied host is removed by auto-scale
+TR |T-13||Reimage a host to the previous gallery version||The host returns to service on the previous version and a user signs in
+TR |T-14||Check the telemetry destinations||Host pool connection events, session host events, FSLogix mount events and Nerdio audit events are all queryable in the workspaces named in DDD 9.2
+TR |T-15||Sign in on a host carrying the complete inherited policy set, with the enforced Conditional Access set and the session host exclusion in place, and open Outlook and SharePoint in the session||The profile container mounts, and Outlook and SharePoint open. The sign-in log shows CA-210 applied and satisfied, and AllUsers_Office365_DeviceRequired not applied
+TR |T-16||Reach the mapped drive from a session||The drive mounts and a file opens and saves
+TR |T-17||Print to an APM site printer from a session||A test page prints through the mechanism chosen under DEP-05, with no printer redirected from the endpoint
+TR |T-18||Block all traffic from the avdhosts subnet to the on-premises address ranges, then sign in and work a full session||Sign-in, profile mount, Microsoft 365, browsing and printing all succeed
+TR |T-19||Two test users sign in to the same session host and each browses to a different site||The Zscaler Internet Access log shows each request under the signed-in user who made it, not under the host
+TR |T-20||On a session host, confirm the Zscaler Client Connector for VDI service is running in each session and that web traffic leaves through the Cloud Connector||The hub firewall log shows web connections from the zscc subnet only, and none from the avdhosts subnet
+END
+P |T-04, T-08, T-09, T-10, T-13, T-15 and T-18 prove a control rather than a feature. T-15 cannot be substituted by T-03.
+H1 |15 Capacity Planning
+P |Session host SKU, users per host and auto-scale thresholds are fixed from pilot measurement (DEP-07).
+H1 |16. Service Management
+P |The service management and monitoring model is DDD 9. No additional service management configuration is created by this build.
+H1 |Appendix A: Terms &amp; Abbreviations
+TBL|2400,6960
+TH |**Term**||**Meaning**
+TR |AVD||Azure Virtual Desktop
+TR |FSLogix||The Microsoft profile container technology used for user profiles on pooled hosts
+TR |Cloud Connector||The Zscaler virtual appliance that terminates Client Connector for VDI tunnels and forwards traffic to Zscaler Internet Access
+TR |NSG||Network security group
+TR |SOE||Standard Operating Environment
+END

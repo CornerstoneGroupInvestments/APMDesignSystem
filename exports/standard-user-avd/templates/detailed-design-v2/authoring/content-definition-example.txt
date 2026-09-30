@@ -1,0 +1,55 @@
+H1 |1. Introduction
+GD |State what the Design Definition covers: the proposed target-state solution at conceptual level, and what it explicitly leaves for the Detail Design Document to specify.
+H2 |1.1 Purpose
+GD |Outline the architectural principles, the capability change, the scope boundary, and the target-state description at a level sufficient to inform project scope and the business case. Do not specify how components work internally.
+P |**Example.** This Design Definition outlines the proposed target-state of <<Solution Name>>: the applications or services, the technology, and the integration requirements. It defines what technology parts are used and how they interact, not how each piece is configured - that follows in the Detail Design Document.
+H2 |1.2 Document Scope
+P |**Example.** This document summarises the conceptual target-state architecture. It identifies the capability change required, classified by the APM business architecture capability model, and aligns capability to the selected solution components. Each solution component is elaborated in a corresponding Detail Design Document.
+H2 |1.3 Document Audience
+B |Business Sponsor
+B |Business Partners
+B |Project Management Office
+B |Digital Transformation &amp; Architecture
+B |Digital Operations
+B |Digital Delivery
+B |Cyber Security
+H1 |2. Business Context
+GD |Describe the solution in business-friendly language: the problem, the goals, and the part of the business affected. No product names yet.
+P |**Example.** <<Business area>> currently <<describe the present state>>. <<Solution Name>> addresses this by <<describe the business change>>.
+H2 |2.1 Business Goals
+P |**Example.** <<State the business goal, the driver, and the expected uplift. Reference any stakeholder metric, documented pain point or opportunity.>>
+H2 |2.2 Business Operational Considerations
+P |**Example.** <<State the business policies, internal or regulatory controls, and operational considerations that constrain the solution.>>
+H2 |2.3 Project Scope
+P |**In scope**
+B |<<Capability, process or population included>>
+P |**Out of scope**
+B |<<Explicitly excluded item>> - handled by <<other workstream>>
+H1 |3. Technology Context
+GD |Explain the technology recommendation, its strategic alignment, the guiding architecture principles, and the program dependencies.
+H2 |3.1 Technology Recommendation
+P |**Example.** <<State the recommendation and the rationale, including any product or technology assessment conducted.>>
+H2 |3.2 Technology Strategic Alignment
+P |**Example.** <<Current and target state inventory of applications, technology, infrastructure and data impacted, with the business uplift each change delivers.>>
+H2 |3.3 Key Architecture Principles
+TBL |2400,6960
+TH |Principle||What it means in this design
+TR |<<Principle name>>||<<The design consequence>>
+END
+H2 |3.4 Conceptual View
+P |N/A - no conceptual domain diagram is required for this example; the solution is a single-domain endpoint change with no cross-domain integration.
+H2 |3.5 Program/Portfolio Dependencies
+P |**Example.** <<State how this initiative relates to in-flight programs, and any specific dependency.>>
+H2 |3.6 Product/Project Methodology
+P |**Example.** <<State whether the solution/product life cycle follows waterfall or agile, the engagement model, and where documentation is stored.>>
+H2 |3.7 Assumptions, Gaps, Risks and Constraints
+TBL |1000,8360
+TH |ID||Assumption / gap / risk / constraint
+TR |A-01||<<Technology assumption, residual gap, technical debt, risk or constraint>>
+END
+H1 |4. Definition
+H2 |4.1 Appendix - Definition
+TBL |2000,7360
+TH |Term/Acronym||Definition
+TR |<<Acronym>>||<<Expansion>>
+END

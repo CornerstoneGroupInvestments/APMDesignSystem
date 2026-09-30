@@ -1,0 +1,2669 @@
+
+Technical Configuration Document
+Template V0.1
+ DATE \@ "d MMMM yyyy" 27 May 2026
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Project Name: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Document Owner: |  |  | 
+Michael Barker 
+Head of Digital Operations
+Leah Brenton
+Head of Product Development
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Contact Details: |  |  | 
+Michael.Barker@apm.net.au
+Leah.Brenton@apm.net.au
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Program Name: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Division/Unit: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Document Status: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Document Version: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Product ID: |  |  | 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FOR INTERNAL USE ONLY
+Commercial in confidence
+© APM
+
+Document control
+Version History
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Version |  |  | 
+       Date |  |  | 
+Author |  |  | 
+                             Key changes
+[ROW]
+[ROW] |  |  | 
+V0.1 |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Consultation
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Position title |  |  | 
+Date
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+References and Derivation
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Version # |  |  | 
+Document Title |  |  | 
+Reference Location
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+SDA Approval
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Role/Group |  |  | 
+Signature |  |  | 
+Date
+[ROW]
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Confidentiality &amp; Disclaimer
+This document is provided by Advanced Personnel Management International Pty Ltd and / or its related entities (APM) on a confidential basis. This document is subject to approval of the APM Board and does not constitute an offer capable of acceptance. No agreement binding APM or its related companies in respect of this document is intended or proposed unless and until the terms and conditions between APM or its related entities are agreed in writing in a formal agreement with the named Company or Prospective Client.
+APM will not be bound by any pricing or any other material contained in this response until the above has taken place. 
+Photography
+Photographs used in this document are for illustration only and should not be interpreted to mean that any person or organisation whose assets are shown in them endorses this document.
+
+APM Contact
+Communications regarding this document should be forwarded to:
+Head of Digital Operations 
+Head of Product Development 
+P08 XXXX XXXX
+M08 XXXX XXXX
+ELeah.Brenton@apm.net.au
+E      Michael.Barker@apm.net.au
+
+APM Contact
+Communications regarding this document should be forwarded to:
+Head of Digital Operations 
+Head of Product Development 
+P08 XXXX XXXX
+M08 XXXX XXXX
+ELeah.Brenton@apm.net.au
+E      Michael.Barker@apm.net.au
+
+
+
+
+Contents
+ TOC \o "1-3" \h \z \u 1. Introduction PAGEREF _Toc213071792 \h 8
+1.1 Background PAGEREF _Toc213071793 \h 8
+1.2 Purpose PAGEREF _Toc213071794 \h 8
+1.2 Audience PAGEREF _Toc213071795 \h 8
+2. Overview PAGEREF _Toc213071796 \h 9
+2.1 Scope PAGEREF _Toc213071797 \h 9
+2.2 Systems Impacted PAGEREF _Toc213071798 \h 9
+2.3 Constraints, Assumptions, Dependencies and Risks PAGEREF _Toc213071799 \h 9
+2.3.1 Constraints PAGEREF _Toc213071800 \h 9
+2.3.2 Assumptions PAGEREF _Toc213071801 \h 9
+2.3.3 Dependencies PAGEREF _Toc213071802 \h 10
+2.3.4 Risks PAGEREF _Toc213071803 \h 10
+2.4 Business requirement traceability matrix PAGEREF _Toc213071804 \h 10
+2.4.1 Functional Requirements Validation PAGEREF _Toc213071805 \h 10
+2.4.2 Non-Functional Requirements Validation PAGEREF _Toc213071806 \h 10
+4. Solution Design PAGEREF _Toc213071807 \h 10
+4.1 Solution Overview PAGEREF _Toc213071808 \h 11
+4.2 Solution/Product Component Inventory PAGEREF _Toc213071809 \h 11
+4.3 Detailed Solution Interface Diagram PAGEREF _Toc213071810 \h 11
+4.4 Solution/Product Interface catalogue PAGEREF _Toc213071811 \h 11
+5. Technology Architecture PAGEREF _Toc213071812 \h 11
+5.1 Technology Component Standards PAGEREF _Toc213071813 \h 12
+5.2 Network &amp; Infrastructure Standards &amp; Patterns PAGEREF _Toc213071814 \h 12
+6. Infrastructure Overview PAGEREF _Toc213071815 \h 13
+6.1 Network and Firewall Specifications PAGEREF _Toc213071816 \h 13
+6.1.1Network Communications Diagram PAGEREF _Toc213071817 \h 13
+6.1.2 IP Addressing PAGEREF _Toc213071818 \h 13
+6.1.3 DNS Information PAGEREF _Toc213071819 \h 14
+6.1.4 Load Balancing Specification PAGEREF _Toc213071820 \h 14
+6.1.5 NAT Rules PAGEREF _Toc213071821 \h 15
+6.1.6 Firewall Rules PAGEREF _Toc213071822 \h 15
+7. Database Specification PAGEREF _Toc213071823 \h 16
+7.1 IaaS PAGEREF _Toc213071824 \h 16
+7.1.1 Hosting PAGEREF _Toc213071825 \h 16
+7.2 PaaS PAGEREF _Toc213071826 \h 16
+7.1.2 Hosting PAGEREF _Toc213071827 \h 16
+8. Compute Specifications PAGEREF _Toc213071828 \h 17
+8.1 On-Prem – Virtual PAGEREF _Toc213071829 \h 17
+8.2 On-Prem – Physical PAGEREF _Toc213071830 \h 17
+8.3 Azure PAGEREF _Toc213071831 \h 18
+9. PaaS Specification PAGEREF _Toc213071832 \h 18
+10. Information &amp; Data Architecture PAGEREF _Toc213071833 \h 19
+10.1 Information Model PAGEREF _Toc213071834 \h 19
+10.2 Information Classification PAGEREF _Toc213071835 \h 19
+10.3 Analytics and reporting Patterns PAGEREF _Toc213071836 \h 19
+11. Cyber &amp; Security Architecture PAGEREF _Toc213071837 \h 19
+11.1 Data Security PAGEREF _Toc213071838 \h 19
+11.2 RBAC Specification PAGEREF _Toc213071839 \h 19
+11.2.1 Application Roles PAGEREF _Toc213071840 \h 19
+11.2.2 Local Groups PAGEREF _Toc213071841 \h 19
+11.2.3 Active Directory Groups PAGEREF _Toc213071842 \h 20
+11.2.4 Azure Active Directory Groups PAGEREF _Toc213071843 \h 20
+11.3 Accounts PAGEREF _Toc213071844 \h 20
+11.3.1 Service Accounts PAGEREF _Toc213071845 \h 20
+11.3.2 Shared Accounts PAGEREF _Toc213071846 \h 21
+11.4 Authentication PAGEREF _Toc213071847 \h 21
+11.4.1 Authentication Requirements PAGEREF _Toc213071848 \h 21
+11.4.2 Conditional Access Rules PAGEREF _Toc213071849 \h 21
+11.5 IDP Specification PAGEREF _Toc213071850 \h 21
+11.5.1 Azure AD PAGEREF _Toc213071851 \h 22
+11.5.2 ADFS PAGEREF _Toc213071852 \h 22
+11.6 Authentication Specification PAGEREF _Toc213071853 \h 22
+11.6.1 Integrated PAGEREF _Toc213071854 \h 22
+11.6.2 LDAP PAGEREF _Toc213071855 \h 22
+11.6.3 SAML PAGEREF _Toc213071856 \h 22
+12. Threat Management PAGEREF _Toc213071857 \h 23
+12.1 Endpoint Protection &amp; Antivirus PAGEREF _Toc213071858 \h 23
+12.1.1 Antivirus Exclusions PAGEREF _Toc213071859 \h 23
+12.2 DNS PAGEREF _Toc213071860 \h 23
+12.3 Logging PAGEREF _Toc213071861 \h 23
+12.4 Monitoring PAGEREF _Toc213071862 \h 23
+12.5 NTP PAGEREF _Toc213071863 \h 24
+12.6 Patching PAGEREF _Toc213071864 \h 24
+12.7 PKI PAGEREF _Toc213071865 \h 24
+12.7.1 Certificate Authority PAGEREF _Toc213071866 \h 24
+12.7.2 Certificates PAGEREF _Toc213071867 \h 24
+12.8 SMTP PAGEREF _Toc213071868 \h 24
+13. Disaster Recovery PAGEREF _Toc213071869 \h 24
+13.1 RPO and RTO PAGEREF _Toc213071870 \h 25
+13.2 Backup Specification PAGEREF _Toc213071871 \h 25
+13.3 Restore Specification PAGEREF _Toc213071872 \h 25
+13.3.1 &lt;Component&gt; PAGEREF _Toc213071873 \h 25
+13.4 Disaster Recovery and Business Continuity PAGEREF _Toc213071874 \h 25
+14 Build, Test and Release Management PAGEREF _Toc213071875 \h 25
+14.1Repository and Devops Tools PAGEREF _Toc213071876 \h 25
+14.1.1Repository and change management PAGEREF _Toc213071877 \h 25
+14.1.2Build Tool PAGEREF _Toc213071878 \h 25
+14.1.3Monitoring Tool PAGEREF _Toc213071879 \h 25
+14.2Pipeline Management PAGEREF _Toc213071880 \h 25
+14.2.1Environmental management PAGEREF _Toc213071881 \h 25
+14.2.2Naming Convention PAGEREF _Toc213071882 \h 25
+14.2.3Code Review and Release Management PAGEREF _Toc213071883 \h 26
+14.2.4Access Control: RBAC via GitHub Teams PAGEREF _Toc213071884 \h 26
+14.3Test Management PAGEREF _Toc213071885 \h 26
+14.3.1Test Strategy/Plan PAGEREF _Toc213071886 \h 26
+14.3.2Test Tool sets PAGEREF _Toc213071887 \h 26
+14.3.3Test Data Management PAGEREF _Toc213071888 \h 26
+14.4 Security &amp; Compliance PAGEREF _Toc213071889 \h 26
+14.4.1 Code Scanning PAGEREF _Toc213071890 \h 26
+14.4.2 Secrets Management PAGEREF _Toc213071891 \h 26
+15 Capacity Planning PAGEREF _Toc213071892 \h 26
+15.1 On-Prem – Virtual PAGEREF _Toc213071893 \h 26
+15.1.1 Storage PAGEREF _Toc213071894 \h 26
+15.1.2 Compute PAGEREF _Toc213071895 \h 26
+15.1.3 Memory PAGEREF _Toc213071896 \h 26
+15.2 On-Prem – Physical PAGEREF _Toc213071897 \h 26
+15.2.1 Storage – Local PAGEREF _Toc213071898 \h 26
+15.2.2 Storage – SAN PAGEREF _Toc213071899 \h 27
+15.2.3 Compute PAGEREF _Toc213071900 \h 27
+15.2.4 Memory PAGEREF _Toc213071901 \h 27
+15.3 Azure PAGEREF _Toc213071902 \h 27
+15.3.1 Compute PAGEREF _Toc213071903 \h 27
+15.3.2 Storage – Machine PAGEREF _Toc213071904 \h 27
+15.3.3 Storage – as a Service PAGEREF _Toc213071905 \h 28
+16. Service Management PAGEREF _Toc213071906 \h 28
+
+
+
+
+
+1. Introduction
+1.1 Background
+&lt;&lt; Insert a brief description for the project summary to outline drivers, business goals and key technology outcomes expected using business friendly language and terms. &gt;&gt;
+
+1.2 Purpose
+
+The purpose of this document is to define the Technical Architecture for the implementation, configuration and ongoing support for &lt;Project/Initiative&gt;. It will describe in detail the components of the system to be implemented, how it uses current APM standards, patterns and infrastructure, and any new technologies or processes it is deploying into the APM Production Environment.
+It is used to gain consensus and architecture approval. Once approved this document serves as de-facto as-built information. The document is a dynamic record of design and scope, intended to be matured with more detailed information as made available through the course of solution implementation and operation.
+In this context the technology infrastructure refers to a subset of the IT solution, namely tools, utilities, components and procedures that provide support for a non-production, production and DR platform.
+1.2 Audience
+The target audience includes technical and commercial stakeholders charged with reviewing, approving, building and supporting architecture including but not limited to the following roles:
+Solution governance forums
+Enterprise and Solution Architects,
+Project Managers,
+Administrators,
+Technical Subject Matter Experts (SME’s),
+Developers, and
+Integrators.
+
+
+2. Overview 
+&lt;&lt; Insert a description for the solution/product providing high level context and background for the using business friendly language and terms. &gt;&gt;
+2.1 Scope
+&lt;&lt; Insert areas of in-scope of the design document by requirements or solution context with reference to Detail Design document. If this document doesn’t cover the whole solution of the project, please indicate or direct to the other solution aspects.&gt;&gt;
+2.2 Systems Impacted 
+Impact legend:
+•Leverage: Existing Application / System leveraged as is
+•Modify: Existing Application / System requires customization as part of solution. 
+•New: Application / System is introduced as part of solution. 
+•Retire: Existing Application / System is retired or removed as part of solution.  
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+System |  |  | 
+Change Type |  |  | 
+Change Description |  |  | 
+Infrastructure Change
+[ROW]
+[ROW] |  |  | 
+APP A |  |  | 
+Leverage |  |  | 
+ |  |  | 
+N/A
+[ROW] |  |  | 
+APP B |  |  | 
+Modify  |  |  | 
+ |  |  | 
+App deployment
+
+
+2.3 Constraints, Assumptions, Dependencies and Risks
+&lt;&lt;Capture, validate constraints, assumptions and dependencies captured in detailed design document&gt;&gt; 
+2.3.1 Constraints
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+ID |  |  | 
+Description |  |  | 
+Treatment
+[ROW]
+[ROW] |  |  | 
+CON-001 |  |  | 
+ |  |  | 
+
+
+2.3.2 Assumptions
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+ID |  |  | 
+Description |  |  | 
+Treatment
+[ROW]
+[ROW] |  |  | 
+ASP-001 |  |  | 
+ |  |  | 
+
+
+2.3.3 Dependencies
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+ID |  |  | 
+Description |  |  | 
+Treatment
+[ROW]
+[ROW] |  |  | 
+DEP-001 |  |  | 
+ |  |  | 
+
+2.3.4 Risks
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+ID |  |  | 
+Description |  |  | 
+Treatment
+[ROW]
+[ROW] |  |  | 
+RSK-001 |  |  | 
+ |  |  | 
+
+
+2.4 Business requirement traceability matrix
+
+2.4.1 Functional Requirements Validation
+The following table outlines the compliance of the solution to the functional requirements outlined in &lt;Functional Requirements Specification Link&gt;.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+ID |  |  | 
+Requirement |  |  | 
+Complies? |  |  | 
+Comments
+[ROW]
+[ROW]
+[ROW] |  |  | 
+RQ-01 |  |  | 
+Example fulfilled requirement |  |  | 
+ |  |  | 
+Comment A
+[ROW]
+[ROW]
+[ROW] |  |  | 
+RQ-02 |  |  | 
+Example partially filled requirement |  |  | 
+? |  |  | 
+Comment B
+[ROW]
+[ROW]
+[ROW] |  |  | 
+RQ-03 |  |  | 
+Example unfulfilled requirement |  |  | 
+ |  |  | 
+Comment C
+
+2.4.2 Non-Functional Requirements Validation
+The following table outlines the compliance of the solution to the non-functional requirements outlined in &lt;Non-Functional Requirements Specification Link&gt;.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+ID |  |  | 
+Requirement |  |  | 
+Complies? |  |  | 
+Comments
+[ROW]
+[ROW]
+[ROW] |  |  | 
+RQ-NF-01 |  |  | 
+Example fulfilled requirement |  |  | 
+ |  |  | 
+Comment A
+
+
+4. Solution Design
+
+&lt;&lt;Insert a description of the application architecture required for the solution/product. This description should include an explanation of the system and its components, including all applications and services that need to be integrated with the target solution/product. This section should describe the application architecture required to meet business and data transformation requirements, including data flows and interfaces to other applications and services.&gt;&gt;
+4.1 Solution Overview  
+&lt;&lt;A system context model diagram that shows how the target solution/product interacts with other systems and services. This diagram should be in logical format and at high-level and should not detail any solution/product/interface components. Roles and processes, internal and external can be included.&gt;&gt;
+4.2 Solution/Product Component Inventory 
+&lt;&lt;An inventory of all solution/product components in scope. Where possible, this inventory should follow existing standards and document mandatory solution/product component reference data and IDs. 
+Clearly identify the components that are new and/or will require changes.&gt;&gt;
+
+4.3 Detailed Solution Interface Diagram
+&lt;&lt;A diagram showing all solution/product components of type application and service, including all detailed interfaces including users and applications. The diagram should follow accepted naming conventions for all objects, components and interfaces, referencing the correct master IDs and data in section 5.2 above.&gt;&gt;
+
+4.4 Solution/Product Interface catalogue 
+
+&lt;&lt;Provide an inventory of all solution/product component interfaces in scope. This inventory should follow existing naming standards and document mandatory solution/product component interface reference data and IDs, including data flows, interface patterns (e.g., ETL, File Transfer etc.), interface technologies and services used, such as API Management by Vendor YYYY, ETL product by vendor YYYY.&gt;&gt;
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+ID |  |  | 
+Name |  |  | 
+Source  |  |  | 
+Destination |  |  | 
+Frequency |  |  | 
+Pattern
+[ROW]
+[ROW] |  |  | 
+Integration ID - 001 |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+5. Technology Architecture
+&lt;&lt;Insert a description of the technology architecture required for the solution/product. This description should include an explanation of the technology reference model (TRM) and the components required to deploy the solution/product into production environment. A description of the DevOps environment can be included to help the reader understand how the solution/product assets will be developed and released into product, including Dev/Test environments. Figure 2 provides an example TRM . &gt;&gt;
+
+5.1 Technology Component Standards 
+
+&lt;&lt; For the scope for the solution/product architecture, insert an inventory of the technology component standards naming the vendors’ products providing each technology component. The inventory should include all technology components for each of the applicable TRM domains using the enterprise standard naming conventions and notations. See Reference Architecture Implementation Guide. 
+Ensure the inventory of technology components references any central repositories and uses records within these repositories to document the inventory. The approved status of each technology component should be listed, making it clear what components are approved, under-review or new. Any classification status for approved that allows the limited use of a technology component under specified conditions should also be documented. For example, approved for region, country and use case YYYY.
+•Complete the technology component standards list for each for your organizations TRM domains. The below provides an example list.
+•List any policies, controls (NIST Control Framework for Security), standards and/or use case limits for each of the domains.&gt;&gt; 
+&gt;&gt;
+
+5.2 Network &amp; Infrastructure Standards &amp; Patterns
+
+&lt;&lt; Insert details. See the following for guidance and examples:
+How to Architect Your WAN for Hybrid Cloud and Multicloud
+Optimize WAN Architectures for Workloads That Span the Hybrid Cloud and the Multicloud
+What Are the Key Factors to Consider When Choosing a Cloud Data Management Architecture?
+Infrastructure for Technical Professionals Primer for 2023
+6. Infrastructure Overview
+Detail solution infrastructure including Physical Model design diagram
+
+Figure  SEQ Figure \* ARABIC 3 - Physical Model Diagram
+6.1 Network and Firewall Specifications
+6.1.1Network Communications Diagram
+Show communication between all components in solution including ports and protocols.
+
+Figure  SEQ Figure \* ARABIC 4 - Network Communication Diagram
+6.1.2 IP Addressing
+On-Prem – Internal Network
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+IP Address |  |  | 
+Subnet |  |  | 
+CIDR |  |  | 
+Default Gateway
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Azure – Internal Network
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+IP Address |  |  | 
+Subnet |  |  | 
+CIDR |  |  | 
+Default Gateway
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Azure – DMZ
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+IP Address |  |  | 
+Subnet |  |  | 
+CIDR |  |  | 
+Default Gateway
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Azure – Public
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+IP Address |  |  | 
+Subnet |  |  | 
+CIDR
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Additional – Network
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+IP Address |  |  | 
+Subnet |  |  | 
+CIDR |  |  | 
+Default Gateway
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+6.1.3 DNS Information
+Internal DNS Records
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Type |  |  | 
+Value |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+External DNS Records
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Type |  |  | 
+Value |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+SaaS FDQN Information
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+FQDN |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+6.1.4 Load Balancing Specification
+On-Prem
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Load Balanced IP |  |  | 
+Ports |  |  | 
+Backend IPs |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+
+Azure
+Backend Pools
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Virtual Machines
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+
+Heath Probes
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Protocol |  |  | 
+Port |  |  | 
+Interval |  |  | 
+Threshold
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Load Balancing Rules
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Frontend IP |  |  | 
+Protocol |  |  | 
+Port |  |  | 
+Backend Port |  |  | 
+Backend Pool |  |  | 
+Health Probe |  |  | 
+Persistence
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+6.1.5 NAT Rules
+On-Prem
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Source Address |  |  | 
+Destination Address |  |  | 
+Destination Ports |  |  | 
+Translated Address |  |  | 
+Translated Ports |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Azure
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Rule Collection |  |  | 
+Name |  |  | 
+Protocol |  |  | 
+Source Type |  |  | 
+Source |  |  | 
+Destination Address |  |  | 
+Destination Ports |  |  | 
+Translated Address |  |  | 
+Translated Ports |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+6.1.6 Firewall Rules
+On-Prem
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Source |  |  | 
+Destination |  |  | 
+Ports |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Azure
+IP Addresses
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Rule Collection |  |  | 
+Name |  |  | 
+Protocol |  |  | 
+Source Type |  |  | 
+Source |  |  | 
+Destination Type |  |  | 
+Destination Address |  |  | 
+Destination Ports
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Service Tags
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Rule Collection |  |  | 
+Name |  |  | 
+Protocol |  |  | 
+Source type |  |  | 
+Source |  |  | 
+Service Tags |  |  | 
+Destination Ports
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Additional
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Source |  |  | 
+Destination |  |  | 
+Ports |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+7. Database Specification
+7.1 IaaS
+7.1.1 Hosting
+Detail the server/cluster hosting the database, as well as the database instance and name. Add an additional section for each component that has an IaaS database.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Host Name |  |  | 
+Host Type |  |  | 
+Database Instance |  |  | 
+Database Name
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+7.2 PaaS
+7.1.2 Hosting
+Detail the PaaS solution hosting the database Add an additional section for each component that has a PaaS database.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Database Name |  |  | 
+Server/Service
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+
+
+
+8. Compute Specifications
+
+8.1 On-Prem – Virtual
+Add additional sections per server.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Item |  |  | 
+Configuration
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+
+[ROW] |  |  | 
+CPU |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+Memory |  |  | 
+ GB
+[ROW] |  |  | 
+Disk |  |  | 
+ID |  |  | 
+ |  |  | 
+Size |  |  | 
+ |  |  | 
+Datastore |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ID |  |  | 
+ |  |  | 
+Size |  |  | 
+ |  |  | 
+Datastore |  |  | 
+
+[ROW] |  |  | 
+Network |  |  | 
+NIC |  |  | 
+ |  |  | 
+Network |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+Operating System |  |  | 
+
+[ROW] |  |  | 
+Farm |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+Cluster |  |  | 
+
+[ROW] |  |  | 
+Resource Group |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+Template Location |  |  | 
+
+[ROW] |  |  | 
+Template Name |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+SRM Protection Group |  |  | 
+
+
+
+
+
+
+8.2 On-Prem – Physical
+Add additional sections per server.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Item |  |  | 
+Configuration
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+
+[ROW] |  |  | 
+CPU |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+Memory |  |  | 
+ GB
+[ROW] |  |  | 
+Disk |  |  | 
+ID |  |  | 
+ |  |  | 
+Size |  |  | 
+ |  |  | 
+Datastore |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ID |  |  | 
+ |  |  | 
+Size |  |  | 
+ |  |  | 
+Datastore |  |  | 
+
+[ROW] |  |  | 
+Network |  |  | 
+NIC |  |  | 
+ |  |  | 
+Network |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+Operating System |  |  | 
+
+[ROW] |  |  | 
+Location |  |  | 
+
+8.3 Azure
+Add additional sections per server
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Item |  |  | 
+Configuration
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+
+[ROW] |  |  | 
+Size |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+Operating System |  |  | 
+
+[ROW] |  |  | 
+CPU |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+Memory |  |  | 
+
+[ROW] |  |  | 
+Disk |  |  | 
+ID |  |  | 
+ |  |  | 
+Size |  |  | 
+ |  |  | 
+Type |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Network |  |  | 
+NIC |  |  | 
+ |  |  | 
+VNET |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+SUBNET |  |  | 
+
+[ROW] |  |  | 
+Location |  |  | 
+
+[ROW]
+[ROW] |  |  | 
+Resource Group |  |  | 
+
+[ROW] |  |  | 
+Subscription |  |  | 
+
+9. PaaS Specification
+Detail any PaaS services used by the solution.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Type |  |  | 
+Name |  |  | 
+Subscription |  |  | 
+Resource Group |  |  | 
+Region
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+
+10. Information &amp; Data Architecture
+
+10.1 Information Model
+
+&lt;&lt; Insert details of Conceptual Data model, Alignment and 
+&gt;&gt;
+10.2 Information Classification
+10.3 Analytics and reporting Patterns
+
+&lt;&lt; Insert details. See the following for guidance and examples:
+Solution Path for Building Modern Analytics and BI Architectures
+Reference Architecture to Enable Self-Service Analytics
+&gt;&gt;
+11. Cyber &amp; Security Architecture 
+
+11.1 Data Security
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Data Classification |  |  | 
+Detail
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+
+
+
+
+11.2 RBAC Specification
+11.2.1 Application Roles
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Context |  |  | 
+Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.2.2 Local Groups
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Group Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.2.3 Active Directory Groups
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Group Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.2.4 Azure Active Directory Groups
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Group Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.3 Accounts
+11.3.1 Service Accounts
+Application Accounts
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Local Accounts
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+
+
+Domain Accounts
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Managed Identities
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.3.2 Shared Accounts
+Application Accounts
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Local Accounts
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Domain Accounts
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Managed Identities
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Name |  |  | 
+Rights |  |  | 
+Description
+[ROW]
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.4 Authentication
+11.4.1 Authentication Requirements
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Role |  |  | 
+Auth Method |  |  | 
+MFA Required
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.4.2 Conditional Access Rules
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Rule |  |  | 
+Scope |  |  | 
+Requirements
+[ROW]
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.5 IDP Specification
+11.5.1 Azure AD
+Add additional sections for each Enterprise App
+&lt;Enterprise App&gt;
+Basic Configuration
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Item |  |  | 
+Value
+[ROW]
+[ROW] |  |  | 
+Identifier |  |  | 
+
+[ROW] |  |  | 
+Reply URL |  |  | 
+
+
+Additional Attributes
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Source Attribute
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+
+Transforms
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Transform Type |  |  | 
+Transform
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+11.5.2 ADFS
+&lt;Relying Party Trust&gt;
+Detail any Relying Party Trusts, Add additional sections for each trust.
+11.6 Authentication Specification
+11.6.1 Integrated
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Context |  |  | 
+Directory
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.6.2 LDAP
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+LDAP Server |  |  | 
+Protocol |  |  | 
+Port
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+11.6.3 SAML
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+IDP Endpoint |  |  | 
+Access
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+12. Threat Management
+12.1 Endpoint Protection &amp; Antivirus
+Detail the endpoint protection and antivirus implementation for the solution.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Endpoint Protection |  |  | 
+Antivirus
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+12.1.1 Antivirus Exclusions
+The following exclusions are required:
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Exclusion |  |  | 
+Type |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+12.2 DNS
+Detail DNS configuration for each component.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Primary DNS |  |  | 
+Secondary DNS
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+12.3 Logging
+Detail the logging configuration for each component.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Type |  |  | 
+Destination |  |  | 
+Frequency
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+12.4 Monitoring
+Detail monitoring requirements for each solution component.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Monitoring Requirements
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+
+12.5 NTP
+Detail NTP configuration for each component.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+NTP Server
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+
+12.6 Patching
+Detail the patching specification, add additional sections for each component.
+
+12.7 PKI
+Detail the PKI configuration for each component.
+12.7.1 Certificate Authority
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+CA |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+12.7.2 Certificates
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Subject |  |  | 
+CA |  |  | 
+SANs |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+12.8 SMTP
+Detail SMTP configuration
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Relay Server |  |  | 
+Port |  |  | 
+Sender Address |  |  | 
+Authentication |  |  | 
+Description
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+13. Disaster Recovery 
+&lt;&lt; Insert details. See the following for guidance and examples:
+             Network Resilience to Counter the Risks of Sabotage
+Designing Availability and Resilience for Applications in Public Cloud IaaS and PaaS
+IT Resilience — Improving Reliability, Tolerability and Disaster Recovery
+Third Party Risk and Contingency Management
+&gt;&gt;
+13.1 RPO and RTO
+The solution has the following Recovery Point Objectives (RPO) and Recovery Time Objectives (RTO) defined.
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Tier |  |  | 
+RPO |  |  | 
+RTO
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+13.2 Backup Specification
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Backup Method |  |  | 
+Backup Frequency |  |  | 
+Offline Requirement
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+13.3 Restore Specification
+13.3.1 &lt;Component&gt;
+Detail the restore process, add additional sections for each component.
+
+13.4 Disaster Recovery and Business Continuity
+Detail the Disaster Recovery and Business Continuity Process for the solution.
+
+
+
+
+
+14 Build, Test and Release Management
+Repository and Devops Tools 
+Repository and change management 
+Build Tool
+Monitoring Tool  
+Pipeline Management
+Environmental management
+Naming Convention
+Code Review and Release Management  
+Access Control: RBAC via GitHub Teams
+Test Management
+Test Strategy/Plan
+Test Tool sets 
+Test Data Management
+14.4 Security &amp; Compliance
+14.4.1 Code Scanning
+14.4.2 Secrets Management
+15 Capacity Planning
+15.1 On-Prem – Virtual
+15.1.1 Storage
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Virtual Machine |  |  | 
+Datastore |  |  | 
+Storage Required
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+
+
+15.1.2 Compute
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Virtual Machine |  |  | 
+Datastore |  |  | 
+Virtual CPUs Required
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+
+
+15.1.3 Memory
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Virtual Machine |  |  | 
+Datastore |  |  | 
+Virtual Memory Required
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+
+15.2 On-Prem – Physical
+15.2.1 Storage – Local
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Machine |  |  | 
+Disk Type |  |  | 
+Storage Required
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+
+
+15.2.2 Storage – SAN
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Machine |  |  | 
+Storage Tier |  |  | 
+Storage Required
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+
+
+15.2.3 Compute
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Machine |  |  | 
+CPUs Required
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+
+
+15.2.4 Memory
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Machine |  |  | 
+Memory Required
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+
+
+15.3 Azure
+Estimate costs using the Azure pricing calculator https://azure.microsoft.com/en-us/pricing/calculator/ 
+15.3.1 Compute
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Virtual Machine |  |  | 
+Machine Size |  |  | 
+Estimated Monthly Cost
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+
+
+15.3.2 Storage – Machine
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Virtual Machine |  |  | 
+Disk Type |  |  | 
+Disk Size |  |  | 
+Estimated Monthly Cost
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+ |  |  | 
+
+
+15.3.3 Storage – as a Service
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Component |  |  | 
+Disk Type |  |  | 
+Disk Size |  |  | 
+Estimated Monthly Cost
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+Total |  |  | 
+ |  |  | 
+
+
+16. Service Management 
+
+9.Solution/Product Support and Operating Model
+&lt;&lt; Insert a description on the solution/products support and operating model. Is there a clear understanding and agreement on the support team? What will be done to document the operating model components? Who is responsible for documenting the support and operating model? 
+The scale of the support and operating model for the solution/products depends on the scale, complexity (including number of and type of integrations), business critically and how pervasive or extensive it is throughout the enterprise. 
+
+
+ 

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><title>CN-PK-01 Participant Kiosk - Device Build Procedure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Mulish:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../styles.css">
+<style>
+doc-page:not(:defined){visibility:hidden}
+body{font-family:'Mulish',sans-serif;color:#1F2D58;font-size:12pt;line-height:1.5}
+h1,h2,h3,h4{font-family:'Poppins',sans-serif;color:#1F2D58;text-wrap:balance;margin:0}
+h1{font-size:20pt;font-weight:600;line-height:1.15}
+h2{font-size:14pt;font-weight:600;margin:20pt 0 7pt;padding-bottom:4pt;border-bottom:2px solid #1F2D58;break-after:avoid}
+h3{font-size:12.5pt;font-weight:600;margin:13pt 0 5pt;break-after:avoid}
+p{margin:0 0 7pt}
+.lede{font-size:11pt;color:#41507F}
+.hdr{background:#1F2D58;color:#fff;padding:15pt 18pt;border-radius:7px;margin-bottom:12pt}
+.hdr h1{color:#fff}
+.hdr .sub{font-family:'Poppins',sans-serif;font-size:9.5pt;letter-spacing:.1em;text-transform:uppercase;color:#8E9BC4;margin-bottom:5pt}
+.hdr .who{font-size:11pt;color:#C2CBE4;margin-top:6pt}
+table{width:100%;border-collapse:collapse;margin:0 0 9pt;font-size:11pt;clear:right}
+th{font-family:'Poppins',sans-serif;font-size:9.5pt;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#1F2D58;text-align:left;padding:5pt 8pt}
+td{padding:5pt 8pt;border-bottom:1px solid #D8DEEC;vertical-align:top}
+tr:nth-child(even) td{background:#F5F7FB}
+table,tr,td,th{break-inside:avoid}
+ol,ul{margin:0 0 8pt;padding-left:19pt}
+li{margin-bottom:5pt}
+kbd{font-family:'JetBrains Mono',monospace;font-size:10pt;font-weight:700;background:#fff;border:1.5px solid #1F2D58;border-bottom-width:3px;border-radius:4px;padding:1pt 5pt;white-space:nowrap}
+.cmd{font-family:'JetBrains Mono',monospace;font-size:11pt;background:#101a33;color:#fff;border-radius:6px;padding:9pt 12pt;margin:6pt 0 8pt;line-height:1.75;break-inside:avoid;clear:right}
+.cmd .ent{color:#F89728;font-weight:700;font-size:9.5pt}
+.cmd .cm{color:#8E9BC4}
+.see{border-left:3px solid #7B87AD;background:#F5F7FB;padding:6pt 11pt;margin:6pt 0 8pt;font-size:11pt;break-inside:avoid;clear:right}
+.see>b:first-child{font-family:'Poppins',sans-serif;font-size:9.5pt;letter-spacing:.06em;text-transform:uppercase;color:#5A6796;display:block;margin-bottom:2pt}
+.stop{border-left:4px solid #C0392B;background:#FCEEF0;padding:8pt 12pt;margin:8pt 0;font-size:11pt;break-inside:avoid;clear:right}
+.stop b{font-family:'Poppins',sans-serif;color:#8C2130}
+.tbc{background:#FFF6EA;border:1px dashed #D89A3C;border-radius:5px;padding:7pt 11pt;margin:7pt 0;font-size:11pt;break-inside:avoid;clear:right}
+.tbc>b:first-child{font-family:'Poppins',sans-serif;font-size:9.5pt;letter-spacing:.06em;text-transform:uppercase;color:#8A5200;display:block;margin-bottom:2pt}
+.rule{background:#1F2D58;color:#fff;border-radius:7px;padding:12pt 16pt;margin:10pt 0 14pt;break-inside:avoid;clear:right}
+.rule h3{color:#fff;margin:0 0 7pt}
+.rule ol{margin:0;padding-left:17pt;font-size:11.5pt}
+.rule li{margin-bottom:6pt;color:#E4E9F5}
+.rule b{color:#F89728}
+.stage{font-family:'Poppins',sans-serif;font-size:9.5pt;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#F89728;display:block;margin-top:16pt}
+.time{float:right;font-family:'Poppins',sans-serif;font-size:9.5pt;font-weight:600;color:#5A6796;background:#EDEFF4;border-radius:20px;padding:2pt 10pt}
+.tick td{height:20pt}
+.tick .bx{width:34pt;text-align:center}
+.tick .bx span{display:inline-block;width:13pt;height:13pt;border:1.5pt solid #1F2D58;border-radius:2px;vertical-align:middle}
+code{font-family:'JetBrains Mono',monospace;font-size:10.5pt;background:#EDEFF4;border-radius:3px;padding:1pt 4pt}
+.ftr{display:flex;justify-content:space-between;font-family:'Poppins',sans-serif;font-size:8.5pt;color:#41507F;border-top:1px solid #D8DEEC;padding-top:4pt}
+a{color:#8A5200;text-decoration:none;border-bottom:1px solid #E8C89A}
+a:hover{color:#B36A00;border-bottom-color:#B36A00}
+</style>
+</head><body>
+<doc-page margin="0.7in">
+
+<div class="ftr" slot="footer"><span>CN-PK-01 &middot; APM ES Participant Kiosk &middot; Device Build Procedure V1.0</span><span>FOR INTERNAL USE ONLY &middot; Commercial in confidence</span></div>
+
+<div class="hdr">
+<div class="sub">CN-PK-01 &middot; Operational procedure &middot; V1.0</div>
+<h1>ES Participant Kiosk<br>Device Build Procedure</h1>
+<div class="who">For CompNow build technicians &middot; APM Standard Operating Environment Program</div>
+</div>
+
+<h2>Solution overview</h2>
+<p>The APM ES Participant Kiosk is a Dell desktop running Windows 11 Enterprise, Microsoft Entra ID joined and managed by Microsoft Intune. It is deployed to APM Employment Services sites for participant use.</p>
+<p>The device operates under a multi-application restricted user experience. The available application set is Microsoft Edge, LibreOffice Writer, Calc and Impress, and File Explorer scoped to the Downloads and Desktop folders. No other application, and no Windows administrative interface, is reachable from the session.</p>
+<p>There is no participant identity and no credential. The device authenticates automatically to a Windows-managed local account, so no username or password exists for a participant to enter and none is displayed. On restart, all session data written by the previous user is purged.</p>
+<p><b>CompNow performs the build.</b> Receive and inspect the device and record its serial number. Verify the firmware settings, where the model requires it. Install the APM image from USB, which erases the internal drive and replaces the factory operating system. Register the device in Windows Autopilot with the group tag <code>PARTICIPANT</code>. Initiate provisioning. Verify the outcome against the acceptance criteria in Stage 8. Then pack, label and dispatch the device, and update the asset register.</p>
+<p>Everything between provisioning and the acceptance tests is automated. Once the device is registered and provisioning has begun, Intune applies the configuration, the security baseline and the application set with no operator intervention.</p>
+
+<div class="rule">
+<h3>Critical build requirements</h3>
+<ol>
+<li>The <b>APM image</b> is installed from USB at Stage 3, before Autopilot registration. It carries the required Windows version, the current updates and the APM certificates, and replaces the factory operating system. Autopilot provisions on top of it and does not change the Windows version.</li>
+<li>Registration in <b>Windows Autopilot</b> is the first action performed against APM's systems, and it must be complete before provisioning is initiated at Stage 7. No configuration, application or lockdown reaches an unregistered device. Stages 4 and 5 deliver registration.</li>
+<li>The Autopilot group tag must read <b>PARTICIPANT</b> in upper case. The tag is the sole mechanism that assigns the kiosk deployment profile. An incorrect or absent tag results in a standard Windows desktop with no lockdown applied.</li>
+<li><b>Userless enrolment status</b> must read <b>Allowed</b> before provisioning is initiated at Stage 7, and before any rebuild. A device at Blocked fails during the account setup phase of provisioning.</li>
+<li>No device is dispatched until it has been <b>restarted and has returned to the restricted session unattended</b>. Stage 8 is the acceptance test for the build.</li>
+</ol>
+</div>
+
+<h2>Prerequisites</h2>
+<table>
+<colgroup><col style="width:31%"><col></colgroup>
+<thead><tr><th>Item</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>Device allocation list</td><td>Quantity per site and destination site code. Issued by APM.</td></tr>
+<tr><td><b>Build USB drive</b></td><td>One drive, prepared once and reused for every device. Holds the APM image and the build scripts. Prepare it as set out below. 16 GB minimum.</td></tr>
+<tr><td>Files from APM</td><td>APM emails a download link for the image, alongside the scripts. Four files: <code>Windows11_25H2_PK_Updated_20260827.iso</code> &middot; <code>get-autopilothash.bat</code> &middot; <code>run-CreateMIREGKey.bat</code> &middot; the PowerShell script <code>run-CreateMIREGKey.bat</code> invokes. Before starting a batch, confirm the image filename matches the one in the most recent APM email: the date in the filename is the image version.</td></tr>
+<tr><td>Workstation with Rufus</td><td>A build facility workstation running <b>Rufus</b> 4.5 or later, used once to prepare the build USB drive. Also used at Stage 5 to reach the Intune admin centre.</td></tr>
+<tr><td>Wired network at the build facility</td><td>Ethernet with internet access. See the network requirements below.</td></tr>
+<tr><td>Keyboard, mouse, monitor</td><td>Required for the build. Not shipped with the device unless the allocation list specifies otherwise.</td></tr>
+<tr><td>Asset register access</td><td>Every device action is recorded against the register.</td></tr>
+<tr><td>Build record sheet</td><td>Located at the end of this document. One per device.</td></tr>
+</tbody>
+</table>
+
+<h3>Preparing the build USB drive</h3>
+<div class="tbc"><b>APM to confirm before issue</b>Two things a technician needs before assembling the kit: the exact filename of the PowerShell script that <code>run-CreateMIREGKey.bat</code> invokes, so its receipt and its placement on the drive can be confirmed; and the USB preparation tool. This procedure specifies Rufus 4.5 or later; confirm that is the tool CompNow is to use, since it is third-party software the build facility may not carry.</div>
+<p>Done once, on a build facility workstation, not per device. One drive serves every device in the batch. Prepare a spare as well: a failed drive stops every build at the facility.</p>
+<ol>
+<li>Obtain the four files listed above from APM.</li>
+<li>Insert a USB drive of 16 GB or larger. Anything on it is erased.</li>
+<li>Open <b>Rufus</b> on the workstation.</li>
+<li>Under <b>Device</b>, select the USB drive. Check the drive letter and capacity match the drive inserted.</li>
+<li>Next to <b>Boot selection</b>, choose <b>SELECT</b> and pick <code>Windows11_25H2_PK_Updated_20260827.iso</code>.</li>
+<li>Set <b>Partition scheme</b> to <b>GPT</b> and <b>Target system</b> to <b>UEFI (non CSM)</b>.</li>
+<li>Set <b>File system</b> to <b>FAT32</b>. Where Rufus warns that the Windows image file exceeds the FAT32 limit and offers to split it, accept. FAT32 is required: it boots under Secure Boot without a third-party bootloader, so Secure Boot stays enabled throughout the build.</li>
+<li>Choose <b>START</b>. Where Rufus offers Windows customisation options, accept the defaults and choose <b>OK</b>. Confirm the warning that the drive will be erased.</li>
+<li>Wait for Rufus to report <b>READY</b>, then close Rufus.</li>
+<li>Open the USB drive in File Explorer. Copy the three script files to the <b>top level of the drive</b>, not into a folder.</li>
+</ol>
+<div class="see"><b>Check before use</b>The top level of the drive shows <code>get-autopilothash.bat</code>, <code>run-CreateMIREGKey.bat</code>, the PowerShell script, and the Windows installation folders (<code>sources</code>, <code>boot</code> and others).</div>
+<div class="stop"><b>Report to APM if</b> Rufus reports an error, or the ISO is refused as not bootable. Do not attempt to build a device from a drive that did not reach READY. Quote the message Rufus showed.</div>
+
+<h3>Network requirements at the build facility</h3>
+<p>Autopilot self-deploying mode attests the device TPM against Microsoft endpoints during provisioning, so outbound internet access is required throughout the build. Wired ethernet is preferred. Where any address below is blocked, provisioning halts at the <i>Securing your hardware</i> stage and returns error <code>0x800705B4</code>.</p>
+<table>
+<colgroup><col style="width:31%"><col></colgroup>
+<thead><tr><th>Must be reachable</th><th>Address</th></tr></thead>
+<tbody>
+<tr><td>Outbound internet</td><td>TCP 443 and TCP 80</td></tr>
+<tr><td>TPM attestation, all devices</td><td><code>*.microsoftaik.azure.net</code></td></tr>
+<tr><td>TPM attestation, Intel</td><td><code>https://ekop.intel.com/ekcertservice</code></td></tr>
+<tr><td>TPM attestation, AMD</td><td><code>https://ftpm.amd.com/pki/aia</code></td></tr>
+</tbody>
+</table>
+<p class="lede">Confirm these with the network team as tested, before the first batch. Blocked attestation endpoints are the most common cause of a stalled provisioning run.</p>
+
+<h2>Stage 1 &middot; Receipt and power-on inspection</h2>
+<span class="time">3 minutes</span>
+<ol>
+<li>Open the carton. Remove the device, the power supply and all accessories. Retain the carton and all packaging for repacking at Stage 9.</li>
+<li>Record the serial number on the build record sheet. It is printed on the carton label and on the device.</li>
+<li>Connect the monitor, keyboard, mouse, ethernet cable and power.</li>
+<li>Press the power button once.</li>
+</ol>
+<div class="see"><b>On screen</b>The Dell logo, followed by the factory operating system starting, or a first-run screen. Either state is expected. The factory operating system is replaced at Stage 3, so its state does not matter.</div>
+<div class="stop"><b>Report to APM if</b> the device does not power on, shows physical damage, or halts on an error before the Dell logo. Do not attempt repair and do not proceed. Set the device aside, photograph it, record it as <b>DOA</b> on the build record sheet and in the asset register, and follow the faulty-goods return process.</div>
+<p>Record in the asset register: serial number, model, destination site, status <b>In build</b>.</p>
+
+<h2>Stage 2 &middot; Firmware verification</h2>
+<span class="time">4 minutes, only where required</span>
+<p>The device model APM has purchased for this use case ships with the correct firmware configuration, so no firmware change is expected and this stage is not performed on those units. Where any other model is used, verify the three settings below before proceeding.</p>
+<ol>
+<li>Switch the device off. Hold the power button for 10 seconds if it will not shut down.</li>
+<li>Press the power button, then <b>immediately start tapping</b> the firmware entry key about once a second until the firmware screen opens. This is <kbd>F2</kbd> on Dell; <kbd>Delete</kbd> and <kbd>F10</kbd> are common on other vendors. Where Windows starts instead, switch off and repeat, tapping earlier.</li>
+<li>Locate and confirm the three settings in the table below. The paths given are for Dell firmware. On another vendor's firmware the settings carry the same or similar names under equivalent menus, so locate each by name rather than by path.</li>
+</ol>
+<table>
+<colgroup><col style="width:26%"><col style="width:24%"><col></colgroup>
+<thead><tr><th>Setting</th><th>Must be</th><th>Dell menu path</th></tr></thead>
+<tbody>
+<tr><td>TPM 2.0 / Security Device</td><td><b>On</b> and <b>Enabled</b></td><td>Security, or Security &gt; TPM 2.0 Security</td></tr>
+<tr><td>Boot mode</td><td><b>UEFI</b>, not Legacy</td><td>Boot Configuration</td></tr>
+<tr><td>Secure Boot</td><td><b>Enabled</b></td><td>Boot Configuration &gt; Secure Boot</td></tr></tbody>
+</table>
+<ol start="4">
+<li>Where a setting was changed, choose <b>Apply Changes</b>, then <b>OK</b>.</li>
+<li>Choose <b>Exit</b>. The device restarts.</li>
+</ol>
+<div class="stop"><b>Report to APM if</b> TPM 2.0 cannot be enabled, or reports a state other than Enabled. Set the device aside, record the serial number, and follow the faulty-goods process.</div>
+
+<h2>Stage 3 &middot; Install the APM Windows image</h2>
+<span class="time">25 to 40 minutes</span>
+<p>The APM image carries the required Windows version, the current updates and the APM certificates. It is installed from USB before Autopilot registration, so that the correct Windows version is present and the factory operating system is replaced. Autopilot provisions on top of this image and does not change the Windows version.</p>
+<div class="stop"><b>This stage erases the internal drive.</b> Every existing partition is deleted, including the factory operating system. That is intended. Confirm the unit is correct, that Stage 1 is complete, and that Stage 2 is complete where it applies.</div>
+<h3>3.1 Boot from the build USB drive</h3>
+<ol>
+<li>Shut the device down. Hold the power button for 10 seconds where it will not shut down from the screen.</li>
+<li>With the device off, connect the <b>build USB drive</b>.</li>
+<li>Press the power button, then <b>immediately start tapping</b> the one-time boot menu key about once a second. This is <kbd>F12</kbd> on Dell.</li>
+<li>From the boot menu, select the USB device listed under <b>UEFI Boot</b>. Do not select a legacy or non-UEFI entry.</li>
+</ol>
+<div class="see"><b>On screen</b>Windows Setup, beginning with a language and keyboard screen.</div>
+<p>Where the device boots into the factory Windows instead, the boot selection did not register. Switch off and repeat, tapping the key earlier.</p>
+<div class="stop"><b>Report to APM if</b> the device reports a Secure Boot violation, or refuses the USB device as untrusted. The build USB drive must be FAT32 with GPT and UEFI (non CSM), per Prerequisites: a drive prepared as NTFS boots through a third-party bootloader that Secure Boot refuses. Re-prepare the drive. Do not disable Secure Boot.</div>
+<h3>3.2 Install the image</h3>
+<ol>
+<li>Work through the language and keyboard screens, then choose <b>Install now</b>.</li>
+<li>At the installation type screen, choose <b>Custom: Install Windows only (advanced)</b>. Do not choose Upgrade.</li>
+<li>Delete every partition listed against the internal drive. Select each in turn, choose <b>Delete</b>, then <b>OK</b> to confirm.</li>
+<li>Continue until the internal drive shows a single entry reading <b>Unallocated Space</b>.</li>
+<li>Select that entry and choose <b>Next</b>. Setup creates the partitions and installs the image.</li>
+</ol>
+<div class="see"><b>On screen</b>An installation progress screen. The device restarts one or more times without operator input.</div>
+<p>Installation takes 25 to 40 minutes depending on the device. Begin the next device at Stage 1 while this one installs.</p>
+<div class="stop"><b>Report to APM if</b> Windows Setup returns an error, no internal drive is listed, or the installation does not complete. Provide a photograph of the screen and the serial number.</div>
+<h3>3.3 Stop at the out-of-box experience</h3>
+<ol>
+<li>Wait until the device restarts into the <b>out-of-box experience (OOBE)</b>, the first screen after installation, which requests a country or region.</li>
+<li><b>Stop there. Do not work through OOBE and do not create an account.</b> Autopilot completes OOBE itself at Stage 7, and an account created here breaks the self-deploying enrolment the build depends on.</li>
+<li>Leave the build USB drive connected. Where Stage 4 applies, it runs the scripts on this drive.</li>
+</ol>
+<div class="stop"><b>Report to APM if OOBE has been worked through, or an account has been created.</b> The device cannot be recovered by restarting it: the local account and the completed OOBE persist, and Autopilot self-deploying will not run. Rebuild the device from Stage 3, which erases the drive and clears both. Record the serial number and report it, so the Autopilot record can be checked before the rebuild.</div>
+
+<h2>Stage 4 &middot; Hardware hash capture</h2>
+<span class="time">5 minutes</span>
+<p>The hardware hash is the device identifier Autopilot uses to match a device to its deployment profile. APM requires it before provisioning can begin.</p>
+<p><b>Omit this stage where APM has confirmed the batch is already registered</b> (Dell can register devices at the point of manufacture). Where registration is unconfirmed, capture the hash. A duplicate capture has no adverse effect.</p>
+
+<h3>4.1 Open a command prompt on the device</h3>
+<ol>
+<li>The device is at the out-of-box experience from Stage 3. Where it has since been switched off, power it on and wait for that screen.</li>
+<li>Confirm the <b>build USB drive</b> is still connected from Stage 3. Where it was removed, reconnect it.</li>
+<li>Press <kbd>Shift</kbd> + <kbd>F10</kbd> together.</li>
+</ol>
+<div class="see"><b>On screen</b>A black console window ending in a prompt similar to <code>X:\windows\system32&gt;</code>. Commands are entered at this prompt.</div>
+<p>If nothing happens, try <kbd>Shift</kbd> + <kbd>Fn</kbd> + <kbd>F10</kbd>. On some keyboards the function keys need <kbd>Fn</kbd> held as well.</p>
+
+<h3>4.2 Switch to the build USB drive</h3>
+<p>Type the following. Press <kbd>Enter</kbd> at the end of each line.</p>
+<div class="cmd">d: <span class="ent">[Enter]</span><br>dir <span class="ent">[Enter]</span></div>
+<div class="see"><b>On screen</b>A directory listing of the USB drive. Both <code>get-autopilothash.bat</code> and <code>run-CreateMIREGKey.bat</code> appear in the list.</div>
+<p>Where the response is <code>The system cannot find the drive specified</code>, the USB drive holds a different letter. Enter <code>e:</code> then <kbd>Enter</kbd>, then <code>f:</code>, and so on, running <code>dir</code> at each until the build files are listed.</p>
+
+<h3>4.3 Run the hash capture file</h3>
+<div class="cmd">get-autopilothash.bat <span class="ent">[Enter]</span></div>
+<p>The batch file opens PowerShell and collects the hash. Do not interrupt it. Capture takes two to three minutes and the console may appear inactive during that period.</p>
+<div class="tbc"><b>APM to confirm before issue</b>The message <code>get-autopilothash.bat</code> returns on completion, the name of the file it writes, and its location. Also whether the batch file writes the CSV as UTF-8: a file produced by redirecting PowerShell console output is UTF-16, which Intune rejects as having incorrect column headings.</div>
+<ol>
+<li>When it has finished, check the file was created. Type <code>dir</code> then <kbd>Enter</kbd> and look for a new <code>.csv</code> file.</li>
+<li>Confirm the file is <b>UTF-8</b> encoded. Open it in Notepad and read the encoding shown at the bottom right of the window. Intune rejects a file saved as UTF-16 and reports it as having incorrect column headings, even where the headings are correct.</li>
+<li>Where it reads UTF-16 LE or Unicode, choose <b>File</b> then <b>Save as</b>, set <b>Encoding</b> to <b>UTF-8</b>, and save over the file.</li>
+<li>Leave the USB drive connected. It is required again at Stage 6.</li>
+<li><b>Do not restart the device yet.</b></li>
+</ol>
+<div class="stop"><b>Report to APM if</b> the console returns errors, closes immediately, or no <code>.csv</code> file is written. Provide a photograph of the screen and the serial number.</div>
+
+<h2>Stage 5 &middot; Autopilot registration and group tag</h2>
+<span class="time">5 to 20 minutes</span>
+<p>Where Stage 4 was performed, CompNow imports the hardware hash to the APM tenant directly, at 5.1. The group tag applied at import determines the configuration the device receives.</p>
+<p><b>5.2 and 5.3 are performed on every device, by either path.</b> A device registered at manufacture arrives without a group tag more often than one imported here, so 5.2 matters most on exactly the path that skips 5.1.</p>
+
+<div class="tbc"><b>APM to confirm before issue</b>The sign-in account CompNow uses for the import, and the permissions it carries.</div>
+
+<h3>5.1 Import the hash to the APM tenant</h3>
+<p><b>Omit 5.1 where Stage 4 was omitted</b>, that is where the batch was registered at manufacture. Confirm the device already appears in the Autopilot devices list by its serial number, then continue at 5.2.</p>
+<div class="stop"><b>Report to APM if</b> a device from a batch registered at manufacture does not appear in the Autopilot devices list at all. It cannot provision until it is registered. Provide the serial number and do not proceed to Stage 6.</div>
+<ol>
+<li>On the build workstation, open <b>intune.microsoft.com</b> and sign in with the account APM has provided.</li>
+<li>In the left menu choose <b>Devices</b>.</li>
+<li>Choose <b>Enrolment</b>.</li>
+<li>Choose <b>Devices</b> under the Windows Autopilot heading.</li>
+<li>Choose <b>Import</b> at the top of the page.</li>
+<li>Choose <b>Select a file</b>, select the <code>.csv</code> file, then choose <b>Import</b>.</li>
+<li>Wait for the import to complete. This can take up to 15 minutes. Choose <b>Sync</b>, then <b>Refresh</b>, until the device appears in the list.</li>
+</ol>
+<div class="stop"><b>Report to APM if</b> the import returns an error, or the device does not appear in the list after 30 minutes. Provide the serial number and the error shown. Do not proceed to Stage 6: an unregistered device cannot provision.</div>
+
+<h3>5.2 Verify the group tag on every device</h3>
+<p>Verify the tag on every device, by either path. Locate the device in the Autopilot devices list by serial number and read the <b>Group Tag</b> column.</p><table>
+<colgroup><col style="width:38%"><col></colgroup>
+<thead><tr><th>Group Tag column shows</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td><code>PARTICIPANT</code></td><td>Compliant. Proceed.</td></tr>
+<tr><td>Empty, or any other value</td><td>Select the device, choose <b>Edit</b> on the right-hand panel, enter <code>PARTICIPANT</code> in upper case in the Group Tag field, choose <b>Save</b>.</td></tr>
+<tr><td><code>participant</code> or <code>Participant</code></td><td>Non-compliant. Correct to upper case as above.</td></tr>
+</tbody>
+</table>
+
+<h3>5.3 Verify Userless enrolment status</h3>
+<p>On the same device row, read the <b>Userless enrolment status</b> column. Scroll right if the column is not visible.</p>
+<table>
+<colgroup><col style="width:38%"><col></colgroup>
+<thead><tr><th>Status shows</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td><b>Allowed</b></td><td>Compliant. Proceed to Stage 6.</td></tr>
+<tr><td><b>Blocked</b></td><td>Select the device and choose <b>Unblock</b>. Wait for the status to change to Allowed. Expected on any device that has previously completed a kiosk build, including returned units.</td></tr>
+</tbody>
+</table>
+<div class="stop"><b>Do not omit this check.</b> A device left at Blocked begins provisioning normally and fails during the account setup phase, forfeiting the full provisioning run. Verify the status before Stage 7, and again before any rebuild.</div>
+
+<h2>Stage 6 &middot; Run the registry key script</h2>
+<span class="time">2 minutes</span>
+<div class="tbc"><b>APM to confirm before issue</b>The function and purpose of <code>run-CreateMIREGKey.bat</code>, stated in one sentence, and the message it returns on success. This procedure sequences the script here, after Autopilot registration and before provisioning; confirm that placement, and whether devices registered at manufacture require it.</div>
+<p>Return to the device. A command prompt at the USB drive is required. Where Stage 4 was omitted, or the prompt has since closed, perform steps 4.1 and 4.2 to open one.</p>
+<div class="cmd">run-CreateMIREGKey.bat <span class="ent">[Enter]</span></div>
+<p>The batch file opens PowerShell, sets the execution policy for the session, then runs the script. No operator input is required.</p>
+<div class="see"><b>On screen</b>PowerShell text scrolling past, then it returns to the command prompt.</div>
+<div class="stop"><b>Report to APM if</b> the console returns errors, or reports that script execution is disabled on the system. Provide a photograph of the screen and the serial number.</div>
+
+<h2>Stage 7 &middot; Initiate provisioning</h2>
+<span class="time">20 to 60 minutes, unattended</span>
+<ol>
+<li>At the command prompt, enter the following.</li>
+</ol>
+<div class="cmd">shutdown /r /t 0 <span class="ent">[Enter]</span></div>
+<ol start="2">
+<li>The device restarts and provisioning begins. <b>Do not use the keyboard or mouse. Do not disconnect power or the network cable.</b></li>
+</ol>
+<div class="see"><b>On screen, in this order</b>The out-of-box experience briefly, then a screen headed <b>Device preparation</b> or <b>Setting up your device</b> showing a list of stages and a progress indicator. The device restarts itself once or twice during the run. Both are expected.</div>
+<p>During provisioning the device joins Microsoft Entra ID, enrols in Intune, renames itself, and installs LibreOffice, the Zscaler Client Connector and the remote support client. The Enrolment Status Page blocks device use until all required applications have installed, so the device cannot be used before the build completes.</p>
+<p>Begin the next device at Stage 1 while this one provisions. Multiple devices can be built concurrently.</p>
+<div class="stop"><b>Where the device remains on the same screen beyond 90 minutes,</b> or displays an error code, stop and report to APM. Provide a photograph of the screen, the serial number and the provisioning start time. Do not restart or wipe the device: APM requires it in its current state for diagnosis.</div>
+
+<h2>Stage 8 &middot; Acceptance testing</h2>
+<span class="time">10 minutes</span>
+<p>Seven tests. All seven must pass before the device is dispatched. Record each result on the build record sheet.</p>
+<div class="stop"><b>Any test that fails stops the device.</b> Do not dispatch it, do not attempt a fix, and do not move on to the next test. Report the failing test number and the serial number to APM.</div>
+
+<h3>Test 1 &middot; Automatic sign-in to the restricted session</h3>
+<p>Allow the device to settle. The expected state is a desktop showing the APM wallpaper and a taskbar.</p>
+<div class="stop"><b>Fail if</b> a sign-in screen requests a username, password or PIN. The device is configured to authenticate automatically with no operator input, so a prompt means provisioning did not complete correctly. Allow a further 30 minutes and restart once. Report to APM if the prompt persists. Do not attempt to sign in.</div>
+
+<h3>Test 2 &middot; Application set</h3>
+<p>Inspect the taskbar and the Start menu against the following.</p>
+<table>
+<colgroup><col style="width:44%"><col></colgroup>
+<thead><tr><th>Must be present</th><th>Must not be present</th></tr></thead>
+<tbody>
+<tr><td>Microsoft Edge</td><td>Microsoft Word, Excel or PowerPoint</td></tr>
+<tr><td>LibreOffice Writer</td><td>Settings</td></tr>
+<tr><td>LibreOffice Calc</td><td>Command Prompt or PowerShell</td></tr>
+<tr><td>LibreOffice Impress</td><td>Microsoft Store</td></tr>
+<tr><td>File Explorer</td><td>Anything else at all</td></tr>
+</tbody>
+</table>
+<div class="stop"><b>Fail if</b> any application in the right-hand column is present, or any in the left-hand column is absent. The restricted user experience has not applied. Report to APM, naming the applications found.</div>
+
+<h3>Test 3 &middot; Microsoft Edge and managed favourites</h3>
+<ol>
+<li>Open <b>Microsoft Edge</b>.</li>
+<li>Confirm a page loads rather than an error.</li>
+<li>Confirm the favourites bar displays the APM managed favourites.</li>
+<li>Open one favourite and confirm the page loads.</li>
+</ol>
+<div class="stop"><b>Fail if</b> no page loads, the favourites bar is absent, or the favourites are not the APM set. Report to APM, stating which of the three applies.</div>
+
+<h3>Test 4 &middot; LibreOffice</h3>
+<p>All three applications are opened. Each is a separate executable with its own entry in the restricted session's allowed list, so one launching does not prove another will.</p>
+<ol>
+<li>Open <b>LibreOffice Writer</b>.</li>
+<li>Enter several words of text.</li>
+<li>Save the document. Name it <code>test.odt</code> and confirm the location offered is <b>Downloads</b>.</li>
+<li>Close Writer.</li>
+<li>Open <b>LibreOffice Calc</b>. Confirm a spreadsheet window opens, then close it. Do not save.</li>
+<li>Open <b>LibreOffice Impress</b>. Confirm a presentation window opens, then close it. Do not save.</li>
+<li>Open <b>File Explorer</b> and confirm <code>test.odt</code> is in <b>Downloads</b> before continuing.</li>
+</ol>
+<p>Leave <code>test.odt</code> in place. Tests 5 and 7 both use it, and Test 7 cannot be run without it.</p>
+<div class="stop"><b>Fail if</b> any of the following. Report to APM, naming which.
+<ul><li>Writer, Calc or Impress does not open, or opens and then closes on its own. Name which of the three.</li>
+<li><code>test.odt</code> is not in Downloads after saving.</li></ul>
+Launch failure is the most frequently observed fault on this build.</div>
+
+<h3>Test 5 &middot; File Explorer namespace restriction</h3>
+<ol>
+<li>Open <b>File Explorer</b>.</li>
+<li>Confirm <b>Downloads</b> and <b>Desktop</b> are present, and that <code>test.odt</code> from Test 4 is in Downloads.</li>
+<li>Click the address bar at the top of the window, type <code>C:\</code> and press <kbd>Enter</kbd>.</li>
+<li>Click the address bar again, type <code>C:\Windows</code> and press <kbd>Enter</kbd>.</li>
+<li>Confirm neither opens. The expected result is that the location is refused or nothing happens.</li>
+</ol>
+<div class="stop"><b>Fail if</b> either address opens, or Downloads and Desktop are absent, or <code>test.odt</code> is not in Downloads. An address that opens means the namespace restriction has not applied. Report to APM, naming what was reachable.</div>
+
+<h3>Test 6 &middot; Zscaler Client Connector</h3>
+<p>Inspect the notification area at the right of the taskbar. The Zscaler icon must be present. Hover over it and confirm it does not report a disconnected or error state.</p>
+<div class="stop"><b>Fail if</b> the icon is absent, or reports a disconnected or error state. Report to APM, quoting the state shown.</div>
+
+<h3>Test 7 &middot; Restart session purge</h3>
+<p>This test verifies that participant data does not persist between sessions. It is the primary control this build exists to deliver.</p>
+<ol>
+<li>Confirm <code>test.odt</code> from Test 4 is present in the Downloads folder. <b>Where it is absent, stop: Test 4 did not complete. Return to Test 4 and do not record Test 7 at all.</b> An empty Downloads folder proves nothing if nothing was saved into it.</li>
+<li>Restart the device. Press <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Delete</kbd>, then choose the power icon, then <b>Restart</b>. Where that is blocked, hold the power button for 10 seconds and switch it back on.</li>
+<li>Wait for the device to return to the restricted session unattended, with no sign-in prompt.</li>
+<li>Open <b>File Explorer</b> and inspect <b>Downloads</b>.</li>
+</ol>
+<div class="see"><b>Pass</b>The document is no longer present and the Downloads folder is empty. Edge retains no history and no saved credentials.</div>
+<div class="stop"><b>Fail if</b> <code>test.odt</code> persists after the restart. The session purge is not operating. Report to APM.<br><b>This test is void, not passed,</b> where <code>test.odt</code> was not present before the restart.</div>
+
+<h2>Stage 9 &middot; Packaging, labelling and asset record</h2>
+<span class="time">5 minutes</span>
+<ol>
+<li>Record the device name. Open File Explorer, right-click <b>This PC</b> and choose <b>Properties</b>, or read it from the Autopilot devices list in Intune. The name begins <code>APM-PK-</code> followed by six characters.</li>
+</ol>
+<div class="stop"><b>Do not proceed where the device name does not begin</b> <code>APM-PK-</code><b>.</b> The device has not received the kiosk configuration, which in almost all cases indicates an incorrect group tag at Stage 5. Correct the tag at Stage 5, then rebuild the device from Stage 3.</div>
+<ol start="2">
+<li>Shut the device down through Windows. <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Delete</kbd>, power icon, <b>Shut down</b>.</li>
+<li>Disconnect the build monitor, keyboard, mouse and cables. These remain at the build facility unless the allocation list specifies otherwise.</li>
+<li>Repack the device into its original carton with its power supply and all supplied accessories.</li>
+<li>Label the carton exterior with the <b>device name</b> and the <b>destination site address</b>.</li>
+<li>Place the APM site instruction sheet inside the carton, uppermost. APM supplies it, and it covers unboxing, connecting and power-on for site staff, so it must be the first thing seen when the carton is opened.</li>
+<li>Update the asset register: device name, serial number, status <b>Dispatched</b>, date, destination site.</li>
+<li>Release to the courier. Record the consignment number in the asset register.</li>
+</ol>
+
+<h2>Fault diagnosis and escalation</h2>
+<p>Provide APM with the <b>serial number</b>, the <b>stage reached</b>, and a <b>photograph of the screen</b>. These three items allow APM to diagnose without further contact.</p>
+<table>
+<colgroup><col style="width:36%"><col></colgroup>
+<thead><tr><th>Symptom</th><th>Cause and action</th></tr></thead>
+<tbody>
+<tr><td><i>Securing your hardware</i> fails, or error <code>0x800705B4</code></td><td>TPM 2.0 is disabled, so verify the firmware settings at Stage 2 even where it was omitted for an APM-purchased unit. Otherwise the build facility network is blocking the attestation endpoints listed under Prerequisites. Verify both.</td></tr>
+<tr><td>Intune rejects the hash file, or reports that the column headings are wrong</td><td>Almost always the file encoding, not the headings. The headings must read <code>Device Serial Number,Windows Product ID,Hardware Hash</code> and Intune requires the file to be <b>UTF-8</b>. A file saved as UTF-16 is read as binary and the first line is reported as invalid. Re-save it as UTF-8 per step 4.3, then import again.</td></tr>
+<tr><td>OOBE was worked through at Stage 3, or a local account was created</td><td>Autopilot self-deploying will not run on a device where OOBE is already complete. Rebuild from Stage 3. Restarting the device does not clear it.</td></tr>
+<tr><td>Account setup phase fails, or error <code>0x80180014</code></td><td>Userless enrolment status was Blocked, or a device record persists from a previous enrolment. Request APM clear the device record, then rebuild from Stage 3.</td></tr>
+<tr><td>Provisioning completes to a standard Windows desktop with Settings and full application access</td><td>The group tag was not <code>PARTICIPANT</code>. Correct the tag at Stage 5, then rebuild from Stage 3.</td></tr>
+<tr><td>Device presents a sign-in prompt requesting a password</td><td>Automatic sign-in has not applied. Allow 30 minutes, restart once. Escalate to APM if the prompt persists. Do not attempt to sign in.</td></tr>
+<tr><td>LibreOffice fails to open, or opens then closes</td><td>Known fault, and it can affect one application without affecting the others. Do not dispatch the device. Report the serial number and which of Writer, Calc or Impress failed.</td></tr>
+<tr><td>Device name does not begin <code>APM-PK-</code></td><td>Same cause as the standard desktop symptom above. Verify the group tag at Stage 5, then rebuild from Stage 3.</td></tr>
+<tr><td>Provisioning static on one screen beyond 90 minutes</td><td>Leave the device in its current state. Photograph the screen and escalate to APM. Do not restart or wipe: APM requires the device as-is for diagnosis.</td></tr>
+</tbody>
+</table>
+
+<h2>Build record sheet</h2>
+<p class="lede">One per device. Retain with the carton until dispatch, then file.</p>
+<table>
+<colgroup><col style="width:23%"><col></colgroup>
+<tbody>
+<tr><td><b>Serial number</b></td><td></td></tr>
+<tr><td><b>Device name</b></td><td><code>APM-PK-</code></td></tr>
+<tr><td><b>Destination site</b></td><td></td></tr>
+<tr><td><b>Built by</b></td><td></td></tr>
+<tr><td><b>Date</b></td><td></td></tr></tbody>
+</table>
+<table class="tick">
+<colgroup><col style="width:34pt"><col style="width:15%"><col></colgroup>
+<thead><tr><th></th><th>Stage</th><th>Verified</th></tr></thead>
+<tbody>
+<tr><td class="bx"><span></span></td><td>1</td><td>Powered on, no physical damage, serial number recorded</td></tr>
+<tr><td class="bx"><span></span></td><td>2</td><td>TPM 2.0 enabled, UEFI boot mode, Secure Boot enabled. Not required on the APM-purchased model</td></tr>
+<tr><td class="bx"><span></span></td><td>3.2</td><td>APM image installed, all factory partitions deleted</td></tr>
+<tr><td class="bx"><span></span></td><td>3.3</td><td>Stopped at the out-of-box experience, no account created</td></tr>
+<tr><td class="bx"><span></span></td><td>4</td><td>Hardware hash captured, CSV file written. Not required where the batch was registered at manufacture</td></tr>
+<tr><td class="bx"><span></span></td><td>5.1</td><td>Hash imported to the APM tenant, device appears in the list. Where Stage 4 was omitted, confirm the device appears in the list</td></tr>
+<tr><td class="bx"><span></span></td><td>5.2</td><td>Group Tag reads <b>PARTICIPANT</b> in upper case</td></tr>
+<tr><td class="bx"><span></span></td><td>5.3</td><td>Userless enrolment status reads <b>Allowed</b></td></tr>
+<tr><td class="bx"><span></span></td><td>6</td><td>Registry key script completed, no errors reported</td></tr>
+<tr><td class="bx"><span></span></td><td>7</td><td>Provisioning completed unattended</td></tr>
+<tr><td class="bx"><span></span></td><td>Test 1</td><td>Restricted session reached, no sign-in prompt</td></tr>
+<tr><td class="bx"><span></span></td><td>Test 2</td><td>Edge, Writer, Calc, Impress, File Explorer present. No other application</td></tr>
+<tr><td class="bx"><span></span></td><td>Test 3</td><td>Edge loads a page, APM managed favourites present</td></tr>
+<tr><td class="bx"><span></span></td><td>Test 4</td><td>Writer, Calc and Impress all open. <code>test.odt</code> saved to Downloads</td></tr>
+<tr><td class="bx"><span></span></td><td>Test 5</td><td><code>test.odt</code> in Downloads, Desktop present, <code>C:\</code> and <code>C:\Windows</code> both refused</td></tr>
+<tr><td class="bx"><span></span></td><td>Test 6</td><td>Zscaler Client Connector present, no error state</td></tr>
+<tr><td class="bx"><span></span></td><td>Test 7</td><td><code>test.odt</code> present before restart, restricted session reached unattended, <code>test.odt</code> purged</td></tr>
+<tr><td class="bx"><span></span></td><td>9</td><td>Device name begins <code>APM-PK-</code></td></tr>
+<tr><td class="bx"><span></span></td><td>9</td><td>Packed, labelled, instruction sheet enclosed, asset register updated</td></tr>
+</tbody>
+</table>
+
+<h2>Open items &middot; for closure by APM before issue to CompNow</h2>
+<p class="lede">Each item is marked at the point in the document where it applies. The procedure is otherwise complete.</p>
+<table>
+<colgroup><col style="width:7%"><col style="width:14%"><col></colgroup>
+<thead><tr><th>#</th><th>Stage</th><th>Requirement</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Prerequisites</td><td>The exact filename of the PowerShell script <code>run-CreateMIREGKey.bat</code> invokes, and confirmation of the USB preparation tool and version.</td></tr>
+<tr><td>2</td><td>4.3</td><td>The message <code>get-autopilothash.bat</code> returns on success, the name of the file it writes, and its location. Also: confirm the batch file writes the CSV as UTF-8. A file produced by redirecting PowerShell console output is UTF-16, which Intune rejects as having incorrect column headings, so the encoding step at 4.3 is a workaround until the batch file is corrected.</td></tr>
+<tr><td>3</td><td>5.1</td><td>The sign-in account CompNow uses to import hardware hashes to the APM tenant, and the permissions it carries.</td></tr>
+<tr><td>4</td><td>6</td><td>The function and purpose of <code>run-CreateMIREGKey.bat</code>, stated in one sentence, and the message it returns on success. This procedure sequences it at Stage 6, after Autopilot registration and before provisioning; confirm that placement, and whether devices registered at manufacture require it. A change to the placement renumbers the stages after it.</td></tr>
+</tbody>
+</table>
+
+</doc-page>
+<script src="../doc-page.js"></script>
+</body></html>

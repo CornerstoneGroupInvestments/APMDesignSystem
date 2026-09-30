@@ -1,0 +1,42 @@
+<!-- @dsCard group="Diagrams" viewport="1240x760" name="Architecture diagram kit" subtitle="Zones, boxes, wires, steps and heat cells for DDD and HLD figures" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>body{margin:0;padding:24px;background:var(--surface-page)}</style>
+</head>
+<body>
+<div class="dgm-fig" style="width:1192px;height:712px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>Architecture diagram kit - the vocabulary</b><span class="dgm-ref">FIGURE N</span></div>
+<div class="dgm-stage" style="height:650px">
+<svg class="dgm-wires" viewBox="0 0 1192 650">
+<defs>
+<marker id="dgmArrow" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="dgmArrowAccent" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker>
+</defs>
+<line x1="286" y1="180" x2="392" y2="180" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#dgmArrow)"></line>
+<line x1="676" y1="180" x2="782" y2="180" stroke="#F89728" stroke-width="2.6" marker-end="url(#dgmArrowAccent)"></line>
+<line x1="188" y1="272" x2="188" y2="346" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#dgmArrow)"></line>
+</svg>
+<div class="dgm-zone" style="left:24px;top:78px;width:352px;height:236px"><span>ZONE - DASHED GROUPING</span></div>
+<div class="dgm-zone is-boundary" style="left:400px;top:78px;width:352px;height:236px"><span>ZONE - TRUST BOUNDARY</span></div>
+<div class="dgm-box" style="left:56px;top:120px;width:230px;height:104px"><h4>Default box</h4><p>The diagram's noun. Title plus one line of plain explanation.</p></div>
+<div class="dgm-box is-accent" style="left:432px;top:120px;width:244px;height:104px"><h4>Accent box</h4><p>Marks the element under design.</p><div><span class="dgm-chip">Attribute</span><span class="dgm-chip">Protocol</span></div></div>
+<div class="dgm-box is-navy" style="left:782px;top:120px;width:230px;height:104px"><h4>Navy box</h4><p>Platform or target system.</p><div><span class="dgm-chip">Managed</span></div></div>
+<div class="dgm-box is-soft" style="left:56px;top:346px;width:230px;height:92px"><h4>Soft box</h4><p>Supporting or out-of-scope element.</p></div>
+<div class="dgm-box is-centred" style="left:1036px;top:120px;width:130px;height:104px"><h4>Lifeline head</h4></div>
+<div class="dgm-lbl" style="left:332px;top:158px">plain wire</div>
+<div class="dgm-lbl is-accent" style="left:724px;top:158px">accent wire</div>
+<div class="dgm-step" style="left:296px;top:166px">1</div>
+<div class="dgm-step" style="left:688px;top:166px">2</div>
+<div class="dgm-heat is-high" style="left:432px;top:346px;width:172px;height:92px"><h5>High impact</h5><p>Design change required.</p></div>
+<div class="dgm-heat is-medium" style="left:620px;top:346px;width:172px;height:92px"><h5>Medium</h5><p>Process change only.</p></div>
+<div class="dgm-heat is-low" style="left:808px;top:346px;width:172px;height:92px"><h5>Low</h5><p>Awareness only.</p></div>
+<div class="dgm-legend" style="left:56px;top:474px"><span><i></i>Request</span><span><i class="is-dashed"></i>Response</span><span><i class="is-accent"></i>Authorised session</span></div>
+<div class="dgm-key" style="left:56px;top:512px"><span><em style="background:var(--brand-primary)"></em>High</span><span><em style="background:var(--apm-orange-200)"></em>Medium</span><span><em style="background:var(--neutral-100);border:1px solid var(--border-default)"></em>Low</span></div>
+<p class="dgm-note" style="left:56px;top:556px;width:1080px">Build each figure as a fixed-size <code>.dgm-fig</code> canvas with absolutely positioned children, then snapshot it to PNG at 2× for embedding in Word or PDF. Wires are a single SVG overlay sized to the stage viewBox, so arrow endpoints use the same coordinate space as the boxes.</p>
+</div>
+</div>
+</body>
+</html>

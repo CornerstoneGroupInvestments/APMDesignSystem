@@ -1,0 +1,147 @@
+H1 |1. Introduction
+H2 |1.1 Background
+P |**Example.** <<Brief project summary: drivers, business goals, key technology outcomes.>>
+H2 |1.2 Purpose
+P |**Example.** This document defines the technical architecture for the implementation, configuration and ongoing support of <<Project/Initiative>>: an Intune device configuration change applying Policy 1, Policy 2 and Policy 3 as standard, exempting Policy 4 (USB redirect) per the functional requirement allowing USB access, and introducing a new Policy 5 with the settings specified in section 5.
+H2 |1.3 Audience
+B |Solution governance forums
+B |Enterprise and Solution Architects
+B |Project Managers
+B |Administrators
+B |Technical Subject Matter Experts
+B |Developers and Integrators
+H1 |2. Overview
+H2 |2.1 Scope
+P |**In scope**
+B |Assignment of Policy 1, Policy 2 and Policy 3 (standard SOE controls) to the target device group
+B |Exemption of Policy 4 (USB redirect block) for the target device group, per functional requirement FR-<<n>>
+B |Creation and assignment of Policy 5, the new configuration profile detailed in section 5
+P |**Out of scope**
+B |Any change to the underlying hardware SOE image
+H2 |2.2 Systems Impacted
+P |Impact legend: Leverage - existing system used as is. Modify - existing system requires customisation. New - introduced as part of solution. Retire - removed as part of solution.
+TBL |2100,1600,3200,2460
+TH |System||Change Type||Change Description||Infrastructure Change
+TR |Microsoft Intune||Modify||New device configuration profile (Policy 5) created; Policy 4 exclusion group created||N/A
+TR |Entra ID||Modify||New device group created for the Policy 4 exclusion and Policy 5 assignment||N/A
+END
+H2 |2.3 Constraints, Assumptions, Dependencies and Risks
+H3 |2.3.1 Constraints
+TBL |1400,4160,3800
+TH |ID||Description||Treatment
+TR |CON-001||Policy 5 must not conflict with an existing enforced Intune profile on the same device scope||Reviewed against the existing profile inventory before assignment
+END
+H3 |2.3.2 Assumptions
+TBL |1400,4160,3800
+TH |ID||Description||Treatment
+TR |ASP-001||The target device group membership is accurate at the time of assignment||Validated by Digital Operations prior to rollout
+END
+H3 |2.3.3 Dependencies
+TBL |1400,4160,3800
+TH |ID||Description||Treatment
+TR |DEP-001||Entra ID group creation must complete before Policy 5 assignment||Sequenced in the deployment runbook
+END
+H3 |2.3.4 Risks
+TBL |1400,4160,3800
+TH |ID||Description||Treatment
+TR |RSK-001||USB redirect exemption on the target group increases data-exfiltration surface||Accepted - scoped to the named device group only, logged and reviewed quarterly by Cyber Security
+END
+H2 |2.4 Business Requirement Traceability Matrix
+H3 |2.4.1 Functional Requirements Validation
+TBL |900,4260,900,2360
+TH |ID||Requirement||Complies?||Comments
+TR |FR-01||USB storage devices must remain usable on the target device group||Yes||Delivered by the Policy 4 exemption in section 5
+END
+H3 |2.4.2 Non-Functional Requirements Validation
+P |N/A - no non-functional requirement is impacted by this change.
+H1 |4. Solution Design
+H2 |4.1 Solution Overview
+P |**Example.** The solution assigns three existing Intune configuration profiles unchanged, excludes one existing profile from the target group, and introduces one new profile. No new application or service is introduced.
+H2 |4.2 Solution/Product Component Inventory
+TBL |2300,3760,3300
+TH |Component||Role in the solution||Version / licensing / status
+TR |Policy 1 - <<name>>||Existing standard SOE control, applied unchanged||Unchanged
+TR |Policy 2 - <<name>>||Existing standard SOE control, applied unchanged||Unchanged
+TR |Policy 3 - <<name>>||Existing standard SOE control, applied unchanged||Unchanged
+TR |Policy 4 - USB redirect block||Existing control, excluded from the target device group||Changed - exclusion group added
+TR |Policy 5 - <<new policy name>>||New configuration profile, detailed in section 5 below||New
+END
+H2 |4.3 Detailed Solution Interface Diagram
+P |N/A - no new interface is introduced.
+H2 |4.4 Solution/Product Interface Catalogue
+P |N/A - no new interface is introduced.
+H1 |5. Technology Architecture
+H2 |5.1 Technology Component Standards
+TBL |1900,2400,2400,2660
+TH |TRM domain||Component||Product / version||Approval status
+TR |Endpoint management||Microsoft Intune||Current tenant release||Approved
+END
+H2 |5.2 Network &amp; Infrastructure Standards &amp; Patterns
+P |N/A - no network or infrastructure change.
+H1 |6. Infrastructure Overview
+P |N/A - no infrastructure component is introduced or changed by this example; the design is a device-management policy change delivered entirely through the existing Intune/Entra ID management plane.
+H2 |6.1 Network and Firewall Specifications
+H3 |6.1.1 Network Communications Diagram
+P |N/A
+H3 |6.1.2 IP Addressing
+P |N/A
+H3 |6.1.3 DNS Information
+P |N/A
+H3 |6.1.4 Load Balancing Specification
+P |N/A
+H3 |6.1.5 NAT Rules
+P |N/A
+H3 |6.1.6 Firewall Rules
+P |N/A
+H1 |7. Database Specification
+P |N/A - no database component in scope.
+H1 |8. Compute Specifications
+P |N/A - no compute component in scope.
+H1 |9. PaaS Specification
+P |N/A - no PaaS component in scope.
+H1 |10. Information &amp; Data Architecture
+P |N/A - no new information entity is created or classified by this example.
+H1 |11. Cyber &amp; Security Architecture
+H2 |11.1 Data Security
+P |N/A - no new data classification introduced.
+H2 |11.2 RBAC Specification
+H3 |11.2.4 Azure Active Directory Groups
+TBL |3200,3200,2960
+TH |Group Name||Rights||Description
+TR |sg-int-policy4-exclusion||Excluded from Policy 4 assignment||Holds the devices/users approved for USB redirect under FR-01
+TR |sg-int-policy5-assignment||Assigned Policy 5||Target scope for the new configuration profile
+END
+H2 |11.3 Accounts
+P |N/A - no service, local or domain account is created by this example.
+H2 |11.4 Authentication
+H3 |11.4.2 Conditional Access Rules
+P |N/A - no Conditional Access policy is created or changed by this example.
+H2 |11.5 IDP Specification
+P |N/A - no identity provider configuration change.
+H1 |12. Threat Management
+H2 |12.1 Endpoint Protection &amp; Antivirus
+P |N/A - no change to the endpoint protection baseline; Policy 5 is a device configuration profile, not a protection policy.
+H1 |13. Disaster Recovery
+P |N/A - Intune configuration profiles are platform-managed with no design-specific backup or restore action required.
+H1 |14 Build, Test and Release Management
+H2 |14.1 Repository and DevOps Tools
+P |N/A - this change is authored directly in the Intune admin centre; no code repository is used.
+H2 |14.3 Test Management
+H3 |14.3.1 Test Strategy/Plan
+TBL |900,4860,3600
+TH |ID||Test||Pass criterion
+TR |T-01||Confirm Policy 5 applies to a pilot device in the target group||Policy 5 settings report as Succeeded in Intune within 24 hours of assignment
+TR |T-02||Confirm a USB storage device is usable on a pilot device in the Policy 4 exclusion group||The device mounts and reads/writes without a policy-blocked notification
+TR |T-03||Confirm Policy 1, 2 and 3 remain applied and unaffected on the target group||All three report Succeeded with no configuration drift
+END
+H1 |15 Capacity Planning
+P |N/A - no compute, storage or memory capacity is introduced or changed by this example.
+H1 |16. Service Management
+P |**Example.** Support is via the existing Digital Operations Tier 1/2/3 model. Policy 5 and the Policy 4 exclusion are added to the Intune configuration knowledge article inventory; no new support tier is introduced.
+H1 |Appendix A: Terms &amp; Abbreviations
+TBL |2000,7360
+TH |Term||Definition
+TR |SOE||Standard Operating Environment
+TR |RBAC||Role-Based Access Control
+TR |FR||Functional Requirement
+END

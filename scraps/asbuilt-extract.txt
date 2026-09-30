@@ -1,0 +1,800 @@
+<Title> Detail Design Document
+<Subtitle> Template V0.1
+18 September 2026
+[TABLE 8 rows]
+  | Project Name: | ES Participant Kiosk Solution
+  | Document Owner: | Head of Digital Transformation and Architecture
+  | Contact Details: | Digital Operations
+  | Program Name: | Standard Operating Environment Program
+  | Division/Unit: | Digital
+  | Document Status: | Issued - as-built record
+  | Document Version: | V1.9
+  | Product ID: | APM-AB-PK-V1.9
+FOR INTERNAL USE ONLY
+Commercial in confidence
+© APM
+<PulloutBoxHeading> Document control
+<PulloutBoxHeading> Version History
+[TABLE 2 rows]
+  | Version | Date | Author | Key changes
+  | V1.0 | 10/09/2026 | Shaun Struik | Document Issue
+Consultation
+[TABLE 3 rows]
+  | Name | Position title | Date
+  |  |  | 
+  |  |  | 
+References and Derivation
+[TABLE 3 rows]
+  | Version # | Document Title | Reference Location
+  |  |  | 
+  |  |  | 
+SDA Approval
+[TABLE 2 rows]
+  | Name | Role/Group | Signature | Date
+  |  |  |  | 
+<Heading1-NotLinked> Confidentiality &amp; Disclaimer
+This document is provided by Advanced Personnel Management International Pty Ltd and / or its related entities (APM) on a confidential basis. This document is subject to approval of the APM Board and does not constitute an offer capable of acceptance. No agreement binding APM or its related companies in respect of this document is intended or proposed unless and until the terms and conditions between APM or its related entities are agreed in writing in a formal agreement with the named Company or Prospective Client.
+APM will not be bound by any pricing or any other material contained in this response until the above has taken place.
+<Heading2-NotLinked> Photography
+Photographs used in this document are for illustration only and should not be interpreted to mean that any person or organisation whose assets are shown in them endorses this document.
+<Heading2-NotLinked> APM Contact
+Communications regarding this document should be forwarded to:
+Head of Digital Transformation &amp; Architecture
+P08 XXXX XXXX
+M08 XXXX XXXX
+Esamit.chandra@apm.net.au
+<Heading2-NotLinked> APM Contact
+Communications regarding this document should be forwarded to:
+Head of Digital Transformation &amp; Architecture
+P08 XXXX XXXX
+M08 XXXX XXXX
+Esamit.chandra@apm.net.au
+<Heading2-NotLinked> Contents
+<TOC1> 1. Introduction6
+<TOC2> 1.1 Purpose6
+<TOC2> 1.2 Audience6
+<TOC1> 2. Overview7
+<TOC2> 2.1 Scope7
+<TOC2> 2.2 Guiding Principles7
+<TOC2> 2.3 Assumptions7
+<TOC1> 3. Business Architecture8
+<TOC2> 3.1 Business Reference architecture8
+<TOC2> 3.2 Business Requirements9
+<TOC2> 3.3 Gap treatment9
+<TOC1> 4. Application Architecture9
+<TOC2> 4.1 System Context Diagram10
+<TOC2> 4.2 Solution/Product Component Inventory10
+<TOC2> 4.3 Solution Interface Diagram10
+<TOC2> 4.4 Solution/Product Interface catalogue10
+<TOC1> 5. Technology Architecture10
+<TOC2> 5.1 Technology Component Standards11
+<TOC2> 5.2 Integration standards and patterns11
+<TOC2> 5.3 Network &amp; Infrastructure Standards &amp; Patterns12
+<TOC2> 5.4 Technology component Deployment Patterns12
+<TOC1> 6. Information &amp; Data Architecture12
+<TOC2> 6.1 Information Model12
+<TOC2> 6.2 Information Classification13
+<TOC2> 6.3 Analytics and reporting Patterns13
+<TOC1> 7. Cyber &amp; Security Architecture13
+<TOC1> 8. Service Availability and Disaster Recovery13
+<TOC2> 8.1 Business Service Tiering13
+<TOC2> 8.2 Service Availability13
+<TOC2> 8.2 Disaster recovery &amp; Resilience13
+<TOC1> 9. Service Management14
+<TOC2> 9.1 Service Management principles14
+<TOC2> 9.2 Monitoring, Logging, Reporting and Alerting14
+<Heading1> 1. Purpose and Use
+<Heading2> 1.1 Purpose
+This document is the as-built record of the ES Participant Kiosk Solution. It names every object the solution consists of, the value each object carries, and the administration console each one is configured in, so that the solution can be operated, audited and maintained from this document alone.
+It is written at solution level. Where a full build procedure, a script listing or a click path is needed, this document names the object and points to the document that holds it. It does not repeat those documents.
+<Heading2> 1.2 Audience
+•  Digital Operations - day to day operation, monitoring and the routine maintenance tasks in 16. Routine Maintenance
+•  APM Solution Engineer - configuration changes to any object listed here
+•  APM Cyber Security - control assurance, App Control policy signing, Conditional Access state, RFFR evidence
+•  APM Network Management - the site network, Wi-Fi and egress configuration in 12. Network Configuration
+•  Digital Transformation and Architecture - change assessment against 17. Change Control
+<Heading2> 1.3 Scope
+In scope. Every Entra ID, Intune, Windows, network and Zscaler object created or altered for the Participant Kiosk fleet, its configured values, the console each is held in, the routine maintenance the solution requires, and the items that may not be changed without a change record.
+Out of scope. Build procedures (Technical Configuration Document and the two runbooks), design rationale and the Decision Register (Detail Design Document), and the estate Windows baseline this fleet inherits from (APM Windows SOE Hardening Standard V3.0).
+<Heading2> 1.4 Keeping this document current
+This document is the record of what is configured. It is updated when configuration changes, in the same change as the configuration itself.
+[TABLE 5 rows]
+  | Event | What is updated here
+  | A value in any table below changes | The value, and the Document Control version history row
+  | An object is added, renamed or deleted | Its row in the relevant section, the console map in 3. Where Everything Is Configured, and 17. Change Control if it is change-controlled
+  | An open item in 18. Known Constraints and Open Items closes | The row is removed and the resulting configuration is recorded in its own section
+  | A maintenance task changes owner or frequency | The row in 16. Routine Maintenance
+Guidance    An object renamed in a console and not renamed here breaks two things at once: this record, and any assignment or filter that matched on the old name. The Conditional Access device filter and both dynamic groups all match on literal strings, so a rename is a configuration change to every object that references it.
+<Heading1> 2. Solution Summary
+<Heading2> 2.1 What is deployed
+A physical Dell device in an APM Employment Services site, for participant use. It runs Windows 11 Enterprise under multi-app Assigned Access and signs itself in to a local account that no person holds a credential for. There is no participant identity, no credential to issue and nothing displayed for a participant to type.
+The device is Entra ID joined and managed entirely by Intune. It is provisioned by Windows Autopilot in self-deploying mode on top of an APM image installed at the build facility. Applications are installed locally: Microsoft Edge, LibreOffice Writer, Calc and Impress, and File Explorer scoped to the Downloads folder and removable drives. Microsoft 365 is blocked from the device at three independent layers.
+Every session ends at a restart, and the restart destroys the session. The device restarts after ten minutes without input, and the purge runs at logon and at logoff.
+<Caption> Figure 1. Participant Kiosk solution context - management plane, permitted destinations and blocked corporate services
+<Heading2> 2.2 Fleet, hardware and licensing
+[TABLE 8 rows]
+  | Item | Value
+  | Fleet size | 540 devices
+  | Sites | APM Employment Services sites nationally, up to five devices per site
+  | Hardware | Dell, model specified for the solution. Device hardware specification is held in the Detail Design Document
+  | Operating system | Windows 11 Enterprise, standard channel
+  | Licensing | Device based only: Windows 11 Enterprise E5, Intune device licence, Microsoft Defender for Endpoint P2. No user licence is assigned, because the fleet has no user identity
+  | Device name | APM-PK-[SERVICE TAG], 13 characters. Set by the device name template APM-PK-%SERIAL% on the Autopilot deployment profile (5.1 Autopilot deployment profile). The session account is named separately (8.1 Session account, automatic logon and Assigned Access)
+  | Management plane | Microsoft Intune, Microsoft Entra ID, Microsoft Defender for Endpoint, Windows Autopatch, Zscaler Internet Access
+Guidance    The APM-PK- prefix is load bearing. The production dynamic group in 4.1 Groups keys on it, and every configuration profile, application and compliance policy is assigned to that group. A device whose name does not carry the prefix receives no configuration at all.
+<Heading2> 2.3 Standing constraints
+Four facts constrain every change to this solution.
+[TABLE 5 rows]
+  | Constraint | Consequence
+  | The fleet has no user identity | Any control, licence or policy that evaluates a signing-in user does not apply to this fleet, and cannot be cited as a control over it
+  | Automatic logon must not be disabled | Four categories of policy each disable it on their own, and are excluded for that reason (15. Exclusions From Estate Configuration). A kiosk that cannot sign itself in presents as a device sitting at the sign-in screen with nothing in any log to explain it
+  | The APM code-signing certificate gates the build | It signs the device scripts. Its role in App Control policy signing changed with the base policy in 11. Application Control and is open item 12 in 18. Known Constraints and Open Items
+  | The device holds no corporate data | This is what permits the removable-media exclusions in 15. Exclusions From Estate Configuration, and it stops being true if any corporate service is reachable from the device
+<Heading1> 3. Where Everything Is Configured
+Every object in this document, by the console it is administered in. The section named holds its values.
+[TABLE 16 rows]
+  | Console | Path | Objects | Section
+  | Microsoft Entra admin centre | Groups | 3 device groups | 4.1 Groups
+  | Microsoft Entra admin centre | Protection &gt; Conditional Access | CA-107 | 4.2 Conditional Access
+  | Microsoft Entra admin centre | Devices &gt; All devices | Device records, Entra join state, LAPS password retrieval | 4.3 Device records and local administrator
+  | Microsoft Intune admin centre | Devices &gt; Enrolment &gt; Windows Autopilot | Deployment profile, Enrolment Status Page, hardware hashes and group tag | 5. Enrolment Configuration
+  | Microsoft Intune admin centre | Devices &gt; Compliance | 1 compliance policy | 6. Compliance Policy
+  | Microsoft Intune admin centre | Devices &gt; Configuration | 13 configuration profiles | 7. Device Configuration Profiles
+  | Microsoft Intune admin centre | Devices &gt; Scripts and remediations &gt; Remediations | 4 remediation pairs: session account and Assigned Access, idle restart, session cleanup, time and time zone | 8. The Participant Session, 9. Time and Time Zone
+  | Microsoft Intune admin centre | Devices &gt; Scripts and remediations &gt; Platform scripts | 1 platform script: fallback time zone | 9.2 Fallback time zone
+  | Microsoft Intune admin centre | Apps &gt; Windows | 4 Win32 applications | 10.1 Application inventory
+  | Microsoft Intune admin centre | Endpoint security &gt; App Control for Business | Base policy and supplemental policy, both assigned to all kiosks, and the estate exclusion policy the kiosk group is a member of | 11. Application Control
+  | Microsoft Intune admin centre | Tenant administration &gt; Windows Autopatch | Test and Broad group registration | 13.1 Windows Autopatch
+  | Cisco Meraki dashboard | Wireless, and Security and SD-WAN | SSID APM-KIOSK, VLAN 73, egress ruleset, traffic shaping | 12. Network Configuration
+  | Zscaler admin portal | Client Connector, and URL filtering | App and forwarding profiles, URL filtering policy | 12.4 Zscaler Client Connector
+  | Microsoft Defender portal | Endpoints | Device alerts, ASR events, removable-media events | 14. Monitoring, Logging and Alerting
+  | Microsoft Sentinel | Workspace tables | Log export from every source | 14. Monitoring, Logging and Alerting
+<Heading1> 4. Entra ID Configuration
+<Heading2> 4.1 Groups
+Three groups. Every Intune assignment in this document targets one of them.
+[TABLE 4 rows]
+  | Group name | Type | Membership | What is assigned to it
+  | sg-dyn-dvc-cdg-participant-kiosk-autopilot | Device, dynamic | device.devicePhysicalIds -any (_ -eq "[OrderID]:PARTICIPANT") | Autopilot deployment profile, Enrolment Status Page, Autopatch Broad group
+  | sg-dyn-dvc-cdg-participant-kiosk | Device, dynamic | (device.displayName -startsWith "APM-PK-") | Every configuration profile, application, compliance policy and remediation. Membership of APM-W11-SEC-ACfB Exclusion-P (11. Application Control). Every estate exclusion in 15. Exclusions From Estate Configuration
+  | sg-stc-dvc-cdg-participant-kiosk-ring1 | Device, assigned | Approximately 10 devices: staging lab plus one or two low traffic sites | Autopatch Test group, application update piloting
+The two App Control policies in 11. Application Control are assigned to all kiosks. Which group carries that assignment, and whether Ring 1 still holds an audit-mode policy, is open item 13 in 18. Known Constraints and Open Items.
+Membership of the first two groups is a consequence of the build, not an administrative task: the group tag is set at hardware hash import, and the device name is set by the Autopilot profile. Ring 1 membership is maintained by hand.
+<Heading2> 4.2 Conditional Access
+One policy. It denies rather than grants, and it targets hardware rather than identity.
+[TABLE 9 rows]
+  | Field | Value
+  | Name | CA-107 - All Users &amp; Guests - All Apps - Participant Kiosk Devices - Block
+  | Users, include | All users
+  | Users, exclude | The two tenant emergency access accounts
+  | Target resources | All cloud apps
+  | Conditions, filter for devices | Include devices where: device.trustType -eq "AzureADJoined" -and device.enrollmentProfileName -eq "CDG W11 Autopilot SelfDeploying"
+  | Grant | Block access
+  | Session | Not configured
+  | State | On, enforced before national rollout. Report-only during the pilot
+A Participant Kiosk is Entra ID joined and compliant, so it satisfies both tenant grant policies, AllUsers_AllAccess_DeviceRequired and AllUsers_AllAccess_MFAorDeviceRequired, and satisfies the second without a multi-factor prompt. Neither grant policy is modified and neither carries a kiosk exclusion: in Conditional Access an applicable block overrides a grant.
+Ten further tenant policies evaluate a user principal and are never evaluated for this fleet. None is modified and none needs an exclusion. The full policy by policy disposition, the six build steps and the five verification tests are in the Conditional Access as-built record, APM_AsBuilt_Participant_Kiosk_Conditional_Access_V1.0.
+Guidance    The device filter matches the enrolment profile name as a literal string, and that name is CDG W11 Autopilot SelfDeploying: spaces, no hyphens, no version suffix. It does not follow the CDG-W11-[class]-[name]-[env]-[version] convention, and it is not the name this fleet's other objects carry. Renaming the Autopilot deployment profile silently stops this policy matching, and the fleet then satisfies both corporate grants with nothing blocking it. Treat any change to that profile name as a change to CA-107.
+<Caption> Figure 2. Access control model - device-only identity, and the three layers that keep corporate services off the device
+<Heading2> 4.3 Device records and local administrator
+Device objects appear in the Entra admin centre under Devices &gt; All devices with the APM-PK- prefix, Entra ID joined, and no registered owner. The local administrator password is held in Entra ID and retrieved from the device record.
+[TABLE 10 rows]
+  | Setting | Value
+  | Policy name | CDG-W11-SEC-LAPS-P-1.0
+  | Backup directory | Microsoft Entra ID
+  | Administrator account name | APM-PKAdmin
+  | Password age | 30 days
+  | Password length | 30 characters
+  | Password complexity | Large letters, small letters, numbers and special characters
+  | Post-authentication actions | Reset the password and sign out the managed account
+  | Post-authentication action delay | 8 hours
+  | Retrieval | Entra admin centre, restricted to the named support group. Every retrieval is recorded in the Entra audit log
+APM-PKAdmin is the only interactive administrative path onto a device. It cannot install software, because App Control is enforced and the account holds no signing authority.
+<Heading1> 5. Enrolment Configuration
+<Caption> Figure 3. Participant Kiosk provisioning - build facility preparation, Autopilot self-deployment and automatic logon
+<Heading2> 5.1 Autopilot deployment profile
+[TABLE 7 rows]
+  | Setting | Value
+  | Profile name | CDG W11 Autopilot SelfDeploying. Spaces, no hyphens: the naming convention could not be applied to this object class, and the name is matched as a literal string by CA-107 (4.2 Conditional Access)
+  | Deployment mode | Self-deploying (Microsoft Entra ID joined)
+  | Join type | Microsoft Entra ID joined
+  | Assigned group | sg-dyn-dvc-cdg-participant-kiosk-autopilot
+  | Device name template | APM-PK-%SERIAL%. Yields APM-PK-[SERVICE TAG], 13 characters on a 6-character Dell service tag, inside the 15-character computer-name limit. The dynamic group in 4.1 Groups keys on the APM-PK- prefix
+  | Userless enrolment status | Allowed. Reads Blocked on any device that has completed a self-deploying build before, which is every rebuild and every returned device
+Self-deploying mode attests the device TPM, so the Microsoft attestation endpoints must be reachable from the build facility network. The profile name is referenced by CA-107 (4.2 Conditional Access) and is matched there character for character.
+<Heading2> 5.2 Enrolment Status Page
+[TABLE 5 rows]
+  | Setting | Value
+  | Profile name | CDG-W11-CFG-Kiosk ESP-P-1.0
+  | Assigned group | sg-dyn-dvc-cdg-participant-kiosk-autopilot
+  | Block device use until required apps are installed | Yes
+  | Blocking applications | LibreOffice, Zscaler Client Connector, TeamViewer
+The blocking application list is the mechanism that guarantees the applications are installed before the Assigned Access configuration applies. Without it the application allow-list and the Start pins resolve against paths that do not yet exist. Expected enrolment duration is 20 to 60 minutes.
+<Heading2> 5.3 Hardware hash import and group tag
+Hardware hashes are imported to the APM tenant by the device build partner, CompNow, with Group Tag PARTICIPANT in upper case. Dell OEM direct registration is the alternative path where devices are registered at manufacture.
+The tag is the only thing that puts a device into the Autopilot group. A wrong or absent tag means no Autopilot profile applies and the device builds into a plain desktop, which is a rebuild. Verification and correction are in CN-PK-01.
+<Heading1> 6. Compliance Policy
+One policy: CDG-W11-COM-Participant Kiosk-P-1.0, assigned to sg-dyn-dvc-cdg-participant-kiosk. The estate policy Staff-Windows-Compliance-Policy is excluded from this fleet (15. Exclusions From Estate Configuration).
+[TABLE 12 rows]
+  | Setting | Required value
+  | Operating system | Windows 11
+  | Minimum OS version | Pinned to the validated Windows 11 Enterprise feature version
+  | Microsoft Defender antimalware | Enabled
+  | Security intelligence up to date | Required
+  | Real-time protection | Required
+  | Antispyware | Required
+  | BitLocker | Enabled
+  | Secure Boot | Required
+  | Firewall | Enabled
+  | TPM | Required
+  | Action for noncompliance | Mark noncompliant immediately, alert to Digital Operations
+Compliance state is what makes the fleet satisfy the two tenant grant policies, which is why CA-107 exists as an explicit block (4.2 Conditional Access).
+<Heading1> 7. Device Configuration Profiles
+Fifteen profiles. Thirteen were created for this fleet and are assigned to sg-dyn-dvc-cdg-participant-kiosk; two are estate certificate profiles the kiosk group was added to as an inclusion rather than replaced. All are configured in the Intune admin centre under Devices &gt; Configuration.
+[TABLE 16 rows]
+  | Profile | Type | What it sets | Detail held in
+  | CDG-W11-SEC-Logon Lockdown-P-1.0 | Settings catalog, User Rights | Allow Local Log On, set to *S-1-5-113 and *S-1-5-32-544 | 7.1 Logon lockdown
+  | CDG-WIN-CFG-Delete User Profile-P-1.0 | Settings catalog, Windows Components &gt; User Profiles | Delete user profiles older than 1 day on system restart | 8.4 Profile deletion at restart
+  | CDG-W11-CFG-Assigned Access XML-P-1.0 | Custom, OMA-URI ./Vendor/MSFT/AssignedAccess/Configuration, String (XML file) | The multi-app restricted session | 8.1 Session account, automatic logon and Assigned Access, see the note below
+  | CDG-W11-SEC-Edge Hardening-P-1.0 | Settings catalog, Microsoft Edge | URL block and allow lists, managed favourites, ephemeral profiles, SmartScreen, DNS over HTTPS off | 10.3 Microsoft Edge configuration
+  | CDG-W11-SEC-USB Exception-P-1.0 | Settings catalog | Removable-media write restrictions disabled for this fleet | 15.2 Removable media, excluded controls and compensating controls
+  | CDG-W11-SEC-Bitlocker Exception-P-1.0 | Settings catalog, higher priority than the estate baseline | Intended to leave the removable data drive BitLocker requirement not configured. The setting could not be found in the catalog (15.2 Removable media, excluded controls and compensating controls) | 15.2 Removable media, excluded controls and compensating controls
+  | CDG-W11-SEC-LAPS-P-1.0 | Endpoint protection template, or Settings catalog category LAPS | Local administrator password management | 4.3 Device records and local administrator
+  | [unnamed] Wallpaper | Custom, OMA-URI ./Vendor/MSFT/Personalization/DesktopImageUrl, String | Points at the staged wallpaper file | 8.5 Wallpaper
+  | [unnamed] LibreOffice locked configuration | Imported administrative template (ADMX) | Default save formats, macro block, no autorecovery, no recent documents | 10.2 LibreOffice locked configuration
+  | CDG-W11-CFG-Restart Notification-P-1.0 | Settings catalog, Windows Update for Business | Suppresses update and restart notifications on a public display | 13.1 Windows Autopatch
+  | CDG-W11-CFG-Delivery Optimization-P-1.0 | Delivery Optimization template | LAN peering, bandwidth caps, cache limits | 13.2 Delivery Optimization
+  | Client-Win10-Certificate (Root) | Templates &gt; Trusted certificate, estate object | Root CA for EAP-TLS. Kiosk group added as an inclusion | 12.2 Wi-Fi and certificates
+  | Client-Win10-Certificate (Intermediate) | Templates &gt; Trusted certificate, estate object | Issuing CA for EAP-TLS. Kiosk group added as an inclusion | 12.2 Wi-Fi and certificates
+  | CDG-WIN-CFG-Device SCEP Cert-D-1.0 | Templates &gt; SCEP certificate | EAP-TLS device certificate | 12.2 Wi-Fi and certificates
+  | CDG-WIN-CFG-Kiosk Wi-Fi(APM-KIOSK)-D-1.0 | Templates &gt; Wi-Fi | SSID APM-KIOSK, WPA2/WPA3-Enterprise, EAP-TLS | 12.2 Wi-Fi and certificates
+Three naming facts are recorded as built, not corrected. The profile deletion and certificate objects carry the CDG-WIN- prefix rather than CDG-W11-. The SCEP and Wi-Fi objects carry the -D- environment suffix rather than -P-, which reads as a test object on a production fleet. Two profiles, the wallpaper and the LibreOffice administrative template, still have no recorded name (18. Known Constraints and Open Items).
+Guidance    The two trusted certificate rows are estate objects the kiosk group was added to. Every other estate object in this solution is one the kiosk group is excluded from (15. Exclusions From Estate Configuration). Anyone applying the exclusion register mechanically to "all estate certificate profiles" removes the fleet's EAP-TLS trust chain and takes every kiosk off the network.
+<Heading2> 7.1 Logon lockdown
+The intended value was Administrators plus this device's session account. Assigned Access account names are per device, and the setting takes a single static value list with no wildcard support, so the account cannot be named.
+[TABLE 6 rows]
+  | Setting | Value
+  | Profile name | CDG-W11-SEC-Logon Lockdown-P-1.0
+  | Setting | Allow Local Log On, under User Rights. Not under Local Policies Security Options, where it was first looked for
+  | Value | *S-1-5-113 and *S-1-5-32-544
+  | *S-1-5-113 | Local account. Covers the session account without naming it
+  | *S-1-5-32-544 | Administrators. Covers APM-PKAdmin (4.3 Device records and local administrator)
+S-1-5-113 admits any local account on the device, not only the session account. On this fleet that is the session account and APM-PKAdmin, and no third local account is created by anything in this document. Narrowing it to the session account alone needs the per-device user right set by script, which is recorded as open item 2 in 18. Known Constraints and Open Items.
+The Assigned Access configuration is delivered twice. The custom OMA-URI profile CDG-W11-CFG-Assigned Access XML-P-1.0 was built and assigned, and it writes the same CSP node the session account remediation writes (8.1 Session account, automatic logon and Assigned Access). The profile carries a static XML file, so its Account element cannot name a per-device account; the remediation renders the account name and applies it per device. Both target ./Vendor/MSFT/AssignedAccess/Configuration, and the last writer wins. This is open item 14 in 18. Known Constraints and Open Items.
+<Heading1> 8. The Participant Session
+Three Intune remediation pairs deliver the participant session. All three are configured under Devices &gt; Scripts and remediations, all run as SYSTEM in 64-bit with the signature check on, and all three are assigned to sg-dyn-dvc-cdg-participant-kiosk on a daily schedule plus the first enrolment check-in.
+[TABLE 4 rows]
+  | Object | Version | Marker value | What it owns
+  | CDG-W11-REM-Kiosk Session Account-P-1.0 | - | - | The session account, automatic logon and the Assigned Access configuration (8.1 Session account, automatic logon and Assigned Access)
+  | CDG-W11-REM-Idle Restart-P-1.0 | 4.0 | IdleRestartVersion | Inactivity lock and the restart that ends the session (8.2 Inactivity restart)
+  | CDG-W11-REM-Session Cleanup-P-1.0 | 2.0 | SessionCleanupVersion | Destruction of participant data at every session boundary (8.3 Session cleanup)
+The idle restart and the session cleanup each write a version marker to HKLM\SOFTWARE\APM\ParticipantKiosk once, and only once, every asserted item has been re-verified. Detection reads that marker as its last check, so a device that half-converged reports as drift rather than as compliant.
+Guidance    All three were Win32 applications in an earlier build. The remediation model replaced them because a Win32 application installs once and is never re-evaluated: drift on a device that has already reported success is invisible. A remediation pair re-asserts every item daily, and each detection emits exactly one line naming what drifted.
+<Caption> Figure 4. Session lifecycle and data purge - what is written, when it is destroyed, and what survives
+<Heading2> 8.1 Session account, automatic logon and Assigned Access
+[TABLE 9 rows]
+  | Setting | Value
+  | Object name | CDG-W11-REM-Kiosk Session Account-P-1.0
+  | Scripts | Detect-KioskSessionAccount.ps1 and Remediate-KioskSessionAccount.ps1, both signed
+  | Session account | Kiosk-[SERIAL], local standard user. A separate name from the device name (2.2 Fleet, hardware and licensing), so no local account collides with the computer name. BIOS serial from Win32_BIOS, non-alphanumeric characters stripped, upper-cased, capped at 14 characters before the name is assembled, so the SAM name stays within its 20-character limit. Kiosk- is 6 characters, so the longest name the rule can produce is exactly 20
+  | Account properties | Full name equals the account name, description "APM Participant Kiosk - managed, do not modify", account never expires, password never expires, may not change its own password, enabled
+  | Group membership | Member of Users. Removed from Administrators on every run
+  | Credential | 32 characters drawn by rejection sampling from a 69-character alphabet that excludes the ambiguous I, O, l, 0 and 1. Generated in memory, set on the account, written only to the Winlogon LSA DefaultPassword secret through LsaStorePrivateData, then discarded. Never known to any person, never transmitted
+  | Automatic logon | AutoAdminLogon = 1, DefaultUserName = the account. DefaultPassword, DefaultDomainName and AutoLogonCount are removed on every run
+  | Assigned Access | Applied through the MDM_AssignedAccess class in root\cimv2\mdm\dmmap. Profile Id {4B1E9A0C-6D7F-4A31-9C52-8E0A73B5D411}, profile name "APM Participant Kiosk"
+Detection fails the device, and calls the remediation, on any one of these. The account missing, disabled, renamed in its display name, carrying password expiry, or permitted to change its own password. Membership of Administrators. Automatic logon not configured, or a cleartext DefaultPassword or a DefaultDomainName value present. Assigned Access not applied, not naming this device's account, or still holding the literal [SERIAL] placeholder, which means a configuration profile has overwritten the CSP node.
+A password the account can change is fatal rather than untidy: a changed password breaks automatic logon permanently, because the LSA secret no longer matches and no person holds the new value.
+<Heading3> 8.1.1 Application allow-list in the restricted session
+The allow-list is rendered per device, because it names the session account, and the LibreOffice dependency paths are discovered on the device at run time rather than assumed.
+[TABLE 6 rows]
+  | Group | Entries
+  | Microsoft Edge | msedge.exe and msedge_proxy.exe under Program Files (x86), plus the Edge application user model ID Microsoft.MicrosoftEdge.Stable_8wekyb3d8bbwe!App
+  | LibreOffice | swriter.exe, scalc.exe, simpress.exe, soffice.exe and soffice.bin, plus the discovered dependencies LanguageToolLO.dll, select.pyd and _socket.pyd
+  | Supporting applications | Zscaler ZSATray.exe, TeamViewer.exe
+  | Accessibility | Narrator.exe, Magnify.exe, osk.exe, VoiceAccess.exe
+  | Shell | explorer.exe
+Remediation warns when it finds fewer than three LibreOffice dependencies, which is what a device looks like when LibreOffice has not landed yet. Re-running the remediation after the application installs is the correction, and the Enrolment Status Page blocking list in 5.2 Enrolment Status Page is what makes that case rare.
+[TABLE 4 rows]
+  | Setting | Value
+  | File Explorer namespace | Downloads only, plus removable drives. Desktop, Documents and the C: drive are not reachable
+  | Start pins | Edge, LibreOffice Writer, Calc and Impress, File Explorer, Narrator, Magnify, On-Screen Keyboard, VoiceAccess
+  | Taskbar | Shown
+Remediation also creates the all-users Start menu shortcut for Edge when it is absent, because the Edge Start pin resolves through that shortcut and Edge does not always create it.
+<Heading2> 8.2 Inactivity restart
+The session ends at a restart, and the restart is triggered by the workstation locking rather than by a process polling for idle time. Windows locks the console after ten minutes through the secure screen saver; the lock writes a Security event; a scheduled task filtered to that event restarts the device.
+[TABLE 9 rows]
+  | Setting | Value
+  | Object name | CDG-W11-REM-Idle Restart-P-1.0, version 4.0
+  | Scripts | Detect-KioskIdleRestart.ps1 and Remediate-KioskIdleRestart.ps1, both signed
+  | Payload | C:\APM\PK\Restart-KioskOnLock.bat, pinned by SHA-256 C92628A2824A4E4F7F4E35F111763DC7E7ED54D7E505785A4B740D7046BA1172
+  | Payload permissions | Inheritance removed, SYSTEM:(RX) and Administrators:(F)
+  | Scheduled task | APM-PK-IdleRestart, SYSTEM, highest run level
+  | Task trigger | Security event ID 4800 (workstation locked), filtered by XPath to TargetUserName equal to this device's session account
+  | Task action | shutdown /r /f /t 0, retried once after five seconds
+  | Log | C:\APM\PK\logs\idle-restart.log, rolled over at 512 KB to one generation
+The ten minutes are set in three places, and all three are asserted.
+[TABLE 8 rows]
+  | Setting | Value | Where
+  | ScreenSaveActive | 1 (REG_SZ) | Session account hive, Control Panel\Desktop
+  | ScreenSaveTimeOut | 600 (REG_SZ) | Session account hive, Control Panel\Desktop
+  | ScreenSaverIsSecure | 1 (REG_SZ) | Session account hive, Control Panel\Desktop
+  | SCRNSAVE.EXE | %SystemRoot%\System32\scrnsave.scr (REG_SZ) | Session account hive, Control Panel\Desktop
+  | InactivityTimeoutSecs | 600 (DWORD), written only when absent or zero | HKLM Policies\System
+  | Audit subcategory {0CCE921C-69AE-11D9-BED3-505054503030} | Success enabled | Local audit policy, set by auditpol
+  | Display timeout, on battery and plugged in | 0 (never blank) | Power policy override, else the active power scheme
+Guidance    All four screen-saver values are REG_SZ. Winlogon reads them as strings, so a REG_DWORD is a silent no-op: the value appears set, and the screen saver never starts. Detection reads the value type through reg.exe rather than trusting the data alone.
+Two of the seven rows above are the ones a reviewer should check first. Without Success auditing on that subcategory no 4800 event is ever written, so nothing in this pack fires and the device never restarts. With a display timeout other than 0 the screen blanks before the screen saver is due, which looks to a participant like a device that has failed.
+Remediation is ordered so that a partial run cannot present as a working device: it clears the version marker first, resolves the session account from the profile directory on disk and stops outright if it cannot, and refuses to touch the scheduled task until it has an account name to filter on. A filterless task would restart the device under an administrator who had locked the console.
+Superseded and actively removed. Scheduled task APM-PK-IdleWatchdog, the files Watch-KioskIdle.bat, Watch-KioskIdle.ps1, idle-state.txt, idle-armed.txt, idle-pending.txt and idle-debug.txt, and the IdleWatchdogVersion marker. Remediation deletes all of them, and detection reports the old task's presence as drift, because two mechanisms restarting the same device on two different signals is a fault in itself.
+<Heading2> 8.3 Session cleanup
+Participant data is destroyed at every session boundary. The same batch file runs at four of them, so no single failure leaves data on the device for the next participant.
+[TABLE 6 rows]
+  | Setting | Value
+  | Object name | CDG-W11-REM-Session Cleanup-P-1.0, version 2.0
+  | Scripts | Detect-KioskSessionCleanup.ps1 and Remediate-KioskSessionCleanup.ps1, both signed
+  | Machine payload | Clear-KioskSessionData.bat, SHA-256 E4AEEDCE952F516491A7AA503EB4E72172C098139AE9A684E960F3E06D809F4B
+  | User payload | Clear-KioskUserLogon.bat, SHA-256 8C50173DAE9048D3C9E5418A725403BD5569D54B7AACF767EC81839970731C7B
+  | Log | C:\APM\PK\logs\session-clean-[date].log, one file per day, recording every location cleared, skipped or found in use
+<Heading3> 8.3.1 Where the payloads are staged
+[TABLE 5 rows]
+  | Path | Purpose
+  | C:\APM\PK\Clear-KioskSessionData.bat | The staged copy the scheduled tasks run
+  | %SystemRoot%\System32\GroupPolicy\Machine\Scripts\Startup\Clear-KioskSessionData.bat | Local Group Policy startup script
+  | %SystemRoot%\System32\GroupPolicy\Machine\Scripts\Shutdown\Clear-KioskSessionData.bat | Local Group Policy shutdown script
+  | %SystemRoot%\System32\GroupPolicy\User\Scripts\Logon\Clear-KioskUserLogon.bat | Local Group Policy user logon script
+The Group Policy plumbing is part of the configuration and is asserted on every run: the machine and user scripts.ini files must match their expected contents exactly, gpt.ini must name the Scripts client-side extension {42B5FAAE-6536-11D2-AE5A-0000F87571E3} alongside the machine {40B6664F-4972-11D1-A7CA-0000F87571E3} and user {40B66650-4972-11D1-A7CA-0000F87571E3} extensions, and the Group Policy Scripts registry keys for Startup and Shutdown must name the batch file and carry the matching phase argument.
+The shutdown pass exists because Windows waits for a Group Policy shutdown script and there is no shutdown trigger in Task Scheduler. That is the only mechanism that runs while the session is ending.
+<Heading3> 8.3.2 Scheduled tasks
+[TABLE 4 rows]
+  | Task | Argument | Trigger
+  | APM-PK-CleanStartup | Startup | System startup
+  | APM-PK-CleanLogon | Logon | Session logon. Authoritative pass, because it runs before the participant can reach anything
+  | APM-PK-CleanLogoff | - | Security event ID 4634 or 4647. Best effort: the profile hive is usually still loaded, so the registry pass is skipped and recorded as skipped
+<Heading3> 8.3.3 Policy values the cleanup depends on
+[TABLE 7 rows]
+  | Setting | Value | Why it is required
+  | RunStartupScriptSync | 1 | Windows waits for the startup script to finish before the desktop is available
+  | RunLogonScriptSync | 1 | Windows waits for the logon script to finish before the participant can interact
+  | MaxGPOScriptWait | 900 | Fifteen minutes, so a slow pass is not abandoned mid-delete
+  | SyncForegroundPolicy | 1 | Forces synchronous foreground policy processing, without which the scripts run asynchronously
+  | HiberbootEnabled | 0 | Disables fast startup. With it enabled a restart is not a cold boot, and the startup pass does not run
+  | HideAccountNotifications | 1 | Suppresses account notifications on a public display
+Guidance    HiberbootEnabled = 0 is the value most likely to be reverted by a well-meaning change and the hardest to spot when it is. Fast startup makes a restart resume from a hibernation image, so the startup pass never runs and the session purge silently loses one of its four passes.
+<Heading3> 8.3.4 What is destroyed
+[TABLE 5 rows]
+  | Class | Locations
+  | Participant folders | Downloads, Desktop, Documents, Pictures, Videos, Music and OneDrive in the session profile, plus Public Downloads, Public Documents and Public Desktop
+  | Application state | The LibreOffice user profile including its autorecovery copies, Edge user data, both jump-list stores, Recent items, the profile Temp folder, INetCache, clipboard history, the notification database, and the thumbnail and icon caches
+  | Registry | RecentDocs, TypedPaths, RunMRU, WordWheelQuery and FileExts, plus the ComDlg32 stores OpenSavePidlMRU, LastVisitedPidlMRU and CIDSizeMRU
+  | Machine wide | The print spool, Windows Temp, and the session account's Recycle Bin resolved by SID
+The pass also repairs automatic logon, under four guard conditions: never in a dry run, never without a resolved account, never when the local account does not yet exist, and never when AutoAdminLogon is not already 1. Enabling automatic logon is the session account remediation's job (8.1 Session account, automatic logon and Assigned Access), so this pass corrects the user name and clears DefaultDomainName and AutoLogonCount, and does nothing else.
+The session account's profile is deliberately not deleted. Deleting it destroys Edge's per-user registration and the Start layout cache, which is a known cause of the Start pins failing to appear, and it is not needed to remove participant data.
+Items found in use are counted and logged. At the logoff pass that is expected, and the shutdown, startup and logon passes take them before the next participant starts. At any other pass it is logged as a warning, because something is holding participant data open before the session has begun.
+<Heading2> 8.4 Profile deletion at restart
+CDG-WIN-CFG-Delete User Profile-P-1.0 sets Delete user profiles older than a specified number of days on system restart to 1 day, under Windows Components &gt; User Profiles. The intended value was 0 days; the setting will not accept 0, and 1 day is the minimum it accepts.
+A one-day floor means the session profile is not deleted by this mechanism at the first restart after a session. It is the estate-standard mechanism and it operates independently of the cleanup scripts in 8.3 Session cleanup, which destroy participant data at every session boundary regardless of profile age. The participant data path does not depend on this profile.
+<Heading2> 8.5 Wallpaper
+[TABLE 6 rows]
+  | Setting | Value
+  | Object name | CDG-W11-CFG-Wallpaper-P-1.0
+  | Delivery | Win32 application: Install-KioskWallpaper.ps1 plus wallpaper-participant-v5.1.png
+  | Staged path | C:\APM\PK\wallpaper.png, read-only
+  | Applied by | The Personalization CSP profile in 7. Device Configuration Profiles, which points at that path
+  | Retention line on the artwork | Files saved to the desktop are deleted after 10 minutes of inactivity
+<Heading1> 9. Time and Time Zone
+A kiosk with a wrong clock puts a wrong timestamp on every document a participant saves, and a clock far enough out fails TLS, which presents as a device that can no longer reach anything. The time zone and the clock are two separate settings with two separate mechanisms, and this section records both.
+[TABLE 4 rows]
+  | Object | Type | What it owns
+  | CDG-W11-REM-Time and Time Zone-P-1.0 | Remediation pair | Automatic time zone derived from network location, and clock synchronisation to NTP (9.1 Time and time zone remediation)
+  | CDG-W11-SCR-Fallback Time Zone-P-1.0 | Platform script, once per device | A starting time zone, so a device never begins life on a wildly wrong clock while location resolution is pending (9.2 Fallback time zone)
+  | CDG-W11-TST-Time and Time Zone Readiness-P-1.0 | Pilot verification tool, not an Intune object | A read-only readiness report, and the exercise of the two egress endpoints that produces the real deny list (9.4 Readiness verification)
+The platform script is the only Intune platform script in this solution, configured under Devices &gt; Scripts and remediations &gt; Platform scripts. Everything else in this solution that runs on a device is a remediation pair or a Win32 application.
+<Heading2> 9.1 Time and time zone remediation
+[TABLE 6 rows]
+  | Setting | Value
+  | Object name | CDG-W11-REM-Time and Time Zone-P-1.0
+  | Scripts | DetectTimeAndTimeZone.ps1 and RemediateTimeAndTimeZone.ps1, both signed
+  | Run context | SYSTEM, 64-bit host, signature check on
+  | Schedule | Daily
+  | Assigned group | sg-dyn-dvc-cdg-participant-kiosk
+Run script in 64-bit PowerShell must be Yes. In a 32-bit host every HKLM\SOFTWARE read and write is redirected to Wow6432Node, so two of the three location keys are written to the wrong place and the run half-succeeds. Both scripts test for the wrong host and exit rather than proceed.
+<Heading3> 9.1.1 Service start values
+Compliance is judged on service start type and on outcome, never on whether a service is running. All three services are demand or trigger-start and stop themselves when idle, so Running is not a health signal.
+[TABLE 4 rows]
+  | Service | Start | Meaning | Note
+  | lfsvc (Geolocation Service) | 2 | Automatic | Set deliberately, so its state is deterministic rather than dependent on a trigger
+  | w32time (Windows Time) | 2 | Automatic | Not sufficient on its own, see 9.1.3 Clock synchronisation
+  | tzautoupdate (Auto Time Zone Updater) | 3 | Demand | Windows reads demand-start as Set time zone automatically = On. 2 is not a valid substitute, and 4 is the toggle off
+Start values are read from HKLM\SYSTEM\CurrentControlSet\Services\[service]\Start, which is not WOW64-redirected.
+<Heading3> 9.1.2 Location gates
+[TABLE 4 rows]
+  | Value | Set to | Key
+  | Value (REG_SZ) | Allow | HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location
+  | Status (DWORD) | 1 | HKLM\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration
+  | SensorPermissionState (DWORD) | 1 | HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}
+Guidance    The consent store is under Windows\CurrentVersion, not Windows NT\CurrentVersion. The NT variant of that path is a different key, and writing to it changes nothing while logging success.
+The consent store value is the master gate and is a compliance gate. The other two are set by remediation but reported only, because lfsvc rewrites SensorPermissionState to 0 every time it starts: gating on it would report the whole fleet non-compliant at every detection.
+Remediation writes SensorPermissionState after lfsvc has been restarted, not before. Written before the restart it is overwritten immediately, and the run logs a success that did nothing.
+<Heading3> 9.1.3 Clock synchronisation
+[TABLE 6 rows]
+  | Setting | Value | Where
+  | MaxPosPhaseCorrection (DWORD) | 172800 | HKLM\SYSTEM\CurrentControlSet\Services\W32Time\Config
+  | MaxNegPhaseCorrection (DWORD) | 172800 | As above
+  | w32time stop trigger | Removed | sc.exe triggerinfo w32time delete
+  | Configuration reload | w32tm /config /update | Run after the values are written
+  | Resynchronisation | w32tm /resync /rediscover | Redetects network configuration and rediscovers sources
+172800 seconds is 48 hours. The default ceiling on a device that is not AD domain-joined is 54000 seconds, 15 hours, and a sample outside the ceiling is discarded rather than applied. A kiosk that has been switched off for weeks, or that has a flat CMOS battery, lands outside 15 hours and never heals. 48 hours covers that case while still bounding what the device will accept from a reachable NTP source.
+The service control manager holds a stop trigger on w32time for the condition not domain joined, so setting the service to Automatic is not enough on its own: the service is started and then stopped again. Removing the trigger is the documented workaround for that case.
+A failed clock synchronisation is reported and is not treated as a remediation failure: the configuration is correct and the fault is on the network. Detection keeps reporting it until it clears.
+<Heading3> 9.1.4 Conflicts the detection names but does not fix
+A script must not remove an MDM or Group Policy value, so each of the following is named in the detection output and left in place. Any one of them overrides everything in 9.1 Time and time zone remediation.
+[TABLE 5 rows]
+  | Value | Conflicting when | Key
+  | ConfigureTimeZone | Set to any value | HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\TimeLanguageSettings
+  | DisableLocation | 1 | HKLM\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors
+  | DisableWindowsLocationProvider | 1 | As above
+  | LetAppsAccessLocation | 2, Force Deny | HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+A fixed ConfigureTimeZone value and automatic time zone are two controls writing the same field, so this fleet assigns no fixed time zone policy (15.1 Assignment exclusions).
+Detection also reports the resolved zone and the current time source for each device, so the Intune report shows which devices resolved a zone and which are running free.
+<Heading2> 9.2 Fallback time zone
+[TABLE 7 rows]
+  | Setting | Value
+  | Object name | CDG-W11-SCR-Fallback Time Zone-P-1.0
+  | Script | SetFallbackTimeZone.ps1, signed
+  | Type | Platform script, run once per device. SYSTEM, 64-bit host
+  | Fallback zone | AUS Eastern Standard Time
+  | Acts only when the current zone is | UTC, Pacific Standard Time or GMT Standard Time
+  | Assigned group | sg-dyn-dvc-cdg-participant-kiosk
+The script never overwrites a zone that has already been set, so a Perth kiosk that has resolved W. Australia Standard Time is left alone. It never touches tzautoupdate: automatic time zone is expected to override this value once location resolves, and that is its purpose.
+Guidance    Never append _dstoff to a Windows time zone identifier. That form pins the zone with daylight saving permanently off, which is correct for half of each year.
+<Heading2> 9.3 Egress requirements
+Two destinations are required, and neither is a web destination reachable through the proxy path in 12.4 Zscaler Client Connector.
+[TABLE 3 rows]
+  | Destination | Protocol | Note
+  | time.windows.com | UDP 123 | UDP 123 does not traverse a web proxy. This is a firewall rule, never a Zscaler URL exception. Every NTP sample timing out means UDP 123 is blocked
+  | inference.location.live.net | TCP 443 | The only Location endpoint Microsoft documents for Windows 11. The port is not stated in the documentation and is inferred from the protocol
+lfsvc runs as a machine service, so a proxy that requires user authentication has no token to authenticate with and location resolution fails. The system-wide WinHTTP proxy is what applies, not a user proxy setting.
+TLS inspection of the location endpoint is visible in the certificate issuer: a public issuer means the session is not being decrypted, and an APM or Zscaler issuer means it is.
+<Heading2> 9.4 Readiness verification
+CDG-W11-TST-Time and Time Zone Readiness-P-1.0, script TestTimeAndTimeZoneReadiness.ps1, is read-only and is not an Intune object. It is run in an elevated session on one device before anything in this section is assigned to the fleet, and again on any device that reports the wrong zone. Its output is saved with the pilot evidence.
+It reports the host and language mode, all three service start values and live states, the w32time triggers, the location gates, every conflicting policy in 9.1.4 Conflicts the detection names but does not fix, the current zone, the phase correction ceiling, and the w32time source, status and configuration. It then exercises both endpoints in 9.3 Egress requirements: a five-sample w32tm stripchart against time.windows.com, and DNS resolution, a TCP 443 test and a certificate issuer check against inference.location.live.net. It closes with the Windows Time operational log, the location log channels present on the build, and the procedure for clearing a stale lfsvc location cache.
+A device whose clock is correct but whose zone is wrong has either had location resolution blocked, or is serving a stale cached location fix. The lfsvc cache at %ProgramData%\Microsoft\Windows\LfSvc\Cache has been observed pinning a device to the wrong country. Clearing it is stop lfsvc, delete the cache folder, start lfsvc.
+<Heading1> 10. Applications
+<Heading2> 10.1 Application inventory
+Four Win32 applications, all assigned Required to sg-dyn-dvc-cdg-participant-kiosk. Configured under Apps &gt; Windows.
+[TABLE 5 rows]
+  | Application | Source and packaging | Update path
+  | CDG-W11-APPC-LibreOffice-P-1.0 | LibreOffice Fresh 64-bit MSI, checksum verified against the published SHA-256 | Patch My PC publishes each Fresh release as a superseding Win32 application. Ring 1 first, fleet three days later
+  | [unnamed] Zscaler Client Connector | Vendor installer, local breakout configuration (12.4 Zscaler Client Connector) | Controlled change
+  | [unnamed] TeamViewer | Vendor installer, pinned major version | Controlled change. A version change is also a change to the supplemental App Control policy (11.2 Applications the fleet requires)
+  | CDG-W11-CFG-Wallpaper-P-1.0 | Script plus image, see 8.5 Wallpaper | Repackage and resign
+The idle restart and the session cleanup are not applications. Both are Intune remediation pairs (8.2 Inactivity restart, 8.3 Session cleanup).
+Microsoft Edge and the operating system are not Intune applications. Both are delivered by Windows Autopatch (13.1 Windows Autopatch).
+LibreOffice install command. msiexec /i LibreOffice_[version]_Win_x86-64.msi /qn /norestart CREATEDESKTOPLINK=0 ISCHECKFORPRODUCTUPDATES=0 QUICKSTART=0 REGISTER_ALL_MSO_TYPES=1 UI_LANGS=en_AU. Uninstall: msiexec /x {ProductCode} /qn /norestart. Detection: MSI product code with an installed-version check. Install context System.
+<Heading2> 10.2 LibreOffice locked configuration
+Delivered by ingesting the LibreOffice ADMX template into Intune. LibreOffice reads Group Policy from HKLM\SOFTWARE\Policies\LibreOffice, and values written there are read-only to the participant and cannot be changed in the application's options dialogue. The registry path is given so the setting can be verified on a device.
+[TABLE 17 rows]
+  | Node, under HKLM\SOFTWARE\Policies\LibreOffice | Value | Purpose
+  | org.openoffice.Setup\Office\Factories\com.sun.star.text.TextDocument\ooSetupFactoryDefaultFilter | MS Word 2007 XML | Writer saves as .docx by default
+  | org.openoffice.Setup\Office\Factories\com.sun.star.sheet.SpreadsheetDocument\ooSetupFactoryDefaultFilter | Calc MS Excel 2007 XML | Calc saves as .xlsx by default
+  | org.openoffice.Setup\Office\Factories\com.sun.star.presentation.PresentationDocument\ooSetupFactoryDefaultFilter | Impress MS PowerPoint 2007 XML | Impress saves as .pptx by default
+  | org.openoffice.Office.Common\Security\Scripting\DisableMacrosExecution | true | No macro executes, from any document, from any source
+  | org.openoffice.Office.Common\Security\Scripting\MacroSecurityLevel | 3 (Very high) | Second layer. No trusted location is defined
+  | org.openoffice.Office.Common\Security\Scripting\BlockUntrustedRefererLinks | true | Blocks links to external content from untrusted documents
+  | org.openoffice.Office.Common\Security\Scripting\DisableActiveContent | true | Blocks OLE and other active content
+  | org.openoffice.Office.Common\Misc\FirstRun | false | No first-run wizard, registration prompt or online account offer
+  | org.openoffice.Office.Common\Misc\ShowTipOfTheDay | false | No tip dialogue on a public device
+  | org.openoffice.Office.Common\History\PickListSize | 0 | No recent-documents list
+  | org.openoffice.Office.Common\Save\Document\AutoSave | false | No autorecovery copies written to disk
+  | org.openoffice.Office.Common\Save\Document\CreateBackup | false | No backup copies written to disk
+  | org.openoffice.Office.Common\Passwords\UseStorage | false | No credential storage in the application
+  | org.openoffice.Office.Jobs\Jobs\UpdateCheck\AutoCheckEnabled | false | Updates come from Intune, not the application
+  | org.openoffice.Office.Common\Menus\ShowMenuHelp | false | Removes online help and update entries from the menu
+  | org.openoffice.Office.Paths\Paths\Work\WritePath | %USERPROFILE%\Downloads | Default save folder matches the Edge download folder and the File Explorer scope
+<Heading2> 10.3 Microsoft Edge configuration
+Object: CDG-W11-SEC-Edge Hardening-P-1.0, Settings catalog, device scope.
+[TABLE 11 rows]
+  | Setting | Value
+  | URL blocklist and allowlist | The destination lists in 12.5 Microsoft 365 destinations
+  | Managed favourites | Ten folders, 55 links, fixed and not participant-editable. Value held in config/managed-favorites.json
+  | Password manager and autofill | Disabled
+  | Browser sign-in and sync | Disabled
+  | DNS over HTTPS | Disabled, so Zscaler retains DNS visibility
+  | SmartScreen | Enforced, no override
+  | Certificate error overrides | Prevented
+  | Developer tools | Disabled
+  | Extension installation | Blocked
+  | Ephemeral profiles | Enforced, so browsing data never reaches the disk
+The corporate user-scoped Edge configuration profiles are excluded from this fleet (15.1 Assignment exclusions).
+<Heading1> 11. Application Control
+The fleet runs two App Control policies: a base policy duplicated from the estate enforced baseline, and a supplemental policy that carries the fleet's application rules. Both are assigned to every kiosk.
+[TABLE 4 rows]
+  | Policy | Role | Assignment | Origin
+  | APM-WIN-SEC-ACfB Enforced Baseline_ES Kiosks-P-1.0 | Base policy | All kiosks | Duplicated from APM-WIN-SEC-ACfB Enforced Baseline-P-1.0
+  | APM-WIN-SEC-ACfB Enforced Supp ES Kiosks Basic Apps A-P-1.0 | Supplemental policy | All kiosks | Created for this fleet
+  | APM-W11-SEC-ACfB Exclusion-P | Exclusion | Kiosk device group added as a member | Existing estate object
+Every application rule change for this fleet is made on the supplemental policy. The base policy is a duplicate of an estate object: changing it diverges the two copies, and that divergence is not visible from either policy's own view.
+A base policy accepts a supplemental only when it carries Enabled:Allow Supplemental Policies. That option is what makes this model work, and it also means the base policy's allow-list can be extended by any supplemental policy deployed to the device, not only by this one.
+Both policies use the estate naming prefix APM-WIN-SEC- rather than the fleet prefix CDG-W11-, because the base policy is a copy of an estate object and the supplemental extends it. The base policy name separates its scope with an underscore, APM-WIN-SEC-ACfB Enforced Baseline_ES Kiosks-P-1.0, which is the name as built.
+How the fleet is kept off the estate baseline. The kiosk device group is added to the App Control policy APM-W11-SEC-ACfB Exclusion-P, which is the estate mechanism for carving a device set out of the normal baseline. Membership of that policy is what stops the estate baseline reaching a kiosk, so it is a configuration item in its own right and not a side effect of the group.
+The fleet is not excluded from App Control. It runs the base policy and the supplemental above instead of the estate baseline.
+Guidance    Removing the kiosk group from APM-W11-SEC-ACfB Exclusion-P puts the estate enforced baseline back onto every kiosk, on top of the base policy and supplemental. Two enforced policies on one device intersect: a binary must satisfy both, so the effective allow-list becomes the narrower of the two and applications the fleet depends on can stop launching with nothing in either policy's own view to explain it.
+The exclusion policy carries the estate prefix APM-W11-SEC-, while the base and supplemental policies carry APM-WIN-SEC-. Both prefixes are in use, and the names above are the strings as built.
+<Heading2> 11.1 Rule options
+The base policy carries the rule options of APM-WIN-SEC-ACfB Enforced Baseline-P-1.0 as they stood when it was duplicated. The estate values are recorded below.
+[TABLE 8 rows]
+  | Rule option | Estate baseline | Effect
+  | Enabled: UMCI | Yes | Applies control to user-mode applications and DLLs
+  | Enabled: Inherit Default Policy | Yes | Inherits the Microsoft default trusted rules
+  | Required: Enforce Store Applications | Yes | Store applications in scope. The Store itself is turned off on this fleet
+  | Enabled: Revoked Expired As Unsigned | Yes | Revoked or expired signatures treated as unsigned
+  | Enabled: Boot Audit On Failure | Yes | A policy fault degrades to audit rather than blocking boot
+  | Disabled: Script Enforcement | Yes, script control off | PowerShell and script hosts are not subject to App Control
+  | Enabled: Unsigned System Integrity Policy | Yes | Unsigned policies are accepted
+Two of those options were set the opposite way on the superseded fleet-built policy, which enforced script control and accepted signed policies only. Both are cited elsewhere in this document as controls over this fleet, so the base policy's current value for each is recorded as open item 12 in 18. Known Constraints and Open Items until it is read from the console.
+powershell.exe, cmd.exe, msiexec.exe and reg.exe must remain absent from the deny rules. A deny rule applies in every context including SYSTEM, and the session account remediation, the idle restart, the cleanup tasks and every Win32 install command run through them. Participants are kept out of all four by Assigned Access, which offers no route to launch them. Adding any of the four to the deny list breaks the build.
+<Heading2> 11.2 Applications the fleet requires
+The signer set the fleet depends on, whichever policy carries the rule. A change to any of these is a change to the supplemental policy.
+[TABLE 7 rows]
+  | Publisher | Covers
+  | Microsoft | Operating system and Edge components
+  | The Document Foundation | LibreOffice
+  | Zscaler Inc. | Zscaler Client Connector
+  | TeamViewer | TeamViewer. A version change is a signer change (13.3 Application patching)
+  | Dell | Hardware and firmware components
+  | Patch My PC LLC | The package wrapper for LibreOffice updates
+<Heading2> 11.3 Superseded configuration
+The previous configuration was a purpose-built policy pair for this fleet: CDG-W11-SEC-AppControl Enforced-P-1.0, policy identity CDG-W11-PK-1.0, deployed as a signed .cip through custom OMA-URI with script enforcement on, and CDG-W11-SEC-AppControl Audit-T-1.0 in audit mode on Ring 1, with a signed audit-mode rollback policy version 1.0.0.1 held in escrow. It was replaced by the two policies in this section.
+The disposition of those three objects, and of the escrowed rollback policy, is open item 13 in 18. Known Constraints and Open Items. A deployed enforced policy that is no longer the intended one is not inert: it is still evaluated on any device that received it.
+<Heading1> 12. Network Configuration
+<Caption> Figure 5. Participant Kiosk logical network and security zones
+<Heading2> 12.1 Addressing and VLAN
+[TABLE 7 rows]
+  | Element | Value | Held in
+  | Network type | Re-purposed VLAN, APM-KIOSK | Meraki dashboard
+  | VLAN ID | 73 | Meraki dashboard
+  | Supernet | 10.73.0.0/16 | Meraki template
+  | Per-site allocation | /26, 64 addresses, 62 usable | Meraki template, one per site
+  | Devices per site | Up to five | Site plan
+  | DNS | The site's standard DNS forwarders. No internal domain resolution is required | Site network configuration
+<Heading2> 12.2 Wi-Fi and certificates
+[TABLE 8 rows]
+  | Setting | Value
+  | SSID | APM-KIOSK, hidden
+  | Security | WPA2/WPA3-Enterprise, 802.1X with EAP-TLS. No pre-shared key
+  | Client certificate | Device certificate issued from the existing APM certificate infrastructure, delivered by the SCEP profile in 7. Device Configuration Profiles
+  | Trusted roots | Root and issuing CA delivered by the trusted certificate profile in 7. Device Configuration Profiles
+  | Wireless client isolation | Off, so Delivery Optimization peering works
+  | Intra-VLAN traffic | TCP 7680 permitted within 10.73.0.0/16, for Delivery Optimization
+  | Traffic shaping | 20 Mbps per SSID
+Certificate validity is set to outlast the device's operational life. No certificate rotation mechanism exists in this solution, and expiry is monitored through Intune certificate reporting (16. Routine Maintenance).
+<Heading2> 12.3 Site egress
+Meraki, default outbound deny for VLAN 73. No inbound exposure.
+[TABLE 5 rows]
+  | Source | Destination | Protocol | Action
+  | 10.73.0.0/16 | Microsoft Entra ID and Intune endpoints (login.microsoftonline.com, enterpriseregistration.windows.net, manage.microsoft.com, r.manage.microsoft.com), Windows Update and Delivery Optimization, Defender for Endpoint, the Intune content delivery network, and the Zscaler service edge | TCP 443 | Allow
+  | 10.73.0.0/16 | inference.location.live.net | TCP 443 | Allow
+  | 10.73.0.0/16 | time.windows.com | UDP 123 | Allow
+  | 10.73.0.0/16 | Any | Any | Deny
+The two rows above the deny are the time and time zone requirements in 9.3 Egress requirements. UDP 123 is the only non-443 rule in the ruleset, and it is a firewall rule: NTP does not traverse a web proxy, so it cannot be delivered as a Zscaler URL exception.
+Windows Update and Delivery Optimization endpoints on the allow-list: *.windowsupdate.com, download.windowsupdate.com, *.dl.delivery.mp.microsoft.com, *.delivery.mp.microsoft.com, *.update.microsoft.com, *.windowsupdate.microsoft.com, *.prod.do.dsp.mp.microsoft.com, *.notify.windows.com. Confirm the current published set at each review.
+The default-deny ruleset is confirmed active and enforced, not merely configured, at each site as it is rolled out.
+<Heading2> 12.4 Zscaler Client Connector
+Installed on the device as a Win32 application, performing local breakout directly to Zscaler Internet Access. Enforcement binds to the device group, not to a user identity.
+[TABLE 20 rows]
+  | Setting | Value
+  | App profile name | apm-js-kiosk-users-ap
+  | Forwarding profile name | apm-js-kiosk-users-fp
+  | Tunnel version | Z-Tunnel 2.0
+  | Primary transport | DTLS
+  | On-trusted-network and off-trusted-network action | Tunnel, the same setting for both
+  | Trusted network criteria | None
+  | Z-Tunnel 2.0 setup failure | Fall back to Z-Tunnel 1.0 and bypass non-web traffic
+  | Install Zscaler SSL certificate | On
+  | Install WFP driver | On
+  | Windows driver selection | Packet Filter-Based
+  | Block unreachable domains traffic | On
+  | Drop IPv6 in dual stack | On
+  | Enable anti-tampering | On
+  | Override WPAD | On
+  | Restart WinHTTP service | On
+  | Log file size | 100 MB
+  | Captive portal detection | On. Web security disabled for 10 minutes on detection
+  | Binding | Device group sg-dyn-dvc-cdg-participant-kiosk
+  | PAC file | Hosted PAC file as supplied. The Domain field is not required
+Not created for this fleet: the Entra user group apm-js-kiosk-users-internet, the Zscaler enterprise application, SAML single sign-on, SCIM provisioning and the identity provider. All four depend on a user identity this fleet does not have.
+<Heading2> 12.5 Microsoft 365 destinations
+Three independent layers keep corporate services off the device. Each acts alone, so removing any one leaves the other two in place.
+[TABLE 4 rows]
+  | Layer | Control | What it stops
+  | Identity | CA-107 (4.2 Conditional Access) | Any Entra-federated identity authenticating from this hardware
+  | Device | Edge URL blocklist and allowlist (10.3 Microsoft Edge configuration) | Navigation to the corporate service surface, before any credential is entered
+  | Network | Zscaler URL filtering | The same destinations at the proxy, covering any non-Edge client
+[TABLE 4 rows]
+  | Disposition | Destinations | Reason
+  | Blocked | login.microsoftonline.com, www.office.com, portal.office.com, admin.microsoft.com, outlook.office.com, outlook.office365.com, teams.microsoft.com, *.sharepoint.com, myapps.microsoft.com, myaccount.microsoft.com, portal.azure.com | The Microsoft 365 and Azure service surface
+  | Allowed | outlook.live.com, login.live.com, mail.google.com, accounts.google.com, and other Zscaler Webmail-category destinations | Personal webmail, the participant's document transfer path
+  | Allowed | create.microsoft.com | Resume and cover letter templates, no sign-in required
+The full Zscaler allowlist as deployed is held in config/APM_Participant_Kiosk_Zscaler_Allowlist_V1.0.xlsx, and the Edge managed favourites in config/managed-favorites.json.
+<Heading1> 13. Patching and Content Delivery
+<Heading2> 13.1 Windows Autopatch
+The fleet is managed by Windows Autopatch, which owns quality, feature, driver, firmware and Edge updates and maintains its own underlying Intune policies. No custom update-ring policy exists for this fleet.
+[TABLE 3 rows]
+  | Autopatch group | Membership | Deferral | Purpose
+  | Test | sg-stc-dvc-cdg-participant-kiosk-ring1 | 0 days | Validates each release before the fleet
+  | Broad | sg-dyn-dvc-cdg-participant-kiosk-autopilot, excluding the Test group | Autopatch-scheduled, staged after Test | Fleet rollout
+The First and Fast groups carry no assignment. sg-dyn-dvc-cdg-participant-kiosk is nested in the Windows Autopatch Device Registration group.
+[TABLE 8 rows]
+  | Setting | Value | Purpose
+  | Automatic update behaviour | Auto install and restart at a scheduled time | Independent of the day Autopatch delivered the update
+  | Scheduled install day | Every day | Catches the next overnight window
+  | Scheduled install time | 03:00 local | Restarts outside business hours
+  | Restart checks | Allow | Safety checks before restart
+  | Option to pause Windows updates | Disable | No end user to defer
+  | Option to check for Windows updates | Disable | Hides the update interface
+  | Change notification update level | Turn off all notifications | Suppresses update messages on the public display
+<Heading2> 13.2 Delivery Optimization
+Object: CDG-W11-CFG-Delivery Optimization-P-1.0, assigned to sg-dyn-dvc-cdg-participant-kiosk. Not managed by Autopatch.
+[TABLE 12 rows]
+  | Setting | Value | Purpose
+  | Download mode (DODownloadMode) | 1, LAN | Peers within the same subnet
+  | Restrict peer selection (DORestrictPeerSelectionBy) | 1, subnet mask | Makes the boundary explicit
+  | Delay background download from HTTP | 60 seconds | Waits for a peer before falling back to Microsoft
+  | Minimum background QoS | 500 KB/s | Makes Windows prefer the peer on a slow link
+  | Maximum background bandwidth | 40% | Caps patch traffic at about 8 Mbps of the 20 Mbps link
+  | Business-hours limit | 20% between 08:00 and 18:00 local | Tightens the cap while a site is open
+  | Maximum foreground bandwidth | 80% | On-demand installs finish quickly
+  | Minimum file size to cache | 10 MB | Includes Edge and Defender platform updates in peering
+  | Maximum cache age | 259200 seconds, 3 days | Matches the quality-update deferral
+  | Absolute maximum cache size | 10 GB | Bounded on the 128 GB SSD
+  | Cache server host (DOCacheHost) | Not configured | No Connected Cache is deployed
+Peering depends on two network settings outside Intune, both in 12.2 Wi-Fi and certificates: wireless client isolation off, and TCP 7680 permitted within the VLAN.
+<Heading2> 13.3 Application patching
+LibreOffice is published by Patch My PC as a superseding Win32 application, Ring 1 first and the fleet three days later. TeamViewer and Zscaler are controlled changes. A TeamViewer version change is also an App Control policy change (11. Application Control).
+<Heading1> 14. Monitoring, Logging and Alerting
+[TABLE 6 rows]
+  | Platform | What is monitored | Alerting
+  | Microsoft Intune | Device compliance state, profile success and failure, application install state, Autopilot enrolment outcomes | Any Assigned Access profile failure alerts to Digital Operations
+  | Microsoft Defender for Endpoint | Device alerts, ASR events, removable-media events, software inventory, vulnerability findings | Medium severity and above alerts to APM Cyber Security
+  | Microsoft Entra ID | Device authentication and compliance events, and any sign-in blocked by CA-107 | A blocked corporate sign-in from a kiosk alerts to APM Cyber Security
+  | Windows LAPS | Password retrieval events in the Entra audit log | Reported monthly to Digital Operations
+  | Device remediations | The single status line each detection writes, through Intune remediation reporting. PKIDLE and PKCLEAN lines name the exact item that drifted; the session account detection names the account and the state it failed on | Repeated drift on the same device, or any run reporting ERROR, alerts to Digital Operations
+All sources export to Microsoft Sentinel: Intune device and compliance events, Defender for Endpoint alerts and inventory, Entra ID device authentication and blocked sign-ins, Windows LAPS retrieval events, the Windows security log, TeamViewer connection reports and Zscaler web activity. Retention is approximately 180 days under existing APM policy.
+An Assigned Access activation failure is the one fault that is invisible from the console today. Raising an MDM alert on it is an open item in 18. Known Constraints and Open Items.
+<Heading1> 15. Exclusions From Estate Configuration
+This fleet is a Windows 11 Enterprise endpoint governed by the APM Windows SOE Hardening Standard V3.0, and inherits it except where recorded below. Every exclusion is an assignment exclusion of sg-dyn-dvc-cdg-participant-kiosk from an estate object, so no estate policy is edited for this fleet.
+<Heading2> 15.1 Assignment exclusions
+[TABLE 13 rows]
+  | Estate object | Mechanism | State | Reason
+  | APM-WIN-CFG-WiFi (APM-WLAN)-P-1.0, APM-WIN-CFG-SCEP Device Cert-P-1.0, Staff-Win10-AOVPN (Device Tunnel) (AU/SG), Staff-Win10-AOVPN (User Tunnel) (AU/SG) v2, Staff-Win10-Certificate (Intermediate) v2, Staff-Win10-Certificate (Root), Staff-Win10-Certificate v2 (Device), Staff-Win10-Certificate v2 (User) | Assignment exclusion | Applied | The fleet uses its own SSID, SCEP profile and Wi-Fi profile (12.2 Wi-Fi and certificates). The two Client-Win10-Certificate profiles are not in this list: the kiosk group was added to those (7. Device Configuration Profiles)
+  | APM-W11-SEC-Edge Baseline-P-1.2 | Assignment exclusion | Applied | Replaced by CDG-W11-SEC-Edge Hardening-P-1.0 (10.3 Microsoft Edge configuration)
+  | Staff-Windows-Compliance-Policy | Assignment exclusion | Applied | Replaced by CDG-W11-COM-Participant Kiosk-P-1.0 (6. Compliance Policy)
+  | APM-WIN-SEC-USB Baseline-P-1.0 | Assignment exclusion | Applied | Replaced by CDG-W11-SEC-USB Exception-P-1.0 (15.2 Removable media, excluded controls and compensating controls)
+  | APM-WIN-SEC-ACfB Audit Baseline-P-1.0, APM-WIN-SEC-ACfB Enforced Baseline-P-1.0 | Membership of the exclusion policy APM-W11-SEC-ACfB Exclusion-P | Applied | The fleet runs a duplicate of the enforced baseline plus a supplemental policy instead (11. Application Control). It is excluded from the estate baseline, not from App Control
+  | Corporate PowerShell platform scripts and remediations | Assignment exclusion | Deferred | Not applied. Judged not required during testing, to be reviewed before rollout. Open item 15 in 18. Known Constraints and Open Items
+  | Any profile setting a fixed time zone (ConfigureTimeZone) | Not assigned | Applied | A fixed time zone and automatic time zone are two controls writing the same field. This fleet uses automatic time zone (9.1.4 Conflicts the detection names but does not fix)
+  | Any profile disabling location (DisableLocation, DisableWindowsLocationProvider, LetAppsAccessLocation = Force Deny) | Not assigned, or assignment exclusion where an estate profile sets them | Applied | Automatic time zone is derived from network location, so disabling location fixes every kiosk on its fallback zone (9.1.4 Conflicts the detection names but does not fix)
+  | Any profile setting PreferredAadTenantDomainName | Assignment exclusion | Applied | Named by Microsoft as preventing automatic sign-in
+  | Corporate password and DeviceLock policy settings | Assignment exclusion | Applied | A device password policy disables automatic logon by design
+  | Logon banner policy (LegalNoticeCaption, LegalNoticeText) | Assignment exclusion | Applied | A logon banner disables automatic logon. This exclusion additionally needs a variation against the SOE Hardening Standard, control SOE-07
+  | Corporate device-management applications and Company Portal | Assignment exclusion | Applied | No user identity to enrol or authenticate
+The last three exist for one reason: each disables automatic logon on its own. The detection script in 8.1 Session account, automatic logon and Assigned Access reports all three by name.
+Two estate objects are handled without an exclusion. The two tenant Conditional Access grant policies are overridden by CA-107's block (4.2 Conditional Access). The removable-drive settings of APM-W11-SEC-Bitlocker-P-1.1 were to be overridden by a higher-priority conflicting profile, which could not be built as specified (15.2 Removable media, excluded controls and compensating controls).
+<Heading2> 15.2 Removable media, excluded controls and compensating controls
+[TABLE 4 rows]
+  | Control excluded | Standard | This fleet | Compensating controls
+  | All Removable Storage classes: Deny all access | Enabled | Not enabled | AutoPlay and AutoRun disabled on all drives, Defender scan removable drives enabled, ASR rule blocking untrusted and unsigned processes from USB enforced, App Control enforced with script enforcement, Assigned Access scopes File Explorer with no shell, command prompt or task manager
+  | Removable Disks: Deny write access | Enabled | Disabled | As above. The device holds no corporate data
+  | Write access to removable data drive not protected by BitLocker | Block | Not configured | Participants bring personal, unencrypted USB drives, and the data written is the participant's own document
+Two fleet profiles deliver these exclusions by assignment.
+[TABLE 5 rows]
+  | CDG-W11-SEC-USB Exception-P-1.0 | Value
+  | Removable Disk Deny Write Access | Disable
+  | Removable Disk Deny Write Access (User) | Disable
+  | Deny write access to removable drives not protected by BitLocker | Disabled
+  | Control use of BitLocker on removable drives | Disabled
+[TABLE 2 rows]
+  | CDG-W11-SEC-Bitlocker Exception-P-1.0 | Value
+  | Write access to removable data drive not protected by BitLocker | Intended: Not configured, at higher priority than the estate baseline. The setting could not be found in the Settings catalog and is not set. Open item 16 in 18. Known Constraints and Open Items
+The estate baseline APM-W11-SEC-Bitlocker-P-1.1 therefore still applies its removable-drive setting to this fleet. Whether a participant can write to an unencrypted USB drive today is decided by that estate policy, not by this profile, and the four settings in CDG-W11-SEC-USB Exception-P-1.0 above are what is actually in force.
+The fixed drive is encrypted. BitLocker XTS-AES 256-bit applies under the inherited estate policy, and the compliance policy in 6. Compliance Policy requires it.
+<Heading1> 16. Routine Maintenance
+Every recurring task the solution needs, with the owner who performs it. A task with no named owner does not happen.
+[TABLE 20 rows]
+  | Task | Frequency | Owner | What to do
+  | Review the four remediation detection lines | Weekly | Digital Operations | Intune admin centre &gt; Devices &gt; Scripts and remediations. Each detection writes one line: PKIDLE OK/DRIFT/ERROR, PKCLEAN OK/DRIFT/ERROR, the session account state, and COMPLIANT or NOT COMPLIANT for time and time zone. A DRIFT or NOT COMPLIANT line names the exact item, so no device needs to be visited to find out what is wrong
+  | Check the resolved time zone across the fleet | Monthly | Digital Operations | The time and time zone detection reports the resolved zone and time source per device (9.1.4 Conflicts the detection names but does not fix). A device still on AUS Eastern Standard Time at a Perth or Adelaide site has not resolved its location, and a device reporting Local CMOS Clock is running free
+  | Review device compliance and profile assignment failures | Weekly | Digital Operations | Intune admin centre. A device failing the Assigned Access remediation is not running a restricted session and must be treated as an incident
+  | Review Defender for Endpoint alerts for the fleet | Weekly | APM Cyber Security | Filter on the APM-PK- prefix. Removable-media and ASR events are expected traffic on this fleet, so review for pattern rather than for volume
+  | Confirm sign-ins blocked by CA-107 | Monthly | APM Cyber Security | Entra sign-in logs. A blocked sign-in is the control working. A corporate device appearing in the results means the device filter is mis-scoped, which is a rollback trigger
+  | Report LAPS password retrievals | Monthly | Digital Operations | Entra audit log. Each retrieval is an administrative access to a device and should be attributable to a support ticket
+  | Reconcile the fleet count against the dynamic group | Monthly | Digital Operations | Devices whose name lacks the APM-PK- prefix receive no configuration. The count in the group is the count of managed devices, not the count of shipped devices
+  | Validate an Autopatch release on Ring 1 | Each release | Digital Operations | Confirm the Test group has taken the release and the restricted session, application set and session purge still behave, before the Broad group takes it
+  | Pilot a LibreOffice release on Ring 1 | Each release | APM Solution Engineer | Patch My PC publishes a superseding application. Confirm Writer, Calc and Impress all launch on Ring 1 before the fleet takes it, because Assigned Access generates one rule per listed file
+  | Confirm the Meraki default-deny ruleset is enforced | Quarterly, and at every new site | APM Network Management | Confirm the ruleset is active and enforced on the dashboard, not merely configured
+  | Review the Zscaler allowlist and the Edge managed favourites | Quarterly | APM Solution Engineer | Confirm the destination lists in 12.5 Microsoft 365 destinations still match the deployed configuration, and that no Microsoft 365 destination has become reachable
+  | Review the Windows Update and Delivery Optimization endpoint list | Quarterly | APM Network Management | Microsoft republishes this set. A retired endpoint on the allow-list is harmless, a new one that is missing stops patching
+  | Confirm UDP 123 and the location endpoint are still permitted | Quarterly, and at every new site | APM Network Management | The two rules in 12.3 Site egress are the only non-443 and non-Microsoft-service rules in the ruleset, which makes them the two most likely to be removed by a ruleset tidy-up. Losing UDP 123 stops the clock, losing the location endpoint fixes every device on its fallback zone
+  | Check EAP-TLS device certificate expiry | Quarterly | APM Solution Engineer | Intune certificate reporting. There is no rotation mechanism in this solution, so an approaching expiry is a project, not a task
+  | Check the code-signing certificate expiry | Quarterly | APM Cyber Security | See 17. Change Control. Expiry stops the device scripts running
+  | Reconcile the kiosk base policy against the estate baseline | Half-yearly | APM Cyber Security | APM-WIN-SEC-ACfB Enforced Baseline_ES Kiosks-P-1.0 is a duplicate, so an estate baseline change does not reach it. Compare the two and decide deliberately whether the kiosk copy takes the change (11. Application Control)
+  | Confirm the kiosk group is still a member of APM-W11-SEC-ACfB Exclusion-P | Half-yearly | APM Cyber Security | This membership is the only thing keeping the estate enforced baseline off the fleet (11. Application Control). Confirm the group resolves and that its device count matches the fleet count
+  | Confirm a rollback position exists for the App Control base policy | Half-yearly | APM Cyber Security | The escrowed audit-mode policy was the rollback for the superseded fleet policy (11.3 Superseded configuration). Confirm what the rollback is for the current base policy, and that it is retrievable
+  | Review this document against the consoles | Half-yearly, and at every configuration change | APM Solution Engineer | Per 1.4 Keeping this document current
+<Heading1> 17. Change Control
+Every object in this document is under normal change control. Five carry a consequence that is not obvious from the object itself, and each needs a change record naming that consequence before it is altered.
+[TABLE 8 rows]
+  | Item | Change | Consequence
+  | Autopilot deployment profile name | Rename | CA-107's device filter matches it as a literal string and silently stops matching. The fleet then satisfies both corporate grant policies with nothing blocking it (4.2 Conditional Access)
+  | Device name prefix APM-PK- | Change to the name template | The production dynamic group stops matching, and the device receives no configuration profile, application or compliance policy at all (4.1 Groups)
+  | APM code-signing certificate | Expiry, renewal or revocation | It signs the device scripts. Its role in App Control policy signing changed with the base policy in 11. Application Control and is open item 12 in 18. Known Constraints and Open Items
+  | Supplemental App Control policy | Any change to application rules | This is where every fleet application change is made (11. Application Control). A rule change can stop a signed binary the build depends on, so validate on Ring 1 before the fleet and confirm a rollback position first
+  | App Control base policy | Any change to rule options, or taking an estate baseline change | APM-WIN-SEC-ACfB Enforced Baseline_ES Kiosks-P-1.0 is a duplicate of an estate object, so a change here diverges the two copies invisibly. Script enforcement and unsigned-policy acceptance are cited as controls elsewhere in this document (11.1 Rule options)
+  | Kiosk group membership of APM-W11-SEC-ACfB Exclusion-P | Removal, or a change to how that policy resolves its members | The estate enforced baseline returns to every kiosk and intersects with the fleet base policy, narrowing the effective allow-list (11. Application Control). This is the single object that keeps the two App Control models apart
+  | TeamViewer version | Version upgrade | A version change is a signer change, so it is a change to the supplemental App Control policy as well as an application change (11.2 Applications the fleet requires, 13.3 Application patching)
+Four categories of policy may not be assigned to this fleet, because each disables automatic logon on its own: a logon banner, PreferredAadTenantDomainName, a device password or DeviceLock policy, and any corporate policy that requires an interactive user sign-in. Assigning one presents as a device sitting at the sign-in screen with nothing in any log to explain it (15.1 Assignment exclusions).
+Every item the four remediation pairs assert reverts within 24 hours of being changed by hand. That is the intended behaviour, and it means a manual fix applied to a single device is not a change: it is undone at the next check-in. Changing any of those values for the fleet means changing the script that asserts it, re-signing it and republishing the remediation, which is a change record in its own right. The items in scope are listed in 8.2 Inactivity restart, 8.3 Session cleanup and 9.1 Time and time zone remediation.
+Rollback positions held. CA-107 reverts to Report-only, which restores access within one authentication cycle while preserving the logging needed to diagnose the filter. Boot Audit On Failure is enabled on the estate baseline the kiosk base policy was duplicated from, so an App Control policy fault degrades to audit rather than blocking boot. The rollback position for the current App Control base policy is open item 13 in 18. Known Constraints and Open Items.
+<Heading1> 18. Known Constraints and Open Items
+Each row is a fact about the configuration as it stands, with the role that owns closing it.
+[TABLE 19 rows]
+  | # | Item | Owner | Effect while open
+  | 1 | Two configuration profiles in 7. Device Configuration Profiles have no object name: the wallpaper custom profile and the LibreOffice administrative template | APM Solution Engineer | An engineer cannot find the object a row describes without searching the console
+  | 2 | CDG-W11-SEC-Logon Lockdown-P-1.0 admits any local account, not only the session account. Allow Local Log On takes a static value list with no wildcard support, so *S-1-5-113 is used in place of the account name (7.1 Logon lockdown) | APM Cyber Security | On this fleet the only local accounts are the session account and APM-PKAdmin, so the practical effect is nil. Narrowing it to the session account alone needs the user right set per device by script, using LsaAddAccountRights
+  | 3 | No MDM alert is raised when Assigned Access fails to activate | Digital Transformation and Architecture | A kiosk that never enters its restricted session is invisible until someone visits the site. The StatusConfiguration node set to OnWithAlerts would carry status code 2 (AppNotFound) or 3 (ActivationFailed). The session account detection reports the same condition daily, one check-in behind
+  | 4 | No power management profile is assigned. The display timeout is asserted as 0 by the idle restart remediation (8.2 Inactivity restart), but sleep and hard disk timeouts are not | Digital Operations | A device that sleeps looks broken to the participant standing at it. Nothing in the current object set prevents sleep
+  | 5 | Alt+F4, Alt+Tab, Alt+Shift+Tab and Ctrl+Alt+Del are not blocked in the restricted session | APM Cyber Security | Keyboard Filter is not configured
+  | 6 | Default Windows 11 taskbar pins are not suppressed | Digital Transformation and Architecture | The taskbar is shown in the Assigned Access configuration (8.1.1 Application allow-list in the restricted session), and taskbar pinning is not supported in a restricted user experience, so it carries the Windows 11 defaults
+  | 7 | No EAP-TLS certificate rotation mechanism exists | APM Solution Engineer | Validity is set to outlast the device's operational life. Expiry is monitored, and replacement is a project
+  | 8 | The logon banner exclusion needs a documented variation against the SOE Hardening Standard, control SOE-07 | APM Cyber Security | The banner is an ASD ISM control, and the exclusion is currently held by assignment alone
+  | 9 | The four time and time zone script hashes in 20. Script Register are of the unsigned form of those files | APM Solution Engineer | All ten scripts are now signed. Signing changes the file, so the four hashes recorded for the time and time zone scripts no longer match the files that will be uploaded. Recompute them from the signed files and update 20. Script Register before the next upload, or the verification step in 20. Script Register fails on a correct file
+  | 10 | The egress requirements in 9.3 Egress requirements are the documented endpoints, not an observed deny list | APM Network Management | The readiness tool in 9.4 Readiness verification exercises both endpoints so the Palo Alto and Zscaler logs name what is actually denied. Run it on a pilot device and add whatever the logs name, rather than adding FQDNs by inference
+  | 11 | No pilot device has yet confirmed that network location resolves a correct zone from an APM site | APM Solution Engineer | Location resolution depends on the endpoint in 9.3 Egress requirements being reachable and not being TLS-inspected in a way lfsvc rejects. Until one device is confirmed, automatic time zone is configuration without evidence
+  | 12 | The rule options of APM-WIN-SEC-ACfB Enforced Baseline_ES Kiosks-P-1.0 have not been read from the console since it was duplicated | APM Cyber Security | Two of them are cited as controls over this fleet: script enforcement, and whether unsigned policies are accepted (11.1 Rule options). The estate baseline it was copied from has script control off and accepts unsigned policies, which is the opposite of both. Until they are read, neither can be cited as an RFFR control over this fleet
+  | 13 | The disposition of the superseded App Control objects is not recorded: CDG-W11-SEC-AppControl Enforced-P-1.0, CDG-W11-SEC-AppControl Audit-T-1.0, and the escrowed rollback policy version 1.0.0.1 (11.3 Superseded configuration) | APM Cyber Security | A deployed enforced policy that is no longer the intended one is still evaluated on any device that received it. Two enforced policies on one device intersect: a binary must satisfy both. This also decides whether Ring 1 still holds an audit-mode policy, and what the rollback position is for the current base policy
+  | 14 | The Assigned Access configuration is written by two objects: the custom profile CDG-W11-CFG-Assigned Access XML-P-1.0 and the session account remediation (8.1 Session account, automatic logon and Assigned Access) | APM Solution Engineer | Both write ./Vendor/MSFT/AssignedAccess/Configuration and the last writer wins. Naming the account the same as the device does not resolve this: the name still differs on every device, so the profile's static XML still cannot name it. One of the two must own the node
+  | 15 | The exclusion of corporate PowerShell platform scripts and remediations is not applied (15.1 Assignment exclusions) | APM Cyber Security | Estate scripts written for a signed-in staff user run on a fleet with no user identity. Judged not required during testing; it has to be decided before rollout, not after
+  | 16 | The setting CDG-W11-SEC-Bitlocker Exception-P-1.0 was built to hold could not be found in the Settings catalog, so the profile does not set it (15.2 Removable media, excluded controls and compensating controls) | APM Solution Engineer | The estate baseline's removable-drive BitLocker setting still applies to this fleet. The compensating controls in 15.2 Removable media, excluded controls and compensating controls are unaffected, but the excluded control is not actually excluded, and the RFFR variation recorded against it does not match what is configured
+  | 17 | Two profiles carry the -D- environment suffix on a production fleet: CDG-WIN-CFG-Device SCEP Cert-D-1.0 and CDG-WIN-CFG-Kiosk Wi-Fi(APM-KIOSK)-D-1.0 (7. Device Configuration Profiles) | APM Solution Engineer | Both are assigned to the production fleet and deliver the network trust chain. A future tidy-up that treats -D- objects as test artefacts and deletes them takes every kiosk off the network
+  | 18 | sg-stc-dvc-cdg-participant-kiosk-ring1 may not be needed now that patching is delivered by Windows Autopatch (13.1 Windows Autopatch) | Digital Operations | The group is still the Autopatch Test group and the application piloting ring (4.1 Groups). Removing it removes the only place a release is validated before the fleet takes it
+<Heading1> 19. Reference Documents
+[TABLE 9 rows]
+  | Document | Version | What it holds that this document does not
+  | ES Participant Kiosk Design Definition | V1.1 | What is being built and why, at concept level
+  | ES Participant Kiosk Detail Design Document | V1.2 | The architecture, the Decision Register, the risk register and the requirement traceability
+  | ES Participant Kiosk Technical Configuration Document | V1.8 | The build specification: every click path, the phased build sequence and the full script appendices
+  | Participant Kiosk Conditional Access as-built record | V1.0 | CA-107's six build steps, five verification tests, the as-built record table and the policy by policy tenant disposition
+  | CN-PK-01 Participant Kiosk Build Procedure | V1.0 | The build facility procedure: nine stages, every keystroke, seven acceptance tests and a per-device build record sheet
+  | APM-PK-02 Participant Kiosk Deployment Guide | V1.0 | The APM bench deployment procedure: ten per-device steps, the bench loop, the tick sheet and the fault table
+  | APM Windows SOE Hardening Standard | V3.0 | Every control this fleet inherits without change
+  | Identity and IT Access Management Standard | current | The password length and complexity requirements the LAPS policy meets
+<Heading1> 20. Script Register
+The ten scripts that deliver the four remediation pairs in 8. The Participant Session and 9. Time and Time Zone, the one platform script, and the pilot verification tool. Every configuration value they assert is recorded in 8.1 Session account, automatic logon and Assigned Access, 8.2 Inactivity restart, 8.3 Session cleanup and 9. Time and Time Zone; this section identifies the exact artefact that asserts it.
+All ten are held in the design's config folder, which is the authoritative copy. The scripts are uploaded to Intune from there and are not reproduced as text in this document: the signed file is the artefact, and a transcribed copy of an artefact is a second source of truth.
+[TABLE 11 rows]
+  | File | Object | Lines | Signed | SHA-256
+  | Detect-KioskSessionAccount.ps1 | Session account | 35 | Yes | E9490740A6AAF8A7B745BA4EAEFEAF34C59937353B9417A949B01455AE443DEB
+  | Remediate-KioskSessionAccount.ps1 | Session account | 178 | Yes | D47CFC5E75964927E476028779F2A4B57C7242EE34575677C1230A8BD287337A
+  | Detect-KioskIdleRestart.ps1 | Idle restart 4.0 | 197 | Yes | AF8A6962E195C78EE185ED8744E3985FD12DE9F9DDDE12BBD2F96B10D96B8A53
+  | Remediate-KioskIdleRestart.ps1 | Idle restart 4.0 | 385 | Yes | 7EBB7DDAC5D04BEE8A9571468A60BECB9BD7C223C53A2D32C7F2D3D8DBE814E5
+  | Detect-KioskSessionCleanup.ps1 | Session cleanup 2.0 | 191 | Yes | 3B42C19D31B76A479CFD8704171345A0BB2C886B802FA66586A0398FB211CE56
+  | Remediate-KioskSessionCleanup.ps1 | Session cleanup 2.0 | 731 | Yes | 2B80C2E5EDB790E93E5CEC004F4E0A989ABF92B2B125B42A9450476C5EC19166
+  | DetectTimeAndTimeZone.ps1 | Time and time zone | 164 | Yes | 81D905167D70116C8936E913BCB847AD79D736177BBFB2DFB8C5B44E3094856D
+  | RemediateTimeAndTimeZone.ps1 | Time and time zone | 202 | Yes | B1833570D8B4CDEC8DCD9235390A61429F3A77D0D0BC9BC0E0C2B66C49943E27
+  | SetFallbackTimeZone.ps1 | Fallback time zone | 57 | Yes | C14AC13A4EFD17FC151C45762E10423CD15E1B062EFDAA38BAEF348390BA360F
+  | TestTimeAndTimeZoneReadiness.ps1 | Readiness verification | 147 | Yes | DA2EC367453F980249F85F752D9E4906712DC627E16128E43F6D658BFA6CDBB9
+All ten scripts carry the APM code-signing certificate (17. Change Control). The hash recorded for each of the six session, idle restart and cleanup scripts is the hash of the signed file. The four time and time zone hashes above are of the unsigned form of those files, taken before they were signed: signing changes the file, so they must be recomputed from the signed files before the next upload (18. Known Constraints and Open Items, open item 9).
+Verify a file with Get-FileHash against the value above before uploading it. A hash that does not match means the file is not the one this document records, and it must not be uploaded.
+<Heading2> 20.1 Payloads the remediations write to the device
+Three payload files are written to the device by the remediations rather than uploaded to Intune. Each is pinned by hash inside the script that writes it, so a modified payload on a device is reported as drift and replaced.
+[TABLE 4 rows]
+  | Payload | Written by | Pinned SHA-256
+  | C:\APM\PK\Restart-KioskOnLock.bat | Remediate-KioskIdleRestart.ps1 | C92628A2824A4E4F7F4E35F111763DC7E7ED54D7E505785A4B740D7046BA1172
+  | Clear-KioskSessionData.bat, staged in four locations (8.3.1 Where the payloads are staged) | Remediate-KioskSessionCleanup.ps1 | E4AEEDCE952F516491A7AA503EB4E72172C098139AE9A684E960F3E06D809F4B
+  | Clear-KioskUserLogon.bat | Remediate-KioskSessionCleanup.ps1 | 8C50173DAE9048D3C9E5418A725403BD5569D54B7AACF767EC81839970731C7B
+<Heading2> 20.2 Superseded scripts
+The following are held in the config folder as the record of the superseded Win32 application approach. None is signed, packaged or assigned, and the idle restart remediation actively deletes the two Watch-KioskIdle files from any device that still carries them (8.2 Inactivity restart).
+[TABLE 4 rows]
+  | File | Superseded by
+  | Install-KioskIdleWatchdog.ps1, Install-KioskIdleWatchdog.bat, Watch-KioskIdle.ps1, Watch-KioskIdle.bat | The idle restart remediation pair (8.2 Inactivity restart)
+  | Install-KioskSessionCleanup.ps1, Clear-KioskSessionData.ps1 | The session cleanup remediation pair (8.3 Session cleanup)
+  | Install-KioskSessionPurge.ps1, Invoke-KioskSessionPurge.ps1 | CDG-W11-REM-Profile Purge-P-1.0, which is not built

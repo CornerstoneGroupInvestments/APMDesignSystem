@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../styles.css">
+<script src="../../templates/detailed-design/authoring/qa-checks.js"></script>
+<style>body{margin:0;background:#EDEFF4}.dgm-fig{margin:0 auto 36px}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px}</style>
+</head><body>
+
+<!-- F1 · BUSINESS CAPABILITY IMPACT (§3.2) -->
+<div class="dgm-fig" id="f1" style="width:1520px;height:740px">
+<div class="dgm-cap"><span class="dgm-tag">FIGURE 1</span><b>Business Reference Architecture - Capability Impact</b><span class="dgm-ref">§3.2</span></div>
+<div class="dgm-stage" style="height:678px">
+<div class="dgm-zone" style="left:24px;top:96px;width:718px;height:420px"><span>CAPABILITIES DIRECTLY UPLIFTED</span></div>
+<div class="dgm-heat is-high" style="left:52px;top:140px;width:200px;height:96px"><h5>Identity &amp; Access Management</h5><p>Phishing-resistant authenticator becomes the privileged standard.</p></div>
+<div class="dgm-heat is-high" style="left:272px;top:140px;width:200px;height:96px"><h5>Cyber Security Operations</h5><p>New detections, alerting and audit evidence.</p></div>
+<div class="dgm-heat is-high" style="left:492px;top:140px;width:222px;height:96px"><h5>Privileged Access Management</h5><p>JIT elevation bound to a hardware key.</p></div>
+<div class="dgm-heat is-medium" style="left:52px;top:256px;width:200px;height:96px"><h5>Service Desk &amp; Support</h5><p>Issuance, verification, lost-key handling.</p></div>
+<div class="dgm-heat is-medium" style="left:272px;top:256px;width:200px;height:96px"><h5>End User Compute</h5><p>Endpoint sign-in and AVD session settings.</p></div>
+<div class="dgm-heat is-medium" style="left:492px;top:256px;width:222px;height:96px"><h5>Asset &amp; Licence Management</h5><p>Key register, procurement, replacement.</p></div>
+<div class="dgm-heat is-low" style="left:52px;top:372px;width:200px;height:88px"><h5>Records &amp; Compliance</h5><p>Evidence for RFFR / ISO 27001.</p></div>
+<div class="dgm-heat is-low" style="left:272px;top:372px;width:200px;height:88px"><h5>Procurement</h5><p>FIPS stock sourcing via reseller.</p></div>
+<div class="dgm-heat is-low" style="left:492px;top:372px;width:222px;height:88px"><h5>People &amp; Onboarding</h5><p>Joiner / leaver key steps.</p></div>
+<div class="dgm-zone is-accent" style="left:770px;top:96px;width:334px;height:420px"><span>VALUE STREAM</span></div>
+<div class="dgm-box is-accent" style="left:794px;top:136px;width:286px;height:78px"><h4>Grant privileged access</h4><p>Verified issuance, then registration.</p></div>
+<div class="dgm-box is-accent" style="left:794px;top:230px;width:286px;height:78px"><h4>Authenticate</h4><p>PIN + touch, unphishable.</p></div>
+<div class="dgm-box is-accent" style="left:794px;top:324px;width:286px;height:78px"><h4>Elevate and act</h4><p>JIT role, time-boxed, audited.</p></div>
+<div class="dgm-box is-accent" style="left:794px;top:418px;width:286px;height:78px"><h4>Revoke</h4><p>Immediate and authoritative.</p></div>
+<div class="dgm-zone" style="left:1132px;top:96px;width:364px;height:420px"><span>TARGET BUSINESS OUTCOMES</span></div>
+<div class="dgm-box is-navy" style="left:1156px;top:136px;width:316px;height:86px"><h4>Credential theft removed</h4><p>No password exists to phish, replay or steal.</p></div>
+<div class="dgm-box is-navy" style="left:1156px;top:238px;width:316px;height:86px"><h4>Auditable privilege</h4><p>Every elevation attributable and time-bounded.</p></div>
+<div class="dgm-box is-navy" style="left:1156px;top:340px;width:316px;height:86px"><h4>RFFR evidence</h4><p>Essential Eight MFA and admin-restriction uplift.</p></div>
+<div class="dgm-box" style="left:1156px;top:442px;width:316px;height:74px"><h4>Workforce flexibility</h4><p>Safe privileged work from any device.</p></div>
+<div class="dgm-key" style="left:52px;top:552px"><span><em style="background:var(--brand-primary)"></em>High - design change required</span><span><em style="background:var(--apm-orange-200)"></em>Medium - process change</span><span><em style="background:var(--neutral-100);border:1px solid var(--border-default)"></em>Low - awareness only</span></div>
+<p class="dgm-note" style="left:52px;top:596px;width:1420px">Capabilities in orange require design and operating-model change; medium capabilities require process and runbook updates only.</p>
+</div>
+</div>
+
+<!-- F2 · SYSTEM CONTEXT (§4.1) -->
+<div class="dgm-fig" id="f2" style="width:1520px;height:820px">
+<div class="dgm-cap"><span class="dgm-tag">FIGURE 2</span><b>System Context - YubiKey Authenticated Privileged Access</b><span class="dgm-ref">§4.1</span></div>
+<div class="dgm-stage" style="height:758px">
+<svg class="dgm-wires" viewBox="0 0 1520 758">
+<defs><marker id="a2" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="o2" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="298" y1="220" x2="348" y2="220" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a2)"></line>
+<line x1="298" y1="365" x2="580" y2="365" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a2)"></line>
+<line x1="298" y1="462" x2="344" y2="457" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a2)"></line>
+<line x1="298" y1="600" x2="548" y2="600" stroke="#1F2D58" stroke-width="2.4"></line>
+<line x1="548" y1="600" x2="548" y2="200" stroke="#1F2D58" stroke-width="2.4"></line>
+<line x1="548" y1="200" x2="580" y2="200" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a2)"></line>
+<line x1="962" y1="240" x2="1150" y2="200" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a2)"></line>
+<line x1="962" y1="330" x2="1150" y2="336" stroke="#F89728" stroke-width="2.6" marker-end="url(#o2)"></line>
+<line x1="962" y1="430" x2="1150" y2="500" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#a2)"></line>
+<line x1="1310" y1="404" x2="1310" y2="464" stroke="#F89728" stroke-width="2.6" marker-end="url(#o2)"></line>
+</svg>
+<div class="dgm-zone" style="left:24px;top:96px;width:512px;height:604px"><span>USERS &amp; ENDPOINTS</span></div>
+<div class="dgm-box is-accent" style="left:48px;top:144px;width:246px;height:112px"><h4>Privileged user - corporate</h4><p>Intune-managed Windows 11 or macOS, compliant.</p><div><span class="dgm-chip">USB-C</span><span class="dgm-chip">NFC</span></div></div>
+<div class="dgm-box is-accent" style="left:48px;top:274px;width:246px;height:112px"><h4>Privileged user - personal</h4><p>Unmanaged BYOD. No APM data at rest.</p><div><span class="dgm-chip">Windows App</span><span class="dgm-chip">Web</span></div></div>
+<div class="dgm-box is-navy" style="left:48px;top:406px;width:246px;height:118px"><h4>YubiKey 5C NFC FIPS</h4><p>FIPS 140-2 / 140-3 hardware passkey. PIN + touch.</p><div><span class="dgm-chip">FIDO2</span><span class="dgm-chip">AAL3</span></div></div>
+<div class="dgm-box is-soft" style="left:48px;top:544px;width:246px;height:112px"><h4>Service Desk</h4><p>Verifies identity, issues Temporary Access Pass.</p></div>
+<div class="dgm-box" style="left:352px;top:190px;width:176px;height:160px"><h4>Client software</h4><p>Windows App, AVD web client, Edge / Chrome / Safari.</p><div><span class="dgm-chip">CTAP2</span></div></div>
+<div class="dgm-box" style="left:352px;top:380px;width:176px;height:150px"><h4>Corporate lock screen</h4><p>Windows FIDO2 credential provider - no password.</p></div>
+<div class="dgm-zone is-boundary" style="left:560px;top:96px;width:402px;height:604px"><span>IDENTITY CONTROL PLANE</span></div>
+<div class="dgm-box is-navy" style="left:584px;top:144px;width:354px;height:130px"><h4>Microsoft Entra ID</h4><p>Passkey policy, attestation, AAGUID allow-list, token issuance.</p><div><span class="dgm-chip">Auth methods</span><span class="dgm-chip">TAP</span></div></div>
+<div class="dgm-box is-accent" style="left:584px;top:292px;width:354px;height:118px"><h4>Conditional Access</h4><p>Custom authentication strength - hardware key only. BYOD constrained to AVD.</p></div>
+<div class="dgm-box is-accent" style="left:584px;top:428px;width:354px;height:110px"><h4>Privileged Identity Management</h4><p>JIT elevation, approval for xy, full audit.</p></div>
+<div class="dgm-box" style="left:584px;top:556px;width:354px;height:98px"><h4>Microsoft Intune</h4><p>Device compliance, FIDO2 sign-in policy, session host config.</p></div>
+<div class="dgm-zone" style="left:986px;top:96px;width:510px;height:604px"><span>TARGET RESOURCES</span></div>
+<div class="dgm-box" style="left:1150px;top:144px;width:322px;height:112px"><h4>Admin portals</h4><p>Azure Portal, Entra and M365 admin centres, Nerdio Manager.</p></div>
+<div class="dgm-box is-accent" style="left:1150px;top:274px;width:322px;height:130px"><h4>Privileged AVD image (PAW)</h4><p>Hardened session host. No mail, Teams or browsing. Redirections disabled.</p></div>
+<div class="dgm-box is-navy" style="left:1150px;top:464px;width:322px;height:130px"><h4>Production systems</h4><p>Jump boxes, virtual machines, production subscriptions. Reached only from the PAW.</p></div>
+<div class="dgm-lbl" style="left:298px;top:166px">launch</div>
+<div class="dgm-lbl" style="left:298px;top:340px">FIDO2</div>
+<div class="dgm-lbl" style="left:306px;top:570px">TAP issue</div>
+<div class="dgm-lbl" style="left:294px;top:490px">CTAP2</div>
+<div class="dgm-lbl" style="left:968px;top:182px">token</div>
+<div class="dgm-lbl is-accent" style="left:968px;top:300px">brokered</div>
+<div class="dgm-lbl" style="left:968px;top:436px">policy</div>
+<div class="dgm-lbl is-accent" style="left:1326px;top:420px">zz / xy only</div>
+<div class="dgm-legend" style="left:48px;top:712px"><span><i></i>Authentication / control</span><span><i class="is-accent"></i>Authorised session</span><span><i class="is-dashed"></i>Policy &amp; provisioning</span></div>
+</div>
+</div>
+
+<!-- F3 · AUTHENTICATION SEQUENCE (§4.3) -->
+<div class="dgm-fig" id="f3" style="width:1520px;height:880px">
+<div class="dgm-cap"><span class="dgm-tag">FIGURE 3</span><b>Solution Interface - Authentication Sequence, Key to Production</b><span class="dgm-ref">§4.3</span></div>
+<div class="dgm-stage" style="height:818px">
+<svg class="dgm-wires" viewBox="0 0 1520 818">
+<defs><marker id="a3" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="o3" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="150" y1="164" x2="150" y2="774" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="430" y1="164" x2="430" y2="774" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="722" y1="164" x2="722" y2="774" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="1014" y1="164" x2="1014" y2="774" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="1330" y1="164" x2="1330" y2="774" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="430" y1="222" x2="722" y2="222" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a3)"></line>
+<line x1="722" y1="278" x2="430" y2="278" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#a3)"></line>
+<line x1="430" y1="334" x2="150" y2="334" stroke="#F89728" stroke-width="2.4" marker-end="url(#o3)"></line>
+<line x1="150" y1="390" x2="430" y2="390" stroke="#F89728" stroke-width="2.4" marker-end="url(#o3)"></line>
+<line x1="430" y1="446" x2="722" y2="446" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a3)"></line>
+<line x1="722" y1="502" x2="430" y2="502" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#a3)"></line>
+<line x1="430" y1="558" x2="1014" y2="558" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a3)"></line>
+<line x1="1014" y1="614" x2="1330" y2="614" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a3)"></line>
+<line x1="1330" y1="670" x2="430" y2="670" stroke="#F89728" stroke-width="2.4" marker-end="url(#o3)"></line>
+<line x1="430" y1="726" x2="150" y2="726" stroke="#F89728" stroke-width="2.4" marker-end="url(#o3)"></line>
+</svg>
+<div class="dgm-box is-navy is-centred" style="left:74px;top:96px;width:152px;height:58px"><h4>YubiKey</h4></div>
+<div class="dgm-box is-centred" style="left:354px;top:96px;width:152px;height:58px"><h4>Client device</h4></div>
+<div class="dgm-box is-navy is-centred" style="left:646px;top:96px;width:152px;height:58px"><h4>Entra ID</h4></div>
+<div class="dgm-box is-centred" style="left:938px;top:96px;width:152px;height:58px"><h4>AVD control plane</h4></div>
+<div class="dgm-box is-navy is-centred" style="left:1254px;top:96px;width:152px;height:58px"><h4>PAW session host</h4></div>
+<div class="dgm-step" style="left:446px;top:208px">1</div><div class="dgm-lbl" style="left:486px;top:198px">Sign in as zz / xy (Windows App or browser)</div>
+<div class="dgm-step" style="left:446px;top:264px">2</div><div class="dgm-lbl" style="left:486px;top:254px">WebAuthn challenge - nonce + rpId login.microsoftonline.com</div>
+<div class="dgm-step" style="left:166px;top:320px">3</div><div class="dgm-lbl" style="left:206px;top:310px">Challenge relayed over CTAP2 (USB-C / NFC)</div>
+<div class="dgm-step" style="left:166px;top:376px">4</div><div class="dgm-lbl" style="left:206px;top:366px">PIN + touch → signed assertion; private key never leaves hardware</div>
+<div class="dgm-step" style="left:446px;top:432px">5</div><div class="dgm-lbl" style="left:486px;top:422px">Assertion returned</div>
+<div class="dgm-step" style="left:446px;top:488px">6</div><div class="dgm-lbl" style="left:486px;top:478px">CA evaluated - authentication strength met; token issued</div>
+<div class="dgm-step" style="left:446px;top:544px">7</div><div class="dgm-lbl" style="left:486px;top:534px">Token presented to AVD feed; connection brokered</div>
+<div class="dgm-step" style="left:1030px;top:600px">8</div><div class="dgm-lbl" style="left:1070px;top:590px">Reverse-connect session</div>
+<div class="dgm-step" style="left:446px;top:656px">9</div><div class="dgm-lbl is-accent" style="left:486px;top:646px">In-session WebAuthn redirection - portal and jump-box prompts return to the local key</div>
+<div class="dgm-step" style="left:166px;top:712px">10</div><div class="dgm-lbl is-accent" style="left:206px;top:702px">PIN + touch satisfies the in-session prompt; PIM role activated. No password at any step</div>
+<div class="dgm-legend" style="left:74px;top:776px"><span><i></i>Request</span><span><i class="is-dashed"></i>Response</span><span><i class="is-accent"></i>Hardware-key interaction</span></div>
+</div>
+</div>
+
+<!-- F4 · NETWORK POSITION (§5.3) -->
+<div class="dgm-fig" id="f4" style="width:1520px;height:800px">
+<div class="dgm-cap"><span class="dgm-tag">FIGURE 4</span><b>Network &amp; Infrastructure - Authentication Paths</b><span class="dgm-ref">§5.3</span></div>
+<div class="dgm-stage" style="height:738px">
+<svg class="dgm-wires" viewBox="0 0 1520 738">
+<defs><marker id="a4" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="o4" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="286" y1="216" x2="452" y2="252" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a4)"></line>
+<line x1="286" y1="414" x2="452" y2="342" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a4)"></line>
+<line x1="1176" y1="296" x2="1290" y2="296" stroke="#F89728" stroke-width="2.6" marker-end="url(#o4)"></line>
+<line x1="1030" y1="392" x2="1030" y2="474" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a4)"></line>
+<line x1="1030" y1="586" x2="1030" y2="606" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#a4)"></line>
+</svg>
+<div class="dgm-zone" style="left:24px;top:96px;width:262px;height:470px"><span>ACCESS NETWORKS</span></div>
+<div class="dgm-box" style="left:44px;top:140px;width:222px;height:112px"><h4>APM corporate sites</h4><p>Meraki LAN / WLAN → Palo Alto → Zscaler egress.</p></div>
+<div class="dgm-box is-soft" style="left:44px;top:272px;width:222px;height:112px"><h4>Home / public internet</h4><p>Personal devices, untrusted transport.</p></div>
+<div class="dgm-box is-soft" style="left:44px;top:404px;width:222px;height:112px"><h4>Mobile / tethered</h4><p>Off-network administrator access.</p></div>
+<div class="dgm-zone is-accent" style="left:310px;top:96px;width:432px;height:470px"><span>INTERNET-FACING IDENTITY EDGE</span></div>
+<div class="dgm-box is-accent" style="left:452px;top:206px;width:266px;height:104px"><h4>login.microsoftonline.com</h4><p>TLS 1.2+. Origin binding is the anti-phishing control - no APM network dependency.</p></div>
+<div class="dgm-box is-accent" style="left:452px;top:330px;width:266px;height:104px"><h4>AVD gateway</h4><p>Reverse connect, outbound 443 only. No inbound port opened on APM networks.</p></div>
+<div class="dgm-box" style="left:334px;top:460px;width:384px;height:82px"><h4>No VPN required</h4><p>Authentication and AVD entry are internet-facing services reached over TLS.</p></div>
+<div class="dgm-zone" style="left:766px;top:96px;width:730px;height:576px"><span>AZURE - AUSTRALIA EAST (HUB &amp; SPOKE)</span></div>
+<div class="dgm-box is-navy" style="left:884px;top:242px;width:292px;height:108px"><h4>Hub VNet</h4><p>Azure Firewall, private DNS, Key Vault, Bastion.</p></div>
+<div class="dgm-box is-accent" style="left:1290px;top:242px;width:184px;height:108px"><h4>Privileged AVD pool</h4><p>Session hosts, spoke-attached.</p></div>
+<div class="dgm-box" style="left:884px;top:474px;width:292px;height:112px"><h4>Production spokes</h4><p>Jump boxes, VMs, workload subnets. NSG per tier, private endpoints.</p></div>
+<div class="dgm-box is-navy" style="left:884px;top:618px;width:292px;height:78px"><h4>Log Analytics / Sentinel</h4><p>Sign-in, PIM and session telemetry.</p></div>
+<div class="dgm-box is-soft" style="left:1222px;top:474px;width:252px;height:112px"><h4>Non-production spoke</h4><p>FVE test environment - policy validation before production.</p></div>
+<div class="dgm-lbl" style="left:292px;top:190px">HTTPS 443</div>
+<div class="dgm-lbl" style="left:292px;top:388px">HTTPS 443</div>
+<div class="dgm-lbl is-accent" style="left:1182px;top:266px">peering</div>
+<div class="dgm-lbl" style="left:1042px;top:416px">admin hops</div>
+<div class="dgm-legend" style="left:44px;top:592px"><span><i></i>User traffic (TLS)</span><span><i class="is-accent"></i>Azure peering</span><span><i class="is-dashed"></i>Telemetry</span></div>
+<p class="dgm-note" style="left:44px;top:636px;width:700px">The authentication path has no dependency on APM's corporate network: trust is established by the hardware key and Conditional Access, not by network location. The AVD gateway reverse-connects outbound to the session hosts, so no inbound port is opened on any APM network.</p>
+</div>
+</div>
+
+<!-- F5 · DEPLOYMENT RINGS (§5.4) -->
+<div class="dgm-fig" id="f5" style="width:1520px;height:740px">
+<div class="dgm-cap"><span class="dgm-tag">FIGURE 5</span><b>Deployment Pattern - Configuration Rollout Rings</b><span class="dgm-ref">§5.4</span></div>
+<div class="dgm-stage" style="height:678px">
+<svg class="dgm-wires" viewBox="0 0 1520 678">
+<defs><marker id="a5" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker></defs>
+<line x1="336" y1="254" x2="398" y2="254" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a5)"></line>
+<line x1="704" y1="254" x2="766" y2="254" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a5)"></line>
+<line x1="1072" y1="254" x2="1134" y2="254" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a5)"></line>
+<line x1="232" y1="348" x2="232" y2="428" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#a5)"></line>
+<line x1="600" y1="348" x2="600" y2="428" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#a5)"></line>
+<line x1="968" y1="348" x2="968" y2="428" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#a5)"></line>
+<line x1="1336" y1="348" x2="1336" y2="428" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#a5)"></line>
+</svg>
+<div class="dgm-box is-soft" style="left:106px;top:170px;width:230px;height:130px"><h4>Ring 0 - FVE</h4><p>Non-production tenant. Policies built and proven here first.</p><div><span class="dgm-chip">2 test accounts</span></div></div>
+<div class="dgm-box" style="left:474px;top:170px;width:230px;height:130px"><h4>Ring 1 - Project team</h4><p>Conditional Access in report-only. Sign-in logs reviewed for one week.</p><div><span class="dgm-chip">3 users</span></div></div>
+<div class="dgm-box is-accent" style="left:842px;top:170px;width:230px;height:130px"><h4>Ring 2 - Priv (zz)</h4><p>CA enforced, staged by team, rollback to report-only available.</p><div><span class="dgm-chip">Enforced</span></div></div>
+<div class="dgm-box is-navy" style="left:1134px;top:170px;width:266px;height:130px"><h4>Ring 3 - High-Priv (xy)</h4><p>Enforced with PIM approval. Break-glass verified before cutover.</p><div><span class="dgm-chip">Approval gate</span></div></div>
+<div class="dgm-box is-soft" style="left:118px;top:436px;width:230px;height:108px"><h4>Exit criteria</h4><p>T-01…T-04 pass. Attestation and AAGUID restriction proven.</p></div>
+<div class="dgm-box is-soft" style="left:486px;top:436px;width:230px;height:108px"><h4>Exit criteria</h4><p>T-05…T-08 pass. No unexpected blocks in report-only logs.</p></div>
+<div class="dgm-box is-soft" style="left:854px;top:436px;width:230px;height:108px"><h4>Exit criteria</h4><p>T-09, T-10 pass. Support runbooks validated.</p></div>
+<div class="dgm-box is-soft" style="left:1222px;top:436px;width:230px;height:108px"><h4>Exit criteria</h4><p>T-11, T-12 pass. Cyber sign-off on the enforced state.</p></div>
+<div class="dgm-legend" style="left:118px;top:566px"><span><i></i>Promotion path</span><span><i class="is-dashed"></i>Gate to leave the ring</span></div>
+<p class="dgm-note" style="left:118px;top:608px;width:1334px">Every configuration change follows the same path: authored in the FVE, validated in report-only, enforced by ring. No policy is enabled in enforced mode without a documented rollback and a passing exit criterion.</p>
+</div>
+</div>
+
+<!-- F6 · INFORMATION MODEL (§6.1) -->
+<div class="dgm-fig" id="f6" style="width:1520px;height:740px">
+<div class="dgm-cap"><span class="dgm-tag">FIGURE 6</span><b>Information Model - Entities, Custodians &amp; Flow</b><span class="dgm-ref">§6.1</span></div>
+<div class="dgm-stage" style="height:678px">
+<svg class="dgm-wires" viewBox="0 0 1520 678">
+<defs><marker id="a6" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker></defs>
+<line x1="316" y1="252" x2="414" y2="252" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a6)"></line>
+<line x1="710" y1="252" x2="808" y2="252" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a6)"></line>
+<line x1="1104" y1="252" x2="1202" y2="252" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a6)"></line>
+<line x1="562" y1="344" x2="562" y2="426" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#a6)"></line>
+<line x1="956" y1="344" x2="956" y2="426" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#a6)"></line>
+</svg>
+<div class="dgm-box is-navy" style="left:64px;top:172px;width:252px;height:152px"><h4>Private key material</h4><p>Generated in the YubiKey secure element. Never exported, never escrowed, no backup exists.</p><div><span class="dgm-chip">Custodian: the key</span></div></div>
+<div class="dgm-box" style="left:414px;top:172px;width:296px;height:152px"><h4>Credential metadata</h4><p>Public key, AAGUID, credential ID, attestation result, registration timestamp.</p><div><span class="dgm-chip">Entra ID</span><span class="dgm-chip">Public only</span></div></div>
+<div class="dgm-box is-accent" style="left:808px;top:172px;width:296px;height:152px"><h4>Key register</h4><p>Serial, user, issue date, status and verification record.</p><div><span class="dgm-chip">ServiceNow</span><span class="dgm-chip">OFFICIAL: Sensitive</span></div></div>
+<div class="dgm-box is-navy" style="left:1202px;top:172px;width:254px;height:152px"><h4>Audit events</h4><p>Sign-in, registration, TAP and PIM activation.</p><div><span class="dgm-chip">Sentinel</span></div></div>
+<div class="dgm-box is-soft" style="left:414px;top:434px;width:296px;height:120px"><h4>Retention &amp; access</h4><p>Register retained per records policy; access limited to Cyber and Service Desk roles.</p></div>
+<div class="dgm-box is-soft" style="left:808px;top:434px;width:296px;height:120px"><h4>Reconciliation</h4><p>Register reconciled weekly against Entra registrations and TAP issuance events.</p></div>
+<div class="dgm-lbl" style="left:322px;top:228px">registers</div>
+<div class="dgm-lbl" style="left:716px;top:228px">recorded in</div>
+<div class="dgm-lbl" style="left:1110px;top:228px">generates</div>
+<div class="dgm-legend" style="left:64px;top:566px"><span><i></i>Entity relationship</span><span><i class="is-dashed"></i>Governance applied to</span></div>
+<p class="dgm-note" style="left:64px;top:608px;width:1392px">No APM business data is created, stored or processed. The authenticator holds no personal or business data, so the loss of a key is not a data breach.</p>
+</div>
+</div>
+
+<!-- F7 · TRUST BOUNDARY (§7) -->
+<div class="dgm-fig" id="f7" style="width:1520px;height:800px">
+<div class="dgm-cap"><span class="dgm-tag">FIGURE 7</span><b>Cyber Architecture - Trust Boundary &amp; Device Posture</b><span class="dgm-ref">§7.4</span></div>
+<div class="dgm-stage" style="height:738px">
+<svg class="dgm-wires" viewBox="0 0 1520 738">
+<defs><marker id="a7" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="o7" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="424" y1="240" x2="562" y2="240" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a7)"></line>
+<line x1="424" y1="404" x2="562" y2="404" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#a7)"></line>
+<line x1="906" y1="284" x2="1074" y2="240" stroke="#F89728" stroke-width="2.6" marker-end="url(#o7)"></line>
+<line x1="906" y1="420" x2="1074" y2="470" stroke="#F89728" stroke-width="2.6" marker-end="url(#o7)"></line>
+</svg>
+<div class="dgm-zone" style="left:24px;top:96px;width:400px;height:604px"><span>UNTRUSTED / SEMI-TRUSTED</span></div>
+<div class="dgm-box is-soft" style="left:48px;top:144px;width:352px;height:150px"><h4>Personal device (BYOD)</h4><p>Posture unknown. Assumed compromised for design purposes.</p><div><span class="dgm-chip">Screen observable</span><span class="dgm-chip">No data at rest</span></div></div>
+<div class="dgm-box" style="left:48px;top:316px;width:352px;height:132px"><h4>Corporate device</h4><p>Intune-managed, compliant, Defender for Endpoint.</p><div><span class="dgm-chip">FIDO2 lock screen</span></div></div>
+<div class="dgm-box is-navy" style="left:48px;top:472px;width:352px;height:170px"><h4>What the key guarantees on any device</h4><p>The credential is origin-bound, hardware-bound and PIN + presence protected - phishing, replay and credential theft are defeated even on a fully compromised endpoint.</p></div>
+<div class="dgm-zone is-boundary" style="left:548px;top:96px;width:358px;height:604px"><span>TRUST BOUNDARY</span></div>
+<div class="dgm-box is-accent" style="left:572px;top:144px;width:310px;height:212px"><h4>Entra ID gate</h4><p>Hardware passkey only - passwords blocked by authentication strength. AAGUID allow-list. Attestation enforced. 8-hour sign-in frequency, no persistent sessions. Continuous access evaluation.</p></div>
+<div class="dgm-box is-accent" style="left:572px;top:380px;width:310px;height:262px"><h4>Privileged AVD image (PAW)</h4><p>Hardened Windows 11, admin tooling only. No mail, Teams or general browsing. Drive, clipboard, print and USB redirection disabled. WebAuthn redirection enabled. Watermarking and screen capture protection. Defender for Endpoint to Sentinel.</p></div>
+<div class="dgm-zone" style="left:930px;top:96px;width:566px;height:604px"><span>APM PRODUCTION</span></div>
+<div class="dgm-box" style="left:1074px;top:144px;width:398px;height:196px"><h4>Tier: Priv (zz)</h4><p>Member-server administration, application admin, workload jump boxes.</p><div><span class="dgm-chip">PIM eligible</span><span class="dgm-chip">≤ 8 h</span><span class="dgm-chip">Auto-approve</span></div></div>
+<div class="dgm-box is-navy" style="left:1074px;top:370px;width:398px;height:196px"><h4>Tier: High-Priv (xy)</h4><p>Global Administrator, Privileged Role Administrator, production subscription Owner.</p><div><span class="dgm-chip">≤ 4 h</span><span class="dgm-chip">Approval required</span></div></div>
+<div class="dgm-box is-soft" style="left:1074px;top:592px;width:398px;height:80px"><h4>No direct endpoint-to-production path exists</h4></div>
+<div class="dgm-legend" style="left:48px;top:690px"><span><i></i>Authenticate</span><span><i class="is-accent"></i>Brokered session</span></div>
+<div class="dgm-lbl" style="left:430px;top:214px">Windows App / web</div>
+<div class="dgm-lbl" style="left:430px;top:378px">Windows App / web</div>
+<div class="dgm-lbl is-accent" style="left:912px;top:240px">brokered</div>
+<div class="dgm-lbl is-accent" style="left:912px;top:430px">brokered</div>
+</div>
+</div>
+
+<!-- F8 · PIM ELEVATION (§7.3) -->
+<div class="dgm-fig" id="f8" style="width:1520px;height:600px">
+<div class="dgm-cap"><span class="dgm-tag">FIGURE 8</span><b>Privileged Identity Management - Just-in-Time Elevation</b><span class="dgm-ref">§7.3</span></div>
+<div class="dgm-stage" style="height:538px">
+<svg class="dgm-wires" viewBox="0 0 1520 538">
+<defs><marker id="a8" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker></defs>
+<line x1="332" y1="204" x2="396" y2="204" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a8)"></line>
+<line x1="700" y1="204" x2="764" y2="204" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a8)"></line>
+<line x1="1068" y1="204" x2="1132" y2="204" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a8)"></line>
+<line x1="548" y1="298" x2="548" y2="374" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#a8)"></line>
+<line x1="916" y1="298" x2="916" y2="374" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#a8)"></line>
+</svg>
+<div class="dgm-box" style="left:106px;top:134px;width:226px;height:130px"><h4>1 · Sign in to the PAW</h4><p>zz / xy account with YubiKey (PIN + touch). No standing admin rights held.</p></div>
+<div class="dgm-box is-accent" style="left:396px;top:134px;width:304px;height:130px"><h4>2 · Request activation</h4><p>Entra PIM - eligible role, justification and ticket reference. Hardware key re-asserted.</p></div>
+<div class="dgm-box is-accent" style="left:764px;top:134px;width:304px;height:130px"><h4>3 · Gate by tier</h4><p>zz - auto-approve, maximum 8 hours. xy - approver required (Cyber Security Lead or delegate), maximum 4 hours.</p></div>
+<div class="dgm-box is-navy" style="left:1132px;top:134px;width:326px;height:130px"><h4>4 · Time-boxed role active</h4><p>Production and portal access from the PAW only. Role expires automatically; re-activation requires the key again.</p></div>
+<div class="dgm-box is-soft" style="left:396px;top:382px;width:304px;height:118px"><h4>Audit trail</h4><p>Who, which role, justification, approver and duration - streamed to Sentinel. Access reviews monthly for xy, quarterly for zz.</p></div>
+<div class="dgm-box is-soft" style="left:764px;top:382px;width:304px;height:118px"><h4>Alerting</h4><p>Out-of-hours activation, approval-bypass attempts, repeated maximum-duration requests, activation without a correlated PAW session.</p></div>
+<div class="dgm-legend" style="left:106px;top:508px"><span><i></i>Elevation sequence</span><span><i class="is-dashed"></i>Produces a record</span></div>
+</div>
+</div>
+
+<!-- F9 · KEY LIFECYCLE (§9.1) -->
+<div class="dgm-fig" id="f9" style="width:1520px;height:720px">
+<div class="dgm-cap"><span class="dgm-tag">FIGURE 9</span><b>Service Management - Key Lifecycle</b><span class="dgm-ref">§9.1</span></div>
+<div class="dgm-stage" style="height:658px">
+<svg class="dgm-wires" viewBox="0 0 1520 658">
+<defs><marker id="a9" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="o9" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="334" y1="204" x2="396" y2="204" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a9)"></line>
+<line x1="702" y1="204" x2="764" y2="204" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a9)"></line>
+<line x1="1070" y1="204" x2="1132" y2="204" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a9)"></line>
+<line x1="1296" y1="298" x2="1296" y2="386" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#a9)"></line>
+<line x1="1132" y1="450" x2="1070" y2="450" stroke="#F89728" stroke-width="2.6" marker-end="url(#o9)"></line>
+<line x1="764" y1="450" x2="702" y2="450" stroke="#F89728" stroke-width="2.6" marker-end="url(#o9)"></line>
+</svg>
+<div class="dgm-box" style="left:106px;top:134px;width:228px;height:132px"><h4>1 · Procure &amp; record</h4><p>YubiKey 5C NFC FIPS (fw 5.7.4) via SoftwareOne. Serial recorded in the key register.</p></div>
+<div class="dgm-box" style="left:396px;top:134px;width:306px;height:132px"><h4>2 · Issue</h4><p>In person where practical, otherwise tracked post to the verified address. The key ships with no credential on it.</p></div>
+<div class="dgm-box is-accent" style="left:764px;top:134px;width:306px;height:132px"><h4>3 · Verify &amp; enrol</h4><p>Video identity verification, serial confirmed, one-time TAP issued. Entra prompts passkey registration at sign-in.</p></div>
+<div class="dgm-box is-navy" style="left:1132px;top:134px;width:326px;height:132px"><h4>4 · Attest &amp; activate</h4><p>Entra validates attestation and AAGUID - only a genuine FIPS YubiKey completes. TAP expires; CA enforces key-only sign-in.</p></div>
+<div class="dgm-box" style="left:1132px;top:386px;width:326px;height:132px"><h4>5 · Operate</h4><p>PIN + touch per sign-in. Eight failed PIN attempts destroys the credentials in hardware. xy holders register a spare key.</p></div>
+<div class="dgm-box is-accent" style="left:764px;top:386px;width:306px;height:132px"><h4>6 · Rotate / replace</h4><p>Loss, damage, leaver or firmware sunset - passkey deleted in Entra within one hour of report; replacement follows steps 2–4.</p></div>
+<div class="dgm-box is-soft" style="left:396px;top:386px;width:306px;height:132px"><h4>7 · Revoke &amp; destroy</h4><p>Credential deletion in Entra is the authoritative revocation - the key becomes inert. Returned keys are FIDO2-reset before restocking.</p></div>
+<div class="dgm-lbl" style="left:1312px;top:320px">business as usual</div>
+<div class="dgm-lbl is-accent" style="left:1071px;top:438px;padding:2px 6px">on loss</div>
+<div class="dgm-legend" style="left:106px;top:528px"><span><i></i>Business as usual</span><span><i class="is-accent"></i>Exception path</span></div>
+<p class="dgm-note" style="left:106px;top:576px;width:1352px">Revocation is authoritative in Entra ID rather than dependent on physical recovery: a key that cannot be returned is rendered useless the moment its credential is deleted.</p>
+</div>
+</div>
+
+</body></html>

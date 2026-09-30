@@ -1,0 +1,106 @@
+/* APM — Color tokens
+   Base palette derived from the APM logo (orange + navy) and the brand
+   gradient ribbons (indigo → purple → magenta). */
+
+:root {
+  /* ---- Brand: APM Orange (primary action / highlight) ---- */
+  --apm-orange-50:  #FEF4E6;
+  --apm-orange-100: #FCE3BF;
+  --apm-orange-200: #FACF8E;
+  --apm-orange-300: #F8B95A;
+  --apm-orange-400: #F7A838;
+  --apm-orange-500: #F89728;  /* core APM orange (logo) */
+  --apm-orange-600: #E27F12;
+  --apm-orange-700: #C0680A;
+  --apm-orange-800: #95500A;
+  --apm-orange-900: #6E3C0B;
+
+  /* ---- Brand: APM Navy (text, surfaces, primary dark) ---- */
+  --apm-navy-50:  #EEF0F6;
+  --apm-navy-100: #D4D9E8;
+  --apm-navy-200: #A7B0CC;
+  --apm-navy-300: #6E7BA6;
+  --apm-navy-400: #41507F;
+  --apm-navy-500: #2A3A6B;
+  --apm-navy-600: #1F2D58;  /* core APM navy (logo underscores / tagline) */
+  --apm-navy-700: #182447;
+  --apm-navy-800: #111A36;
+  --apm-navy-900: #0B1226;
+
+  /* ---- Brand ribbon accents (decorative gradient family) ---- */
+  --apm-indigo:  #2E3192;
+  --apm-purple:  #5C2D91;
+  --apm-magenta: #E51C84;
+  --apm-magenta-600: #C8156F;
+
+  /* ---- Neutrals ---- */
+  --neutral-0:   #FFFFFF;
+  --neutral-50:  #F7F8FA;
+  --neutral-100: #EFF1F5;
+  --neutral-200: #E1E5EC;
+  --neutral-300: #CBD2DC;
+  --neutral-400: #A3ADBC;
+  --neutral-500: #74808F;
+  --neutral-600: #545F6E;
+  --neutral-700: #3C4654;
+  --neutral-800: #283039;
+  --neutral-900: #161B22;
+
+  /* ---- Semantic status ---- */
+  --green-500:  #1E8E5A;
+  --green-50:   #E6F4ED;
+  --amber-500:  #E2920E;
+  --amber-50:   #FCF2DD;
+  --red-500:    #D43A3A;
+  --red-50:     #FBE9E9;
+  --blue-500:   #2C6FD6;
+  --blue-50:    #E7F0FC;
+
+  /* ============ SEMANTIC ALIASES ============ */
+
+  /* Brand */
+  --brand-primary:        var(--apm-orange-500);
+  --brand-primary-hover:  var(--apm-orange-600);
+  --brand-primary-active: var(--apm-orange-700);
+  --brand-on-primary:     var(--apm-navy-600);
+  --brand-dark:           var(--apm-navy-600);
+  --brand-dark-deep:      var(--apm-navy-900);
+
+  /* Text */
+  --text-strong:     var(--apm-navy-600);
+  --text-body:       var(--apm-navy-700);
+  --text-muted:      var(--neutral-500);
+  --text-subtle:     var(--neutral-400);
+  --text-on-dark:    var(--neutral-0);
+  --text-on-dark-muted: var(--apm-navy-100);
+  --text-link:       var(--apm-magenta);
+
+  /* Surfaces */
+  --surface-page:    var(--neutral-50);
+  --surface-card:    var(--neutral-0);
+  --surface-sunken:  var(--neutral-100);
+  --surface-dark:    var(--apm-navy-600);
+  --surface-dark-deep: var(--apm-navy-900);
+  --surface-inverse: var(--apm-navy-700);
+
+  /* Borders */
+  --border-subtle:   var(--neutral-200);
+  --border-default:  var(--neutral-300);
+  --border-strong:   var(--neutral-400);
+  --border-focus:    var(--apm-orange-500);
+
+  /* Status */
+  --status-success:  var(--green-500);
+  --status-success-bg: var(--green-50);
+  --status-warning:  var(--amber-500);
+  --status-warning-bg: var(--amber-50);
+  --status-danger:   var(--red-500);
+  --status-danger-bg: var(--red-50);
+  --status-info:     var(--blue-500);
+  --status-info-bg:  var(--blue-50);
+
+  /* Brand gradients */
+  --gradient-ribbon: linear-gradient(95deg, var(--apm-indigo) 0%, var(--apm-purple) 48%, var(--apm-magenta) 100%);
+  --gradient-navy:   linear-gradient(135deg, var(--apm-navy-600) 0%, var(--apm-navy-900) 100%);
+  --gradient-warm:   linear-gradient(120deg, var(--apm-orange-400) 0%, var(--apm-orange-600) 100%);
+}

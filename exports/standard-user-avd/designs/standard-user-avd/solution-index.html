@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><title>Standard User SOE on AVD - solution resource index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+body{margin:0;background:#EDEFF4;font-family:'Mulish',sans-serif;color:#1F2D58;padding:32px 36px 40px}
+.wrap{max-width:1368px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.hero{background:linear-gradient(100deg,#1F2D58,#2E3F73);border-radius:12px;padding:22px 26px;display:flex;align-items:flex-start;gap:26px}
+.hero h1{margin:0;font-family:'Poppins',sans-serif;font-size:25px;font-weight:600;color:#fff;line-height:1.15}
+.hero p{margin:8px 0 0;font-size:13.5px;line-height:1.5;color:#C2CBE4;max-width:760px;text-wrap:pretty}
+.hero .meta{margin-left:auto;display:grid;gap:7px;flex-shrink:0}
+.hero .meta div{font-size:11px;color:#8E9BC4;font-family:'Poppins',sans-serif;letter-spacing:.05em;text-align:right}
+.hero .meta b{display:block;font-size:13px;color:#fff;font-weight:600;letter-spacing:0;margin-top:1px}
+h2{margin:0;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#41507F;display:flex;align-items:baseline;gap:10px}
+h2 em{font-style:normal;font-size:11.5px;font-weight:400;letter-spacing:0;text-transform:none;color:#7B87AD}
+section{display:flex;flex-direction:column;gap:9px}
+table{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff;border-radius:9px;overflow:hidden;box-shadow:0 2px 8px rgba(31,45,88,.07)}
+th{font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#1F2D58;text-align:left;padding:8px 12px}
+td{font-size:12.5px;line-height:1.42;padding:8px 12px;border-bottom:1px solid #E4E8F2;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:nth-child(even) td{background:#F7F8FC}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:#2E3F73;background:#EEF1F8;padding:1px 5px;border-radius:4px;word-break:break-all}
+.tag{display:inline-block;font-family:'Poppins',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.t-src{color:#1F5B3A;background:#EAF5EE;border:1px solid #B5D6C3}
+.t-art{color:#41507F;background:#EEF1F8;border:1px solid #C8D0E4}
+.t-pol{color:#8A5200;background:#FFF6EA;border:1px solid #F0CE9C}
+.t-cfg{color:#6B2478;background:#F8EEFA;border:1px solid #DDBEE4}
+.t-tool{color:#1F4E6B;background:#EAF3F8;border:1px solid #B3D0E0}
+.t-ref{color:#5A4A1F;background:#F7F4EA;border:1px solid #DCD2B4}
+.t-gap{color:#8C2130;background:#FCEEF0;border:1px solid #E9BFC5}
+.rule{border-left:3px solid #F89728;background:#fff;border-radius:0 9px 9px 0;padding:13px 17px;font-size:12.5px;line-height:1.5}
+.rule b{font-family:'Poppins',sans-serif;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;align-items:start}
+.kv{background:#fff;border-radius:9px;padding:13px 15px;box-shadow:0 2px 8px rgba(31,45,88,.07)}
+.kv h3{margin:0 0 5px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7B87AD}
+.kv p{margin:0;font-size:12.5px;line-height:1.45}
+.kv p+p{margin-top:5px}
+a{color:#8A5200;text-decoration:none;border-bottom:1px solid #E8C89A}
+a:hover{color:#B36A00;border-bottom-color:#B36A00}
+.foot{font-size:11.5px;color:#7B87AD;line-height:1.5}
+</style>
+</head><body>
+<div class="wrap">
+
+<div class="hero">
+<div>
+<h1>Standard User SOE on Azure Virtual Desktop</h1>
+<p>The staff desktop delivered as a service. Windows 11 Enterprise multi-session on a pooled AVD host pool, orchestrated by Nerdio, reached through the Windows App from a managed laptop or an unmanaged personal device. Every artefact is listed below by kind, so a resource can be found, cited or lifted out without reading the whole design.</p>
+</div>
+<div class="meta">
+<div>PROGRAMME<b>Standard Operating Environment</b></div>
+<div>USE CASE<b>P2 of 5</b></div>
+<div>REGION<b>Australia East</b></div>
+</div>
+</div>
+
+<div class="rule"><b>One SOE, two channels.</b> The session host is assigned the same 11 Intune policy objects as the Windows 11 thick client, not a copy of them. Where the channels diverge it is named, and there are four: device join type (thick clients hybrid joined and ADFS-federated, session hosts Entra ID joined), SOE update by golden image replacement rather than in-place patching, the five varied controls in Detail 7, and the multi-session application requirements in Detail 5.4. <b>Australia East only.</b></div>
+
+<section>
+<h2>Design documents <em>tier 2 written; tiers 1 and 3 outstanding</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:196px"><col style="width:74px"><col style="width:300px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Document</th><th>Version</th><th>Source of record</th><th>Question it answers, and who approves</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-gap">Not written</span></td><td><b>Design Definition</b></td><td>-</td><td><code>templates/detailed-design-v2/authoring/definition-master.docx</code></td><td>What are we building and why, at concept level. Would be approved by Digital Transformation and Architecture</td></tr>
+<tr><td><span class="tag t-src">Source</span></td><td><b>Detail Design</b></td><td>V1.2</td><td><code>designs/standard-user-avd/content-detail.txt</code></td><td>What the architecture is and which decisions were taken. 33 headings in the APM template's exact order, 16 requirements, 14 interfaces, the risk register, and DR-001 to DR-020 in Appendix A. Approved by APM Cyber Security</td></tr>
+<tr><td><span class="tag t-gap">Not written</span></td><td><b>Technical Configuration</b></td><td>-</td><td><code>templates/detailed-design-v2/authoring/technical-master.docx</code></td><td>How to build it, click by click. The Detail Design defers every setting and console path to it, so this is the next document the solution needs</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Built Word document</td><td>V1.2</td><td><code>designs/standard-user-avd/output/</code></td><td>Regenerable from the source above. The <code>.txt</code> is canonical; a <code>.docx</code> is never edited by hand</td></tr>
+<tr><td><span class="tag t-src">Source</span></td><td><b>Review responses</b></td><td>V2.0</td><td><code>designs/standard-user-avd/review-responses-v2.0.md</code></td><td>All 11 stakeholder comments on V1.0, where each landed and what changed. Read this before re-reviewing</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Superseded sources, builds and the reviewed V1.0</td><td>V0.1 - V1.2</td><td><code>designs/standard-user-avd/history/</code></td><td>The reviewed V1.0 keeps its comment threads. V0.1 (15 May 2026) predates the design standard. None is the design of record</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Support overview article</td><td>V0.1</td><td><code>designs/standard-user-avd/kb/</code></td><td>Written 28 May 2026, <b>not yet reconciled</b> to the current design: it predates DR-013 and the redirection boundary</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Diagrams <em>five figures, one kit, one source file</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:270px"><col style="width:300px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Figure</th><th>File</th><th>Cited by</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-src">Source</span></td><td><b>All figures, one page</b></td><td><code>designs/standard-user-avd/figures.html</code></td><td>Every figure is authored here on the <code>.dgm-*</code> diagram kit and carries <code>qa()</code>. Edit here, never in the PNG</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Solution context, two tiers</td><td><code>figs/solution-context.png</code></td><td>Detail 4.1, Figure 1</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Sign-in to working session, interface sequence</td><td><code>figs/session-sequence.png</code></td><td>Detail 4.3, Figure 2</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Spoke placement, subnets, forced-tunnel egress</td><td><code>figs/network-topology.png</code></td><td>Detail 5.3, Figure 3</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Access control model, managed and unmanaged paths</td><td><code>figs/access-control-model.png</code></td><td>Detail 7, Figure 4</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>SOE hardening inheritance: inherited, varied, added</td><td><code>figs/soe-inheritance.png</code></td><td>Detail 7, Figure 5</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Objects this solution creates <em>named in Detail 5.1, the single home for the naming convention</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:230px"><col style="width:330px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Plane</th><th>Name</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-cfg">Azure</span></td><td>Subscription and virtual network</td><td><code>aus-sub-avd-controlled-001</code>, <code>auea-vnet-avd-ctrl-001</code></td><td><b>No address range is reserved for AVD.</b> Network Management allocates a /23 from the Australia East supernet under G-02. The subnet plan is stated as offsets, so it applies to whichever /23 is issued</td></tr>
+<tr><td><span class="tag t-cfg">Azure</span></td><td>Route table</td><td><code>auea-rt-avd-ctrl-001</code></td><td><code>0.0.0.0/0</code> to the hub Palo Alto internal load balancer frontend. Gateway route propagation disabled, matching every deployed table in the estate</td></tr>
+<tr><td><span class="tag t-cfg">Azure</span></td><td>Host pool, workspace, application groups</td><td><code>auea-avdhp-avd-ctrl-staff-001</code> and siblings</td><td>Two desktop application groups, managed and unmanaged, because redirection is a host-pool property and not a per-user one</td></tr>
+<tr><td><span class="tag t-cfg">Azure</span></td><td>Profile and package storage</td><td><code>aestacfslogix001</code>, <code>aestacappattach001</code></td><td>Azure Files Premium with Entra Kerberos, reached over a private endpoint. Shortform concatenated names, as the ESLZ standard requires for storage accounts</td></tr>
+<tr><td><span class="tag t-cfg">Azure</span></td><td>Image gallery and session hosts</td><td><code>aegalacstaff001</code>, VM prefix <code>aevmacstd</code></td><td>The image is the unit of change: hosts are replaced from a new version, never patched in place</td></tr>
+<tr><td><span class="tag t-cfg">Entra ID</span></td><td>Seven security groups</td><td><code>sg-dyn-dvc-avd-session-hosts</code>, <code>sg-stc-usr-avd-standard-user</code>, <code>-desktop-managed</code>, <code>-desktop-unmanaged</code>, <code>-operators</code>, <code>-image-builders</code>, <code>sg-stc-dvc-avd-session-hosts-ring1</code></td><td>The dynamic device group matches the host name prefix, which is what makes the test and production groups mutually exclusive</td></tr>
+<tr><td><span class="tag t-cfg">Intune</span></td><td>Six AVD-specific objects</td><td><code>AVD-W11-CFG-FSLogix Profile</code>, <code>-Session Time Limits</code>, <code>-Multi-Session Host</code>, <code>-Desktop Branding</code>, <code>-Edge Configuration</code>, <code>AVD-W11-COM-Session Host</code></td><td>Added, not varied. Everything else is the inherited hardening standard set: 748 controls across 11 policies, named profile by profile in Detail 7. The two new profiles set no security key. <code>AVD</code> is a proposed new Scope value (DR-017)</td></tr>
+<tr><td><span class="tag t-cfg">Entra ID</span></td><td>Two Conditional Access policies</td><td><code>CA-202 … Azure Virtual Desktop - Allow - Require MFA</code>, <code>CA-210 … Microsoft 365 exc. AVD - Unmanaged Devices - Block</code></td><td>Confirm both numbers are unused immediately before creation: four numbers in the CA-2xx series are already carried by two policies each</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Test environment and validation <em>Detail Appendix B - 18 tests, all pass before the production build begins</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:230px"><col style="width:280px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Item</th><th>Value</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-cfg">Azure</span></td><td>Placement</td><td><code>aus-sub-dev-controlled-001</code>, <code>auea-vnet-dev-ctrl-001</code></td><td>Existing Dev Controlled subscription, <code>10.40.24.0/23</code>. Same archetype as production, which is what makes a test result meaningful (DR-018)</td></tr>
+<tr><td><span class="tag t-cfg">Azure</span></td><td>Isolation, and its limit</td><td>Compute, network and storage isolated; Intune and Conditional Access are not</td><td>Intune and CA are tenant-level, so isolation there is by assignment, not by boundary. Carried as R-12; the production validation pool is the gate for what test cannot reach</td></tr>
+<tr><td><span class="tag t-art">Artefact</span></td><td>Seven tests that prove a control</td><td>T-04, T-08, T-09, T-10, T-13, T-15, T-18</td><td><b>Last to be cut, not first.</b> T-18 blocks the on-premises ranges and works a full session, which is what evidences separability from Active Directory. T-15 cannot be substituted by T-03: a profile that mounts on a clean host proves nothing about a hardened host under the production CA set</td></tr>
+<tr><td><span class="tag t-ref">Reference</span></td><td>Test network design</td><td><code>reference/environment/APM-AVD-Test-Network-DetailDesign-V0.2.docx</code></td><td>APM's own design of the non-production environment Appendix B places itself in</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Policy, standards and reference sources <em>facts this design cites but does not own</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:290px"><col style="width:280px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Source</th><th>Path</th><th>What this solution takes from it</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-pol">Policy</span></td><td><b>Corporate SOE Hardening Standard V3.0</b></td><td><code>policies/APM-Windows-SOE-Hardening-Standard-V3.0.xlsx</code></td><td>The standard this SOE is governed by: 748 controls across 11 Intune policies, benchmarked against the ASD Windows Hardening Guidelines, the Microsoft Windows 11 v24H2 security baseline and the Microsoft Edge security baseline v139. Detail 7 measures inheritance against it and names five varied controls, SOE-01 to SOE-05. Never edited to accommodate a session host</td></tr>
+<tr><td><span class="tag t-pol">Policy</span></td><td>Conditional Access baseline</td><td><code>policies/APM-Conditional-Access-Policies-Export.csv</code>, <code>ca-policies.js</code></td><td>116 tenant policies: 68 enforced, 43 report-only, 5 off. Two new policies are created in the CA-2xx series, and both numbers are confirmed unused immediately before creation because four numbers in that series are already carried by two policies each</td></tr>
+<tr><td><span class="tag t-pol">Policy</span></td><td>Intune naming schema addendum</td><td><code>policies/APM_Intune_Naming_Schema_Addendum.md</code></td><td>Part 2 is this design's proposed additions: the <code>AVD</code> Scope value and the group names, raised by DR-017</td></tr>
+<tr><td><span class="tag t-pol">Policy</span></td><td>RFFR and ISO 27001 compliance plan</td><td><code>policies/APM-Compliance-Management-Plan-RFFR-ISO27001-ANZ.pdf</code></td><td>The compliance position Detail 7 is written against. The five varied controls are recorded as accepted variations in the RFFR Statement of Applicability</td></tr>
+<tr><td><span class="tag t-ref">Reference</span></td><td><b>ESLZ corpus, Parts 1 and 3</b></td><td><code>reference/eslz/</code></td><td>Every Azure fact: the address plan, the forced-tunnel routing model, the hub firewall, central private DNS, management group archetypes. Cited inline as <code>[CORPUS: …]</code></td></tr>
+<tr><td><span class="tag t-ref">Reference</span></td><td>Landing zone, firewall and naming sources</td><td><code>reference/environment/</code></td><td>Azure Landing Zone (APAC) DDD v1.1, Palo Alto Firewall As-Built V1.0, Azure ESLZ Naming Standards. The documents behind the corpus facts</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Authoring pipeline <em>shared with every other design in the programme</em></h2>
+<table>
+<colgroup><col style="width:96px"><col style="width:290px"><col style="width:280px"><col></colgroup>
+<thead><tr><th>Kind</th><th>Resource</th><th>Path</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-tool">Tool</span></td><td>Three APM masters and the builder</td><td><code>templates/detailed-design-v2/authoring/</code></td><td><code>docx-builder.js</code> splices generated body into the master and resolves <code>[[5.3.4]]</code> to a live hyperlink carrying the section name. Reserved for tier 2: <code>rJ</code> / <code>ddFigSU</code> / <code>5700</code></td></tr>
+<tr><td><span class="tag t-tool">Tool</span></td><td>Consistency and figure checks</td><td><code>consistency-check.js</code>, <code>qa-checks.js</code></td><td>Run both before shipping. <code>scan()</code> catches stale cross-references and figure numbering; <code>qa()</code> must return <code>ok: true</code></td></tr>
+<tr><td><span class="tag t-tool">Tool</span></td><td>Authoring standards</td><td><code>guidelines/</code></td><td>One standard per tier plus the craft rules. Read the matching one before editing a document</td></tr>
+<tr><td><span class="tag t-tool">Tool</span></td><td>Word draft importer</td><td><code>templates/detailed-design/authoring/docx-to-dsl.js</code></td><td>Converts an authored <code>.docx</code> to the DSL. Always read <code>warnings</code>: Word comments and tracked deletions do not come across</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Lifting the solution out</h2>
+<div class="grid">
+<div class="kv"><h3>Standalone bundle</h3><p>A complete, self-contained copy sits at <code>exports/standard-user-avd/</code>: its own <code>CLAUDE.md</code>, the diagram kit, the pipeline and only the policy and reference sources this solution cites.</p><p>Folder depth mirrors this project so <code>figures.html</code> keeps resolving <code>../../styles.css</code>.</p></div>
+<div class="kv"><h3>What stays behind</h3><p>ESLZ corpus Parts 2 and 4, the Employment Services hardening standard, the programme plan and the other four SOE use cases stay here. The bundle carries only what this design cites.</p></div>
+<div class="kv"><h3>Separable by design</h3><p>Nothing in the session host path needs on-premises Active Directory or ADFS: no domain membership, no Group Policy, no domain controller reachability. The one residual link is Entra Kerberos authenticating a hybrid identity to the profile store, which is a user identity link, not a device one (DR-019, Detail 5.4.8).</p><p>An on-premises file server back end for the mapped drive is the one option that would break it.</p></div>
+<div class="kv"><h3>Licensing, settled</h3><p>No AVD-specific licence is required. The Windows 11 Enterprise E5 user subscription licence inside Microsoft 365 E5 carries both the AVD user access right and the multi-session use right. Confirmed with SoftwareOne (A-01).</p></div>
+</div>
+</section>
+
+<section>
+<h2>Open items <em>eight items, each with a named owner and a date it is needed by - Detail 3.4</em></h2>
+<table>
+<colgroup><col style="width:70px"><col><col style="width:250px"></colgroup>
+<thead><tr><th>Ref</th><th>Item</th><th>Owner</th></tr></thead>
+<tbody>
+<tr><td><b>G-02</b></td><td>No address range is reserved for AVD. A /23 must be allocated from the Australia East supernet and the spoke peered to the hub. <b>Blocks every network object</b>, and it is phase 1 of the implementation sequence</td><td>Network Management</td></tr>
+<tr><td><b>G-03</b></td><td>Two identity facts are unproven: that staff accounts remain hybrid identities for the life of this design, and that the profile container mounts on an Entra ID joined host for a hybrid identity user. Record the planned date of any move to cloud only; prove the mount with T-15</td><td>Digital Transformation and Architecture</td></tr>
+<tr><td><b>G-01</b></td><td>The mapped network drive back end is not recorded anywhere available to this design. All three candidate paths are specified in Detail 5.4; the answer selects one</td><td>Digital Operations</td></tr>
+<tr><td><b>G-04</b></td><td>The inherited App Control for Business policy does not enforce script control, so PowerShell and equivalent script hosts are unconstrained. ASD Essential Eight application control expects script control</td><td>APM Cyber Security</td></tr>
+<tr><td><b>G-05</b></td><td><code>Staff-Windows-Compliance-Policy</code> sets no minimum operating system version. A minimum build is added to the AVD compliance policy</td><td>APM Cyber Security</td></tr>
+<tr><td><b>G-06</b></td><td>Session host sizing is not established: users per host, virtual machine SKU and disk type. Fixed from pilot measurement, not from a vendor estimate</td><td>Digital Operations</td></tr>
+<tr><td><b>G-07</b></td><td>Security log retention in the Australia East security workspace is shorter than APM's 180-day requirement</td><td>APM Cyber Security</td></tr>
+<tr><td><b>G-08</b></td><td><b>Application deployment definitions are not held.</b> Needed from Intune: the Microsoft 365 Apps deployment (channel, architecture, app list), the Teams deployment, the OneDrive profile (Known Folder Move, Files On-Demand), the Edge configuration profile (managed favourites JSON, homepage, start-up URLs), the desktop and lock screen branding profile, and the line-of-business application list. The hardening standard covers security settings only</td><td>Digital Operations</td></tr>
+</tbody>
+</table>
+</section>
+
+<p class="foot">Source of record for each resource is the path shown. A value lives in exactly one file; every other mention cross-references it. Built Word documents are regenerable and are never edited by hand.</p>
+
+</div>
+</body></html>

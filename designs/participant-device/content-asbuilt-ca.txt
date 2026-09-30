@@ -1,0 +1,151 @@
+H1 |1. Purpose and Audience
+H2 |1.1 Purpose
+P |This document records the Conditional Access configuration required for the Participant Kiosk fleet, as built. It gives the exact portal path, the exact field values and an objective pass criterion for each step, so the configuration can be created, verified and audited without reference to any other document.
+P |The Participant Kiosk design uses Conditional Access to deny rather than to grant. One policy is created. Its purpose is to guarantee that no APM identity can authenticate to any cloud service from Participant Kiosk hardware.
+H2 |1.2 Audience
+P |Entra ID administrators holding Conditional Access Administrator or Security Administrator, performing or auditing the build. The reader is assumed to be competent in the Entra admin centre and to require values rather than explanation.
+H2 |1.3 Scope
+B |In scope: the single Conditional Access policy this fleet adds, its device filter, its rollout from report-only to enforced, and the verification evidence for each.
+B |In scope: confirmation that existing tenant policies which grant access are not weakened by a managed, compliant kiosk device.
+B |Out of scope: the compliance policy, App Control, Edge hardening and web filtering. Those are separate control layers, specified in the Detailed Design Document and the Technical Configuration Document.
+B |Out of scope: the fourteen Conditional Access policies belonging to the retired kiosk solution. They were deleted on 12 August 2026 under the kiosk decommissioning change request, and are listed in section 7 for completeness only.
+H1 |2. Design Position
+P |Conditional Access is not protecting a participant identity, because the fleet has none. The participant signs in to a Windows-managed local account through automatic logon. There is no cloud identity, no password known to any person and no sign-in to protect.
+P |The risk the policy addresses is the opposite one: a member of APM staff, or anyone holding an APM credential, authenticating to a corporate service from a device sitting in a public waiting area.
+H2 |2.1 Why an explicit block is required
+P |The tenant enforces two policies for all users against all cloud applications:
+B |AllUsers_AllAccess_DeviceRequired, which grants access from a compliant or Entra-joined device.
+B |AllUsers_AllAccess_MFAorDeviceRequired, which grants access on multi-factor authentication or an Entra-joined device.
+P |A Participant Kiosk is Entra ID joined and carries a compliance policy, so it satisfies both grants, and satisfies the second without any multi-factor prompt. Being managed and compliant makes this fleet look like a corporate device to every existing grant in the tenant.
+P |Denial must therefore be stated rather than inherited. This is the decision recorded as DR-010, approved by APM Cyber Security: block Microsoft 365 access from the device outright.
+H2 |2.2 Position in the control stack
+P |Conditional Access is one of three layers that keep corporate services off the device. It is the layer that acts on authentication. The other two act on the browser and on the network, and are specified elsewhere.
+TBL|1500,3000,4860
+TH |**Layer**||**Control**||**What it stops**
+TR |Authentication||This policy, CA-107||Any APM identity authenticating to any Entra-federated service from kiosk hardware
+TR |Browser||Edge hardening, CDG-W11-SEC-Edge Hardening-P-1.0||Sign-in to Microsoft services in the browser, and browser sync
+TR |Network||Zscaler and Meraki default-deny egress||Reaching corporate and Microsoft 365 endpoints at all
+END
+P |The layers are independent by design. A device the tenant does not recognise is not evaluated by the device filter, which is why the browser and network layers are required and not optional.
+H1 |3. Prerequisites
+P |Confirm all four before starting. Each is a hard dependency of the build steps.
+TBL|900,3400,5060
+TH |**#**||**Prerequisite**||**How to confirm**
+TR |1||Autopilot self-deploying profile exists and is named CDG W11 Autopilot SelfDeploying||Intune admin centre > Devices > Enrolment > Windows Autopilot deployment profiles
+TR |2||At least one Participant Kiosk device has completed enrolment and appears as Entra ID joined||Entra admin centre > Devices > All devices, filter on name prefix APM-PK-
+TR |3||The two tenant emergency access accounts are identified||Entra admin centre > Users. Record both User Principal Names before step 4.3
+TR |4||The account performing the build holds Conditional Access Administrator or Security Administrator||Entra admin centre > Roles and administrators > Assignments
+END
+GD |The device filter matches on the enrolment profile name as a literal string. If the Autopilot profile is renamed at any point, this policy silently stops matching. Any change to that profile name must be treated as a change to this policy.
+H1 |4. Build Steps
+P |Six steps. Steps 4.1 and 4.2 confirm the filter will match before the policy is created. Step 4.3 creates the policy in report-only. Steps 4.4 to 4.6 verify, enforce and re-verify.
+H2 |4.1 Step 1 - Confirm the enrolment profile name
+P |The device filter depends on an exact string match. Copy the name from the portal rather than typing it.
+NUM |Open the Intune admin centre.
+NUM |Go to Devices > Enrolment > Windows Autopilot deployment profiles.
+NUM |Open the Participant Kiosk profile and copy its name exactly, including case, hyphens and the version suffix.
+P |Expected value: CDG W11 Autopilot SelfDeploying
+P |The name carries spaces and no hyphens. It does not follow the CDG-W11-&lt;class&gt;-&lt;name&gt;-&lt;env&gt;-&lt;version&gt; convention used by every other object in this solution, and it must not be corrected to match that convention while CA-107 is enforced: the filter matches this string literally.
+P |Pass criterion: the copied string matches the expected value character for character. If it does not, stop and resolve the naming difference before continuing.
+H2 |4.2 Step 2 - Confirm the filter returns the kiosk fleet
+P |Validate the filter expression against real devices before it is used to block access.
+NUM |Open the Entra admin centre.
+NUM |Go to Devices > All devices > Filter.
+NUM |Apply the enrolment profile name and the join type as filter values, using the string confirmed in step 4.1.
+NUM |Record the device count returned.
+P |Pass criterion: the returned set contains every enrolled Participant Kiosk and no other device. A corporate laptop appearing in this set means the filter is wrong and must not be used to block.
+H2 |4.3 Step 3 - Create the policy in report-only
+P |Path: Entra admin centre > Protection > Conditional Access > Policies > New policy.
+P |Create the policy with the values in the table below. Set the enable state to Report-only, not On.
+TBL|2600,6760
+TH |**Field**||**Value**
+TR |Name||CA-107 - All Users & Guests - All Apps - Participant Kiosk Devices - Block
+TR |Users > Include||All users
+TR |Users > Exclude||The two emergency access accounts recorded in prerequisite 3
+TR |Target resources||All cloud apps
+TR |Conditions > Filter for devices||Include devices where: device.trustType -eq "AzureADJoined" -and device.enrollmentProfileName -eq "CDG W11 Autopilot SelfDeploying"
+TR |Grant||Block access
+TR |Session||Not configured
+TR |Enable policy||Report-only
+END
+P |Pass criterion: the policy saves without a validation error and appears in the policy list with state Report-only.
+BQ |Do not omit the emergency access account exclusion. A policy that includes All users against All cloud apps with a Block grant is capable of locking every administrator out of the tenant if its filter is ever mis-scoped. The exclusion is the recovery path, and it is the same exclusion carried by every other tenant policy.
+H2 |4.4 Step 4 - Verify in report-only
+P |Report-only records what the policy would have done, without enforcing it. Run this on a pilot device before enforcing.
+NUM |On a Participant Kiosk in the pilot ring, open Edge and attempt to sign in to a Microsoft 365 service with a test APM account.
+NUM |In the Entra admin centre, go to Monitoring and health > Sign-in logs and locate that sign-in.
+NUM |Open the sign-in, select the Report-only tab and find CA-107.
+P |Pass criterion: CA-107 shows result Would have blocked for the kiosk sign-in, and does not appear as Would have blocked against any sign-in from a corporate device over the same period.
+P |Remain in report-only for the pilot. Do not enforce until the pilot has produced this evidence and APM Cyber Security has confirmed the result.
+H2 |4.5 Step 5 - Enforce
+P |Enforce before national rollout, per APM Cyber Security practice. Report-only is not a control.
+NUM |Confirm the step 4.4 pass criterion is documented and accepted.
+NUM |Open the policy: Entra admin centre > Protection > Conditional Access > Policies > CA-107.
+NUM |Set Enable policy to On and save.
+NUM |Record the date, time and approver in the as-built record at section 6.
+P |Pass criterion: the policy list shows CA-107 with state On.
+H2 |4.6 Step 6 - Confirm the corporate grant policies
+P |This step confirms the block takes precedence and that no corporate grant policy has been altered. In Conditional Access, an applicable block always overrides a grant, so no change to the two grant policies is required.
+NUM |Open each of AllUsers_AllAccess_DeviceRequired and AllUsers_AllAccess_MFAorDeviceRequired.
+NUM |Confirm neither has been edited as part of this build and that neither excludes the kiosk device filter.
+NUM |Confirm no corporate Conditional Access policy has been newly scoped to include the Participant Kiosk device group.
+P |Pass criterion: both grant policies are unchanged from their pre-build export, and the kiosk sign-in in step 4.4 was blocked despite satisfying both.
+P |Related dependency: corporate Intune configuration profiles and application assignments that target All Devices or All Users must exclude the Participant Kiosk device group. That is a separate exclusion exercise, recorded as assumption A-10 in the Detailed Design Document, and it is not a Conditional Access change.
+H1 |5. Verification Tests
+P |Every test has an objectively true or false pass criterion. Run all five before the fleet is declared in service, and retain the output as RFFR evidence.
+TBL|700,3200,5460
+TH |**#**||**Test**||**Pass criterion**
+TR |1||Sign in to a Microsoft 365 service from a Participant Kiosk with a valid APM account||Access denied. Sign-in log shows CA-107 as the failing policy
+TR |2||Sign in to the same service with the same account from a corporate laptop||Access granted. CA-107 does not appear as applied
+TR |3||Attempt access to the Azure portal from a Participant Kiosk||Access denied by CA-107. Confirms the All cloud apps target covers the portals
+TR |4||Review the device filter result count against the enrolled fleet count||The two counts match. No device outside the fleet is captured
+TR |5||Search Conditional Access for CA-APM-Kiosk and CA-APM-KioskPB||No results. Confirms the retired policy families are gone
+END
+P |Test 2 is the one most often skipped and the one that matters most. It proves the policy is scoped to the hardware rather than to the identity, and that staff access is unaffected.
+H1 |6. As-Built Record
+P |Complete this table at enforcement and retain it as the configuration record of the policy.
+TBL|2400,2200,2200,2560
+TH |**Item**||**Value**||**Date**||**Confirmed by**
+TR |Policy name||CA-107 - All Users & Guests - All Apps - Participant Kiosk Devices - Block||||
+TR |Policy object ID||||||
+TR |Created in report-only||||||
+TR |Report-only evidence accepted||||||
+TR |Enforced (state On)||||||
+TR |Enrolment profile name at enforcement||CDG W11 Autopilot SelfDeploying||||
+TR |Device count matched by filter||||||
+TR |Verification tests 1 to 5 complete||||||
+END
+H1 |7. Related Tenant Policies
+H2 |7.1 Policies that remain unchanged
+P |The following tenant policies apply to APM staff identities and are enforced. None is changed by this build. They are listed so an auditor can see what was and was not touched.
+TBL|2400,6960
+TH |**Policy**||**Control**
+TR |Deny Legacy Auth, CA-100||Legacy authentication protocols blocked
+TR |CA-102||Locations other than Australia and corporate blocked. This is why the fleet needs no location policy of its own
+TR |CA-104||High sign-in risk blocked
+TR |CA-105||Known-bad IP addresses blocked
+TR |CA-201||No browser session persistence on unmanaged devices
+TR |CA-203||High user risk requires multi-factor authentication and a password reset
+TR |AllUsers_AllAccess_DeviceRequired||Grants access from a compliant or Entra-joined device
+TR |AllUsers_AllAccess_MFAorDeviceRequired||Grants access on multi-factor authentication or an Entra-joined device
+END
+BQ |Two qualifications, taken from the tenant Conditional Access export of 7 August 2026. First, phishing-resistant multi-factor authentication is report-only in the tenant today, in both CA-401 and CA-106, as is CA-101, the tenant-wide multi-factor policy. Phishing-resistant authentication is therefore not cited as a compensating control anywhere in this build. Second, the risk-based policies above evaluate a user principal, so a fleet with no user identity is never assessed by them. That is not a gap: the device-centred equivalents are the compliance policy, App Control and Defender for Endpoint alerting.
+H2 |7.2 Retired policies
+P |Fourteen Conditional Access policies belonging to the previous kiosk solution were deleted on 12 August 2026 under the kiosk decommissioning change request. Both families assigned to groups of user identities, so all fourteen stopped matching anything when the kiosk user group was retired.
+TBL|2000,1400,5960
+TH |**Family**||**Count**||**Disposition**
+TR |CA-APM-Kiosk-*||7, all report-only||Deleted. Report-only data exported as RFFR evidence before deletion
+TR |CA-APM-KioskPB-*||7, 6 enforced||Deleted. Sign-in data exported as RFFR evidence before deletion
+END
+P |Verification test 5 confirms both families are absent.
+H1 |8. Rollback
+P |The policy is a single object with no dependencies. Rollback is immediate and carries no data loss.
+TBL|900,3400,5060
+TH |**#**||**Action**||**Effect**
+TR |1||Set CA-107 to Report-only||Enforcement stops immediately. Evaluation and logging continue
+TR |2||Set CA-107 to Off||The policy stops evaluating entirely
+TR |3||Delete CA-107||Removes the object. Only where the design position itself is reversed
+END
+P |Rollback trigger: a corporate device is blocked by CA-107, indicating the device filter is mis-scoped. Called by APM Cyber Security.
+P |Reverting to Report-only is the correct first action in every case. It restores staff access within one authentication cycle while preserving the logging needed to diagnose the filter.
+GD |Rolling this policy back leaves the browser and network layers in place, but removes the only control that stops an APM identity authenticating from kiosk hardware. Treat any rollback as an open risk until the filter is corrected and the policy re-enforced.

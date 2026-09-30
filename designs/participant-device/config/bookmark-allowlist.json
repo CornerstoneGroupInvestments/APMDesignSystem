@@ -1,0 +1,313 @@
+{
+  "generated": "2026-09-04",
+  "source": "content-technical.txt A.7",
+  "linkCount": 53,
+  "hostCount": 38,
+  "hosts": [
+    "adf.org.au",
+    "alffie.com",
+    "apsjobs.gov.au",
+    "askizzy.org.au",
+    "au.indeed.com",
+    "au.jora.com",
+    "beyondblue.org.au",
+    "calculate.fairwork.gov.au",
+    "create.microsoft.com",
+    "cvcheck.com",
+    "dit.sa.gov.au",
+    "duke.co",
+    "ethicaljobs.com.au",
+    "facebook.com",
+    "fairwork.gov.au",
+    "govolunteer.com.au",
+    "gumtree.com.au",
+    "headspace.org.au",
+    "mciinstitute.edu.au",
+    "moneysmart.gov.au",
+    "nt.gov.au",
+    "seek.com.au",
+    "servicesaustralia.gov.au",
+    "tafe.wa.edu.au",
+    "tafecourses.com.au",
+    "tafensw.edu.au",
+    "tafeqld.edu.au",
+    "tafesa.edu.au",
+    "tastafe.tas.edu.au",
+    "tmr.qld.gov.au",
+    "transport.act.gov.au",
+    "transport.nsw.gov.au",
+    "transport.tas.gov.au",
+    "transport.wa.gov.au",
+    "vic.gov.au",
+    "workforceaustralia.gov.au",
+    "youtu.be",
+    "youtube.com"
+  ],
+  "links": [
+    {
+      "folder": "Workforce Australia",
+      "name": "Workforce Australia Online for Individuals - Job Search",
+      "url": "https://www.workforceaustralia.gov.au/individuals/jobs/search"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Improve Your Job Search",
+      "url": "https://www.workforceaustralia.gov.au/individuals/coaching/job-search"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Compliance Framework",
+      "url": "https://www.workforceaustralia.gov.au/individuals/obligations/learn/dont-meet-your-obligations/compliance-demerits"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Contact Us",
+      "url": "https://www.workforceaustralia.gov.au/individuals/contact-us/"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Video - Your Workforce Australia Homepage",
+      "url": "https://www.youtube.com/watch?v=AFnNpzrBGbg"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Video - Link Workforce Australia account in myGov",
+      "url": "https://youtu.be/lVLdwUecxhc"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Video - How to create your profile",
+      "url": "https://www.youtube.com/watch?v=Ac04__5k2xk"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Video - How to submit multiple Job Search efforts",
+      "url": "https://youtu.be/xSyU4Y8B1I4"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Video - Your Job Plan explained",
+      "url": "https://www.youtube.com/watch?v=1YTeDgjivcw"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Video - Your Points Target Explained",
+      "url": "https://www.youtube.com/watch?v=kzK5JBN8eUw"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Video - Earning and reporting points",
+      "url": "https://www.youtube.com/watch?v=PErET8hpo-I"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Video - Points for study and training",
+      "url": "https://www.youtube.com/watch?v=rXjUN_xW7t4"
+    },
+    {
+      "folder": "Workforce Australia",
+      "name": "Video - Points for paid work",
+      "url": "https://www.youtube.com/watch?v=OwsyN6Tsqsw"
+    },
+    {
+      "folder": "Centrelink and Services Australia",
+      "name": "Centrelink Medical Certificate form (SU415)",
+      "url": "https://www.servicesaustralia.gov.au/su415"
+    },
+    {
+      "folder": "Centrelink and Services Australia",
+      "name": "Verification of medical conditions form (SU684)",
+      "url": "https://www.servicesaustralia.gov.au/su684"
+    },
+    {
+      "folder": "Centrelink and Services Australia",
+      "name": "Report employment income - online account help",
+      "url": "https://www.servicesaustralia.gov.au/centrelink-online-account-help-report-employment-income"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "Resume Templates",
+      "url": "https://create.microsoft.com/en-us/templates/resumes"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "Cover Letter Templates",
+      "url": "https://create.microsoft.com/en-us/templates/cover-letters"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "Seek",
+      "url": "https://www.seek.com.au/"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "Jora",
+      "url": "https://au.jora.com/"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "Indeed",
+      "url": "https://au.indeed.com/"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "Gumtree",
+      "url": "https://www.gumtree.com.au/"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "Ethical Jobs",
+      "url": "https://www.ethicaljobs.com.au/"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "APS Jobs",
+      "url": "https://www.apsjobs.gov.au/s/"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "Facebook",
+      "url": "https://www.facebook.com/"
+    },
+    {
+      "folder": "Job Search and Applications",
+      "name": "National Police Check Australia",
+      "url": "https://cvcheck.com/national-police-check/"
+    },
+    {
+      "folder": "Support Services",
+      "name": "Ask Izzy",
+      "url": "https://askizzy.org.au/"
+    },
+    {
+      "folder": "Support Services",
+      "name": "Beyond Blue",
+      "url": "https://www.beyondblue.org.au/"
+    },
+    {
+      "folder": "Support Services",
+      "name": "Headspace",
+      "url": "https://headspace.org.au/"
+    },
+    {
+      "folder": "Support Services",
+      "name": "Alcohol and Drug Foundation",
+      "url": "https://adf.org.au/resources/druginfo/"
+    },
+    {
+      "folder": "Support Services",
+      "name": "Financial Counselling - Moneysmart",
+      "url": "https://moneysmart.gov.au/managing-debt/financial-counselling"
+    },
+    {
+      "folder": "Work Rights and Volunteering",
+      "name": "Fair Work",
+      "url": "https://www.fairwork.gov.au/"
+    },
+    {
+      "folder": "Work Rights and Volunteering",
+      "name": "Fair Work - Pay and Conditions Tool",
+      "url": "https://calculate.fairwork.gov.au/"
+    },
+    {
+      "folder": "Work Rights and Volunteering",
+      "name": "Volunteering Australia",
+      "url": "https://govolunteer.com.au/"
+    },
+    {
+      "folder": "Transport",
+      "name": "Transport Canberra (ACT)",
+      "url": "https://www.transport.act.gov.au/"
+    },
+    {
+      "folder": "Transport",
+      "name": "Transport for NSW",
+      "url": "https://www.transport.nsw.gov.au/"
+    },
+    {
+      "folder": "Transport",
+      "name": "Driving NT",
+      "url": "https://nt.gov.au/driving"
+    },
+    {
+      "folder": "Transport",
+      "name": "Transport and Main Roads (QLD)",
+      "url": "https://www.tmr.qld.gov.au/"
+    },
+    {
+      "folder": "Transport",
+      "name": "Infrastructure and Transport (SA)",
+      "url": "https://www.dit.sa.gov.au/"
+    },
+    {
+      "folder": "Transport",
+      "name": "Transport and Planning (VIC)",
+      "url": "https://www.vic.gov.au/department-transport-and-planning"
+    },
+    {
+      "folder": "Transport",
+      "name": "Transport WA",
+      "url": "https://www.transport.wa.gov.au/"
+    },
+    {
+      "folder": "Transport",
+      "name": "Transport Services (TAS)",
+      "url": "https://www.transport.tas.gov.au/"
+    },
+    {
+      "folder": "Training",
+      "name": "Duke",
+      "url": "https://duke.co/"
+    },
+    {
+      "folder": "Training",
+      "name": "MCI Institute",
+      "url": "https://www.mciinstitute.edu.au/"
+    },
+    {
+      "folder": "Training",
+      "name": "Alffie",
+      "url": "https://www.alffie.com/"
+    },
+    {
+      "folder": "Training",
+      "name": "TAFE QLD",
+      "url": "https://tafeqld.edu.au/"
+    },
+    {
+      "folder": "Training",
+      "name": "TAFE ACT",
+      "url": "https://www.tafecourses.com.au/courses/act/"
+    },
+    {
+      "folder": "Training",
+      "name": "TAFE NSW",
+      "url": "https://www.tafensw.edu.au/"
+    },
+    {
+      "folder": "Training",
+      "name": "TAFE VIC",
+      "url": "https://www.vic.gov.au/tafe"
+    },
+    {
+      "folder": "Training",
+      "name": "TAFE WA",
+      "url": "https://www.tafe.wa.edu.au/"
+    },
+    {
+      "folder": "Training",
+      "name": "TAFE NT",
+      "url": "https://www.tafecourses.com.au/courses/northern-territory/"
+    },
+    {
+      "folder": "Training",
+      "name": "TAFE SA",
+      "url": "https://www.tafesa.edu.au/"
+    },
+    {
+      "folder": "Training",
+      "name": "TAFE TAS",
+      "url": "https://www.tastafe.tas.edu.au/"
+    }
+  ]
+}

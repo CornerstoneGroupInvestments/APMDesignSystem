@@ -1,0 +1,422 @@
+
+Detail Design Document
+Template V0.1
+ DATE \@ "d MMMM yyyy" 
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Project Name: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Document Owner: |  |  | 
+Samit Chandra, 
+Head of Digital Transformation &amp; Architecture
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Contact Details: |  |  | 
+Samit.Chandra@apm.net.au
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Program Name: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Division/Unit: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Document Status: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Document Version: |  |  | 
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Product ID: |  |  | 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FOR INTERNAL USE ONLY
+Commercial in confidence
+© APM
+
+Document control
+Version History
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Version |  |  | 
+       Date |  |  | 
+Author |  |  | 
+                             Key changes
+[ROW]
+[ROW] |  |  | 
+V0.1 |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Consultation
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Position title |  |  | 
+Date
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+References and Derivation
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW] |  |  | 
+Version # |  |  | 
+Document Title |  |  | 
+Reference Location
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+SDA Approval
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[TABLE]
+
+[ROW]
+[ROW]
+[ROW] |  |  | 
+Name |  |  | 
+Role/Group |  |  | 
+Signature |  |  | 
+Date
+[ROW]
+[ROW]
+[ROW] |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+
+
+Confidentiality &amp; Disclaimer
+This document is provided by Advanced Personnel Management International Pty Ltd and / or its related entities (APM) on a confidential basis. This document is subject to approval of the APM Board and does not constitute an offer capable of acceptance. No agreement binding APM or its related companies in respect of this document is intended or proposed unless and until the terms and conditions between APM or its related entities are agreed in writing in a formal agreement with the named Company or Prospective Client.
+APM will not be bound by any pricing or any other material contained in this response until the above has taken place. 
+Photography
+Photographs used in this document are for illustration only and should not be interpreted to mean that any person or organisation whose assets are shown in them endorses this document.
+
+APM Contact
+Communications regarding this document should be forwarded to:
+Head of Digital Transformation &amp; Architecture
+P08 XXXX XXXX
+M08 XXXX XXXX
+Esamit.chandra@apm.net.au
+APM Contact
+Communications regarding this document should be forwarded to:
+Head of Digital Transformation &amp; Architecture
+P08 XXXX XXXX
+M08 XXXX XXXX
+Esamit.chandra@apm.net.au
+
+
+
+Contents
+ TOC \o "1-3" \h \z \u 1. Introduction PAGEREF _Toc207615540 \h 6
+1.1 Purpose PAGEREF _Toc207615541 \h 6
+1.2 Audience PAGEREF _Toc207615542 \h 6
+2. Overview PAGEREF _Toc207615543 \h 7
+2.1 Scope PAGEREF _Toc207615544 \h 7
+2.2 Guiding Principles PAGEREF _Toc207615545 \h 7
+2.3 Assumptions PAGEREF _Toc207615546 \h 7
+3. Business Architecture PAGEREF _Toc207615547 \h 8
+3.1 Business Reference architecture PAGEREF _Toc207615548 \h 8
+3.2 Business Requirements PAGEREF _Toc207615549 \h 9
+3.3 Gap treatment PAGEREF _Toc207615550 \h 9
+4. Application Architecture PAGEREF _Toc207615551 \h 9
+4.1 System Context Diagram PAGEREF _Toc207615552 \h 10
+4.2 Solution/Product Component Inventory PAGEREF _Toc207615553 \h 10
+4.3 Solution Interface Diagram PAGEREF _Toc207615554 \h 10
+4.4 Solution/Product Interface catalogue PAGEREF _Toc207615555 \h 10
+5. Technology Architecture PAGEREF _Toc207615556 \h 10
+5.1 Technology Component Standards PAGEREF _Toc207615557 \h 11
+5.2 Integration standards and patterns PAGEREF _Toc207615558 \h 11
+5.3 Network &amp; Infrastructure Standards &amp; Patterns PAGEREF _Toc207615559 \h 12
+5.4 Technology component Deployment Patterns PAGEREF _Toc207615560 \h 12
+6. Information &amp; Data Architecture PAGEREF _Toc207615561 \h 12
+6.1 Information Model PAGEREF _Toc207615562 \h 12
+6.2 Information Classification PAGEREF _Toc207615563 \h 13
+6.3 Analytics and reporting Patterns PAGEREF _Toc207615564 \h 13
+7. Cyber &amp; Security Architecture PAGEREF _Toc207615565 \h 13
+8. Service Availability and Disaster Recovery PAGEREF _Toc207615566 \h 13
+8.1 Business Service Tiering PAGEREF _Toc207615567 \h 13
+8.2 Service Availability PAGEREF _Toc207615568 \h 13
+8.2 Disaster recovery &amp; Resilience PAGEREF _Toc207615569 \h 13
+9. Service Management PAGEREF _Toc207615570 \h 14
+9.1 Service Management principles PAGEREF _Toc207615571 \h 14
+9.2 Monitoring, Logging, Reporting and Alerting PAGEREF _Toc207615572 \h 14
+
+
+
+1. Introduction
+1.1 Purpose
+
+The purpose of this document is to provide a high-level logical architecture view of the implementation of initiative for &lt;&lt; Project&gt;&gt; and related Integration Components and to define any Services required which will be implemented to allow satellite systems to integrate and coexist with inherent eco system. Services are also mapped to requirements (Business Use Cases) as part of this document.
+This document will form the basis on which Technical Design document (TDD) for each distinct solution component can be prepared.
+The aim of this document is to:
+1.Outline the business requirements currently identified
+2.Describe the logical architecture to meet those requirements
+3.Describe the physical architecture to meet those requirements
+4.Describe the solution decisions that have been made with the business requirements in mind and their implications. Though Functional requirements that are partially or fully enabled by solution design (vs tool capabilities) will be considered in this document, Non-functional requirements driven by service tiering and business will be addresses as well.
+5.Outline data and cyber security requirements and policies &amp; controls to adhere and meet APM cyber security guidelines and standards
+1.2 Audience
+The primary audience for the use of this document are APM’s Digital delivery, Digital operations, Cyber security, Information architecture team and project teams responsible for development/build, integration development, support, and maintenance. However, in order to build a framework that will support the business needs of APM, it is critical that the business owners and business operations staff be involved in the development of the framework, especially from the perspective of identifying the business requirements that are driving the development of the framework.
+This includes:
+Business Sponsor,
+Business Partners,
+Project Management office,
+Digital Transformation &amp; Architecture, 
+Digital Operations
+Digital Delivery
+Cyber Security 
+And wider Digital teams.
+
+
+2. Overview 
+&lt;&lt; Insert a description for the solution/product providing high level context and background for the using business friendly language and terms. &gt;&gt;
+2.1 Scope
+
+&lt;&lt;Insert a statement that explains the business scope including capabilities, process, people, that is impacted directly or indirectly by this initiative. 
+What part of the business will this solution/product impact at the high level?
+Overlay of Business Capability Model to demonstrate impacted business areas, capabilities with heatmap
+Clearly outline items that are our-of scope and remediation
+
+2.2 Guiding Principles
+
+The Guiding Principles are a set of key statements and ideas that drive how elements of the project will be designed, implemented, and operated. These principles are contextualised focusing on the project deliver aligning to the project/program success criteria
+
+2.3 Assumptions
+&lt;&lt;Outline key assumptions  across all the architecture domain(business, Technology, Information &amp; Integration and Cyber) made while conceptualisation of the solution&gt;&gt;
+3. Business Architecture
+
+&lt;&lt;The solution/product is a response to target business outcomes. These business outcomes are defined as part of the business architecture (BA). 
+Explain how the solution/product supports the business architecture, calling out any objectives and target business outcomes — consistent use of business terms from an accepted glossary is advised. At minimum provide a description of the business capabilities impacted and how these and related BA models need to change to address target business outcomes. Provide a clear link from the BA required transformation to the solution/product. 
+However, the scope of your solution/product architecture will determine the scope of the BA to be documented. 
+For advice and guidance on BA and deliverables review Tool: Business Architecture Activities and Deliverables Close the Strategy-to-Execution Gap. 
+Ensure the BA documentation (diagrams, tables, inventories and, presented conforms to standard notations and formats. Where possible, reuse BA documentation that might reside in a central repository. 
+3.2 Business Reference architecture
+&lt;&lt;Insert Business Reference architecture to articulate Business capabilities impacted, uplift expected, Values streams and business process enhanced or impacted as result of this initiative.&gt;&gt;
+
+50018953406775
+Figure  SEQ Figure \* ARABIC 1. Reference Architecture Components0
+Figure  SEQ Figure \* ARABIC 1. Reference Architecture Components64833530035500This is a reference from Design definition .This is a reference from Design definition 
+For advice and guidance on BA and deliverables review Tool: Business Architecture Activities and Deliverables Close the Strategy-to-Execution Gap. 
+Ensure the BA documentation (diagrams, tables, inventories and, presented conforms to standard notations and formats. Where possible, reuse BA documentation that might reside in a central repository. 
+
+3.3 Business Requirements 
+&lt;&lt;Include architectural significant business requirements and gap analysis with the scope and high-level requirement traceability (met/Not met). Provide the link to business requirements document as a reference
+Separate Functional and non-functional requirements to traceability and analysis. 
+3.4 Gap treatment
+
+&lt;&lt;Insert  the gap treatment agreed with business to address all the requirement which are not met with solution recommended&gt;&gt;
+
+4. Application Architecture
+
+&lt;&lt;Insert a description of the application architecture required for the solution/product. This description should include an explanation of the system and its components, including all applications and services that need to be integrated with the target solution/product. This section should describe the application architecture required to meet business and data transformation requirements, including data flows and interfaces to other applications and services. 
+The description should clearly identify new investments in solution/product components such as the purchase of new software and/or technology components. The rationale for investing in new software or services over the reuse of existing solutions should be included. See The Must-Have Components of Procurement Technology Business Cases.
+Existing components that need to be changed should also be identified and the changes explained. 
+If the enterprise application policy is “buy vs build,” and the recommendation is to “build,” then the business case should be included in these sections via a high-level statement and a link to the complete business case document. 
+Include references to architecture documentation frameworks that are required by your enterprise. Examples can include:
+4+1 View Model — uses five different views (Logical, Development, Process, Physical and Scenarios) to describe software architecture.
+ C4 Model — uses four levels of diagrams (System Context, Container, Component and Code) to describe software architecture.
+ Views and Beyond — is a comprehensive approach to architecture documentation that incorporates multiple types of information.&gt;&gt;
+The scope of your solution/product will determine what application architecture documentation will be required. 
+
+At a minimum, the following sections should be documented: 
+For each of the sections, ensure:
+Standard naming conventions, notations, formats and reference data are used.
+Diagrams and inventories are reused from central repositories, and any changes are reflected in central repositories following change management processes.&gt;&gt;
+4.1 System Context Diagram 
+&lt;&lt;A system context model diagram that shows how the current and target solution/product interacts with other systems and services. This diagram should be in logical format and at high-level and should not detail any solution/product/interface components. Roles and processes, internal and external can be included.&gt;&gt;
+4.2 Solution/Product Component Inventory 
+&lt;&lt;An inventory of all solution/product components in scope. Where possible, this inventory should follow existing standards and document mandatory solution/product component reference data and IDs. 
+Clearly identify the components that are new and/or will require changes.&gt;&gt;
+This should include solution version, licensing information. 
+
+4.3 Solution Interface Diagram
+&lt;&lt;A diagram showing all solution/product components of type application and service, including all detailed interfaces. The diagram should follow accepted naming conventions for all objects, components and interfaces, referencing the correct master IDs and data in section 5.2 above.&gt;&gt;
+
+4.4 Solution/Product Interface catalogue 
+
+&lt;&lt;Provide an inventory of all solution/product component interfaces in scope. This inventory should follow existing naming standards and document mandatory solution/product component interface reference data and IDs, including data flows, interface patterns (e.g., ETL, File Transfer etc.), interface technologies and services used, such as API Management by Vendor YYYY, ETL product by vendor YYYY.&gt;&gt;
+
+5. Technology Architecture
+&lt;&lt;Insert a description of the technology architecture required for the solution/product. This description should include an explanation of the technology reference model (TRM) and the components required to deploy the solution/product into production environment. A description of the DevOps environment can be included to help the reader understand how the solution/product assets will be developed and released into product, including Dev/Test environments. Figure 2 provides an example TRM . &gt;&gt;
+72390025908000
+5.1 Technology Component Standards 
+
+&lt;&lt; For the scope for the solution/product architecture, insert an inventory of the technology component standards naming the vendors’ products providing each technology component. The inventory should include all technology components for each of the applicable TRM domains using the enterprise standard naming conventions and notations. See Reference Architecture Implementation Guide. 
+Ensure the inventory of technology components references any central repositories and uses records within these repositories to document the inventory. The approved status of each technology component should be listed, making it clear what components are approved, under-review or new. Any classification status for approved that allows the limited use of a technology component under specified conditions should also be documented. For example, approved for region, country and use case YYYY.
+•Complete the technology component standards list for each for your organizations TRM domains. The below provides an example list.
+•List any policies, controls (NIST Control Framework for Security), standards and/or use case limits for each of the domains.&gt;&gt; 
+
+5.2 Integration standards and patterns
+. 
+&lt;&lt; Insert details. See the following for guidance and examples:
+Choosing Application Integration Platform Technology
+Decision Point for Mediating API and Microservices Communication
+&gt;&gt;
+5.3 Network &amp; Infrastructure Standards &amp; Patterns
+
+&lt;&lt; Insert details. See the following for guidance and examples:
+How to Architect Your WAN for Hybrid Cloud and Multicloud
+Optimize WAN Architectures for Workloads That Span the Hybrid Cloud and the Multicloud
+What Are the Key Factors to Consider When Choosing a Cloud Data Management Architecture?
+Infrastructure for Technical Professionals Primer for 2023
+            Number of environments and technology components available in those environments
+
+5.4 Technology component Deployment Patterns
+
+&lt;&lt; Insert a description of the technology component deployment pattern for the solution/product architecture. Indicate whether the pattern is approved and standard or to be updated as a result of this solution/product architecture. See the following for guidance and examples:
+A Guidance Framework for Deploying Data and Analytics in the Cloud
+Guidance Framework for Deploying Centralized Log Monitoring
+Using ‘Policy as Code’ to Secure Application Deployments and Enforce Compliance
+Designing and Operating DevOps Workflows to Deploy Containerized Applications With Kubernetes
+Quick Answer: How Can I Optimize the Use of Programmable Platforms for Effective Software Delivery?
+Solution Path for Cloud-Native Infrastructure With Kubernetes
+&gt;&gt;
+
+6. Information &amp; Data Architecture
+
+6.1 Information Model
+
+&lt;&lt; Insert details of Conceptual Data model including reference to product specific data model if any available&gt;&gt;
+6.2 Information Classification
+ &lt;&lt; Insert data classification for all the conceptual data elements identified aligning to APM data classification standards&gt;&gt;
+
+6.3 Analytics and reporting Patterns
+
+&lt;&lt; Insert details of Solution for Building Modern Analytics and BI Architectures to meet APM business requirements. &gt;&gt;
+7. Cyber &amp; Security Architecture 
+
+&lt;&lt; Insert details of policies, control and procedures adopted to meet the requirements as described in patterns in section above. Along with this if there is a gap to be addressed as part of current Cyber standard, outline the proposed controls, policies and procedures to be implemented.
+Topics to be covered but not limited to Identity (User, application, integration)
+Data and Network policies
+User accessibility and controls
+Device protection 
+Data Sovereignty 
+Encryption
+
+&gt;&gt;
+
+8. Service Availability and Disaster Recovery
+
+8.1 Business Service Tiering 
+&lt;&lt; This should align and driven by  Non-functional requirement captured &gt;&gt;
+8.2 Service Availability
+ &lt;&lt; This should align and driven by business Service tiering &gt;&gt;
+8.2 Disaster recovery &amp; Resilience
+&lt;&lt; Insert details. See the following for guidance and examples:
+Quick Answer: Build Network Resilience to Counter the Risks of Sabotage
+Designing Availability and Resilience for Applications in Public Cloud IaaS and PaaS
+IT Resilience — 7 Tips for Improving Reliability, Tolerability and Disaster Recovery
+Fundamental Elements of Business Continuity Management: Third-Party Risk and Contingency Management
+&gt;&gt;
+9. Service Management 
+9.1 Service Management principles
+
+9.2 Monitoring, Logging, Reporting and Alerting

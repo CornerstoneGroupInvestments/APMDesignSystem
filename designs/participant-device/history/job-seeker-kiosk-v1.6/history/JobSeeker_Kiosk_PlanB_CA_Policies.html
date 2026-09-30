@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><title>APM — Kiosk Plan B Conditional Access Policy Set</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Mulish:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+doc-page:not(:defined){visibility:hidden}
+body{font-family:'Mulish',sans-serif;color:#26304d;font-size:10.5pt;line-height:1.55}
+h1,h2,h3{font-family:'Poppins',sans-serif;color:#1F2D58;text-wrap:balance}
+h1{font-size:22pt;line-height:1.2;margin:0 0 4pt}
+h2{font-size:14pt;margin:22pt 0 8pt;padding-bottom:4pt;border-bottom:2px solid #F89728}
+h3{font-size:11.5pt;margin:16pt 0 4pt}
+p{margin:0 0 8pt}
+a{color:#1F2D58}a:hover{color:#F89728}
+.meta{color:#5A6B9E;font-size:9.5pt;margin:0 0 2pt}
+.dochead{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:18pt}
+.dochead img{height:44px}
+.tag{display:inline-block;background:#FDE5C6;color:#7a4a08;font-family:'Poppins',sans-serif;font-weight:600;font-size:8.5pt;padding:2pt 10pt;border-radius:999px;margin-top:6pt}
+.policy{border:1px solid #dfe3ee;border-radius:10px;padding:12pt 14pt;margin:0 0 10pt;break-inside:avoid}
+.policy h3{margin:0 0 2pt;font-size:11pt}
+.policy .fn{font-family:'Poppins',sans-serif;font-weight:600;font-size:9pt;color:#F89728;text-transform:uppercase;letter-spacing:.04em;margin:0 0 6pt}
+.policy p{margin:0 0 6pt}
+table{width:100%;border-collapse:collapse;font-size:9.5pt;margin:6pt 0 10pt}
+th{font-family:'Poppins',sans-serif;font-weight:600;text-align:left;background:#1F2D58;color:#fff;padding:5pt 8pt}
+td{padding:5pt 8pt;border-bottom:1px solid #e5e8f1;vertical-align:top}
+tr{break-inside:avoid}
+.cfg td:first-child{width:110pt;font-weight:700;color:#1F2D58}
+.cfg th{display:none}
+.cfg{margin:4pt 0 0}
+.note{background:#f4f6fb;border-radius:10px;padding:10pt 14pt;margin:8pt 0;break-inside:avoid}
+.note p{margin:0}
+code{font-family:Consolas,monospace;font-size:9pt;background:#f4f6fb;padding:1pt 4pt;border-radius:4px;color:#1F2D58}
+ul{margin:0 0 8pt;padding-left:16pt}
+li{margin-bottom:3pt}
+</style></head><body>
+<doc-page size="a4" orientation="portrait" margin="0.8in">
+<div class="dochead"><div>
+<p class="meta">APM Digital Workplace — Job Seeker Kiosk (Interim Thick-Client Solution)</p>
+<h1>Conditional Access Policy Set</h1>
+<p class="meta">Version 0.1 draft &nbsp;•&nbsp; 20 July 2026 &nbsp;•&nbsp; Prepared by the Twiki Corp project team</p>
+<span class="tag">Passwordless-MFA exempt design — compensating controls</span>
+</div><img src="../assets/apm-logo.png" alt="APM"></div>
+
+<h2>Purpose</h2>
+<p>The interim kiosk solution signs in with fixed per-device usernames and passwords, so kiosk identities cannot satisfy multi-factor authentication. This policy set removes MFA for the kiosk population only and replaces it with layered compensating controls: access is bound to known, compliant, Entra-joined kiosk hardware, at APM sites, on approved applications only, with every credential-theft pathway (legacy auth, device-code phishing, off-site replay) explicitly blocked.</p>
+<p>All policies target the kiosk user group <code>SG-APM-Kiosk-PlanB-Users</code>. Device conditions use a device extension attribute (<code>extensionAttribute1 = "KioskPlanB"</code>) stamped on kiosk device objects, because Conditional Access device filters cannot reference an Entra security group. The device group <code>SG-APM-Kiosk-PlanB-Devices</code> continues to drive Intune policy assignment. APM sites do not present dedicated egress IP ranges, so no location-based policy is used; device binding (policies 1 and 2) carries the compensating role a trusted-location control would otherwise provide.</p>
+<div class="note"><p><strong>Deployment note:</strong> build every policy in <strong>report-only</strong> mode first, confirm expected sign-in outcomes in the Entra sign-in logs, then enable. Exclude the kiosk user group from any tenant-wide MFA policy, and exclude the break-glass accounts from all policies below, per APM CA standards.</p></div>
+
+<h2>Policies</h2>
+
+<div class="policy"><h3>1&nbsp;&nbsp;CA-APM-KioskPB-RequireCompliantDevice</h3><p class="fn">Grant — require compliant, Entra-joined kiosk device</p>
+<p>Allows kiosk sign-in only from devices that are Entra ID joined, carry the kiosk device attribute, and are marked compliant by Intune. A valid username and password is useless on any other machine: the sign-in cannot present a compliant kiosk device claim. Session controls stop tokens outliving the working day and prevent the browser keeping the user signed in after the session ends.</p>
+<table class="cfg"><tr><td>Users</td><td>Include SG-APM-Kiosk-PlanB-Users</td></tr><tr><td>Resources</td><td>All resources</td></tr><tr><td>Conditions</td><td>Platforms: Windows. Device filter (include): <code>device.trustType -eq "AzureAD" -and device.extensionAttribute1 -eq "KioskPlanB"</code></td></tr><tr><td>Grant</td><td>Require device to be marked as compliant</td></tr><tr><td>Session</td><td>Sign-in frequency 12 hours; persistent browser session: never persistent</td></tr></table></div>
+
+<div class="policy"><h3>2&nbsp;&nbsp;CA-APM-KioskPB-BlockNonKioskDevices</h3><p class="fn">Block — deny all non-kiosk devices</p>
+<p>The explicit deny that closes the gap left by policy 1: it blocks kiosk identities on every device that is <em>not</em> a tagged kiosk — including unregistered and unknown devices, which present no attribute at all and therefore match the filter. Together, policies 1 and 2 hard-bind each kiosk identity to APM kiosk hardware.</p>
+<table class="cfg"><tr><td>Users</td><td>Include SG-APM-Kiosk-PlanB-Users</td></tr><tr><td>Resources</td><td>All resources</td></tr><tr><td>Conditions</td><td>Device filter (include): <code>device.extensionAttribute1 -ne "KioskPlanB"</code></td></tr><tr><td>Grant</td><td>Block access</td></tr></table></div>
+
+<div class="policy"><h3>3&nbsp;&nbsp;CA-APM-KioskPB-BlockNonWindows</h3><p class="fn">Block — deny non-Windows platforms</p>
+<p>Backstop to policy 2: denies kiosk sign-ins from Android, iOS, macOS and Linux outright. Platform detection is evaluated independently of device filters, so a spoofed or anomalous device record still fails on platform.</p>
+<table class="cfg"><tr><td>Users</td><td>Include SG-APM-Kiosk-PlanB-Users</td></tr><tr><td>Resources</td><td>All resources</td></tr><tr><td>Conditions</td><td>Platforms (include): Android, iOS, macOS, Linux</td></tr><tr><td>Grant</td><td>Block access</td></tr></table></div>
+
+<div class="policy"><h3>4&nbsp;&nbsp;CA-APM-KioskPB-BlockLegacyAuth</h3><p class="fn">Block — legacy authentication</p>
+<p>Legacy protocols (IMAP, POP, SMTP AUTH, Exchange ActiveSync) do not carry device claims, so they bypass every device-based control above. For password-only accounts this is the classic attack path; it is closed unconditionally.</p>
+<table class="cfg"><tr><td>Users</td><td>Include SG-APM-Kiosk-PlanB-Users</td></tr><tr><td>Resources</td><td>All resources</td></tr><tr><td>Conditions</td><td>Client apps: Exchange ActiveSync clients, Other clients</td></tr><tr><td>Grant</td><td>Block access</td></tr></table></div>
+
+<div class="policy"><h3>5&nbsp;&nbsp;CA-APM-KioskPB-BlockAuthFlows</h3><p class="fn">Block — device code flow and authentication transfer</p>
+<p>Device-code phishing is the leading technique for stealing sessions from fixed-credential accounts: the attacker initiates a device-code sign-in and lures the user (or an automated kiosk flow) into approving it elsewhere. Authentication transfer similarly moves a session to an attacker-controlled device. Neither flow has any legitimate use on a kiosk.</p>
+<table class="cfg"><tr><td>Users</td><td>Include SG-APM-Kiosk-PlanB-Users</td></tr><tr><td>Resources</td><td>All resources</td></tr><tr><td>Conditions</td><td>Authentication flows: device code flow, authentication transfer</td></tr><tr><td>Grant</td><td>Block access</td></tr></table></div>
+
+<div class="policy"><h3>6&nbsp;&nbsp;CA-APM-KioskPB-BlockRiskySignIn</h3><p class="fn">Block — sign-in risk medium and above</p>
+<p>Identity Protection blocks anomalous sign-ins (impossible travel, anonymised IP, token anomalies) at medium or high risk. The tenant standard remediates risk with MFA; kiosk accounts can never satisfy that, so the kiosk policy blocks outright and at a lower threshold. Requires Entra ID P2 coverage for the kiosk identities — confirm licensing position with SoftwareOne.</p>
+<table class="cfg"><tr><td>Users</td><td>Include SG-APM-Kiosk-PlanB-Users</td></tr><tr><td>Resources</td><td>All resources</td></tr><tr><td>Conditions</td><td>Sign-in risk: medium, high</td></tr><tr><td>Grant</td><td>Block access</td></tr></table></div>
+
+<div class="policy"><h3>7&nbsp;&nbsp;CA-APM-KioskPB-BlockUnapprovedApps</h3><p class="fn">Block — default-deny all applications except the resume surface</p>
+<p>Kiosk identities exist for one task: creating and editing resumes in Office for the web. This policy blocks every cloud application by default and excludes only the services that task requires — Office for the web and SharePoint Online (OneDrive authenticates as SharePoint Online; it is required for Office web sessions and for staging USB files). Exchange, Teams and all other workloads are denied by default rather than by individual block policies. Data-plane exposure created by allowing SharePoint/OneDrive is controlled by Purview Information Barriers and the scratch-OneDrive wipe process, documented in the DDD §7.2.</p>
+<table class="cfg"><tr><td>Users</td><td>Include SG-APM-Kiosk-PlanB-Users</td></tr><tr><td>Resources</td><td>Include all resources; exclude Microsoft Office Online, Office 365 SharePoint Online (add Office 365 portal only if report-only testing shows the sign-in entry flow requires it)</td></tr><tr><td>Grant</td><td>Block access</td></tr></table></div>
+
+<h2>How the policies work together</h2>
+<p>No single policy carries the design. Each policy addresses a distinct control layer, and access is granted only where every layer is satisfied concurrently: approved hardware, a modern authentication client, approved applications, and normal sign-in behaviour.</p>
+<table><thead><tr><th style="width:30%">Policy</th><th style="width:20%">Control layer</th><th>Function in the environment</th><th style="width:26%">MFA-removal role</th></tr></thead><tbody>
+<tr><td>1 RequireCompliantDevice</td><td>Device trust and health</td><td>Restricts access to Entra-joined, Intune-managed kiosk devices assessed as compliant</td><td>Substitutes the possession factor with the managed kiosk device</td></tr>
+<tr><td>2 BlockNonKioskDevices</td><td>Device identity</td><td>Denies kiosk identities on any device not carrying the kiosk device attribute, including unregistered devices</td><td>Renders stolen credentials unusable on non-kiosk hardware</td></tr>
+<tr><td>3 BlockNonWindows</td><td>Platform</td><td>Denies sign-ins from Android, iOS, macOS and Linux platforms</td><td>Backstop where device claims are absent or spoofed</td></tr>
+<tr><td>4 BlockLegacyAuth</td><td>Protocol</td><td>Denies legacy authentication protocols that bypass device-based evaluation</td><td>Closes the password-spray attack path</td></tr>
+<tr><td>5 BlockAuthFlows</td><td>Authentication flow</td><td>Denies device code flow and authentication transfer</td><td>Closes device-code phishing and session-transfer vectors</td></tr>
+<tr><td>6 BlockRiskySignIn</td><td>Sign-in risk</td><td>Blocks sign-ins assessed by Identity Protection at medium risk or above</td><td>Provides the anomaly response MFA challenges would otherwise deliver</td></tr>
+<tr><td>7 BlockUnapprovedApps</td><td>Application</td><td>Denies all cloud applications except Office for the web and SharePoint Online</td><td>Constrains the blast radius of any compromised session</td></tr>
+</tbody></table>
+
+<h2>Supporting controls outside Conditional Access</h2>
+<ul>
+<li><strong>Security-info registration block</strong> — kiosk accounts must be prevented from registering MFA/SSPR methods, so an attacker holding the password cannot enrol their own authenticator.</li>
+<li><strong>Tenant MFA exclusions</strong> — exclude <code>SG-APM-Kiosk-PlanB-Users</code> from tenant-wide MFA policies; verify no "all users" policy demands a control these accounts cannot meet.</li>
+<li><strong>Credential hygiene</strong> — Key Vault-managed per-device passwords with scheduled rotation; Entra smart lockout and banned-password list apply.</li>
+<li><strong>Data plane</strong> — Purview Information Barriers isolate the kiosk segment from all staff content in SharePoint and OneDrive; scratch OneDrive wiped at logoff plus scheduled sweep.</li>
+<li><strong>Device plane</strong> — Assigned Access single-app lockdown (Edge + Zscaler + File Explorer), Intune compliance policy, BitLocker, and Zscaler client for web filtering.</li>
+</ul>
+</doc-page>
+<script src="doc-page.js"></script>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><title>APM Conditional Access - Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Mulish:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Mulish,sans-serif;background:#F4F6FA;color:#16203D;font-size:14px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px 80px}
+header{background:#1F2D58;color:#fff;padding:30px 0 26px;margin-bottom:26px}
+header .wrap{padding-bottom:0}
+h1{font-family:Poppins,sans-serif;font-size:26px;font-weight:600;letter-spacing:-.01em}
+.hdrmeta{font-size:12.5px;color:#B9C2DA;margin-top:7px}
+.hdrmeta a{color:#fff;text-decoration:underline;font-weight:600}
+.file{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:rgba(255,255,255,.13);padding:1px 5px;border-radius:3px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:10px;margin:0 0 24px}
+.stat{background:#fff;border:1px solid #E1E6F0;border-radius:8px;padding:12px 14px}
+.stat b{display:block;font-family:Poppins,sans-serif;font-size:24px;font-weight:600;line-height:1.1}
+.stat span{font-size:11.5px;color:#5A668C;text-transform:uppercase;letter-spacing:.05em}
+.stat.sv-conflict b{color:#8E1B2C}.stat.sv-flag b{color:#B26B00}.stat.sv-good b{color:#1B7F79}.stat.sv-info b{color:#41507F}.stat.sv-unknown b{color:#5A668C}.stat.sv-count b{color:#41507F}
+h2{font-family:Poppins,sans-serif;font-size:17px;color:#1F2D58;font-weight:600;margin:32px 0 4px}
+h2 .sub{font-size:12px;color:#5A668C;font-weight:400;font-family:Mulish,sans-serif}
+.note{background:#fff;border:1px solid #E1E6F0;border-left:3px solid #41507F;border-radius:6px;padding:13px 15px;font-size:13px;color:#3A4361;margin:10px 0 4px}
+.f{background:#fff;border:1px solid #E1E6F0;border-radius:9px;padding:16px 18px;margin:12px 0}
+.f.conflict{border-left:4px solid #8E1B2C}.f.flag{border-left:4px solid #B26B00}
+.f.good{border-left:4px solid #1B7F79}.f.info{border-left:4px solid #41507F}.f.unknown{border-left:4px solid #5A668C;border-left-style:dashed}
+.fh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.fh h3{font-family:Poppins,sans-serif;font-size:14.5px;font-weight:600;flex:1;min-width:260px;color:#1F2D58}
+.vb{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:4px}
+.vb.conflict{background:#FBE4E7;color:#8E1B2C}.vb.flag{background:#FBF0DE;color:#6B4200}
+.vb.good{background:#E2F0EF;color:#12544F}.vb.info{background:#F2F5FB;color:#2C3D71}.vb.unknown{background:#EDEFF5;color:#5A668C}
+.rid{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#41507F}
+.blk{margin-top:11px}
+.blk h4{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#5A668C;font-weight:700;margin-bottom:3px}
+.blk p{font-size:13.2px}
+.rem{background:#F7F9FD;border:1px solid #E1E6F0;border-radius:5px;padding:10px 12px;font-size:13.2px}
+.own{font-size:12.5px;color:#3A4361}
+.refs{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.refs span{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#EFF2F8;color:#41507F;padding:2px 7px;border-radius:3px}
+.tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:12px 0}
+input[type=search]{flex:1;min-width:200px;font-family:Mulish,sans-serif;font-size:13.5px;padding:9px 12px;border:1px solid #D3DAE8;border-radius:6px;background:#fff;color:#16203D}
+input[type=search]:focus{outline:2px solid #F89728;outline-offset:-1px}
+button{font-family:Mulish,sans-serif;font-size:12.5px;font-weight:600;padding:8px 13px;border:1px solid #D3DAE8;background:#fff;color:#41507F;border-radius:6px;cursor:pointer}
+button[aria-pressed=true]{background:#1F2D58;color:#fff;border-color:#1F2D58}
+table{width:100%;table-layout:fixed;border-collapse:collapse;background:#fff;border:1px solid #E1E6F0;border-radius:8px;overflow:hidden;font-size:12.8px}
+th{background:#F2F5FB;text-align:left;font-family:Poppins,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#41507F;padding:9px 11px;border-bottom:1px solid #E1E6F0}
+td{padding:8px 11px;border-bottom:1px solid #EEF1F7;vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.nm{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#1F2D58;overflow-wrap:anywhere}
+.pill{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:4px;white-space:nowrap;display:inline-block}
+.pill.on{background:#E2F0EF;color:#12544F}.pill.ro{background:#FBF0DE;color:#6B4200}.pill.off{background:#EDEFF5;color:#5A668C}
+.gr{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#3A4361;overflow-wrap:anywhere}
+.hit{background:#FDEDD9}
+.empty{text-align:center;color:#5A668C;padding:26px;font-size:13px}
+a{color:#1F2D58}a:hover{color:#F89728}
+</style></head><body>
+<header><div class="wrap">
+<h1>APM Conditional Access - tenant analysis</h1>
+<div class="hdrmeta">116 policies exported from the APM corporate tenant &middot; source <span class="file">policies/APM-Conditional-Access-Policies-Export.csv</span> &middot; <span id="gen"></span><br>
+<a href="APM_Policy_Register.html">Policy register</a> &nbsp;&middot;&nbsp; <a href="APM_Compliance_Check.html">Check a document</a></div>
+</div></header>
+<div class="wrap">
+<div class="stats" id="stats"></div>
+<div class="note" id="limits"></div>
+<h2>Findings <span class="sub">what this export changes about the Participant Kiosk design</span></h2>
+<div id="findings"></div>
+<h2>All policies <span class="sub">as exported, names trimmed</span></h2>
+<div class="tools">
+  <input type="search" id="q" placeholder="Search policy names and grant rules&hellip;" autocomplete="off">
+  <button data-s="all" aria-pressed="true">All 116</button>
+  <button data-s="on" aria-pressed="false">Enforced</button>
+  <button data-s="ro" aria-pressed="false">Report-only</button>
+  <button data-s="off" aria-pressed="false">Disabled</button>
+  <button data-s="kiosk" aria-pressed="false">Kiosk</button>
+  <button data-s="wide" aria-pressed="false">All users + all apps</button>
+</div>
+<table><thead><tr><th style="width:44%">Policy</th><th style="width:9%">State</th><th style="width:11%">Users</th><th style="width:8%">Groups</th><th style="width:11%">Apps</th><th>Grant</th></tr></thead><tbody id="rows"></tbody></table>
+<div class="empty" id="none" style="display:none">No policy matches.</div>
+</div>
+<script src="ca-policies.js"></script>
+<script src="ca-analysis-data.js"></script>
+<script>
+const A = window.CA_ANALYSIS, P = window.CA_POLICIES, $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('gen').textContent = 'analysed ' + A.generated;
+$('limits').innerHTML = '<b>What this export cannot tell you.</b> ' + esc(A.limits);
+const sev = ['conflict','flag','good','info','unknown'];
+const n = k => A.findings.filter(f => f.sev === k).length;
+$('stats').innerHTML = [['sv-conflict',n('conflict'),'Conflicts'],['sv-flag',n('flag'),'Flags'],['sv-good',n('good'),'Supports'],['sv-info',n('info'),'Info'],['sv-unknown',n('unknown'),'Unknown'],
+  ['sv-count',A.counts.enabled,'Enforced'],['sv-count',A.counts.reportOnly,'Report-only'],['sv-count',A.counts.disabled,'Disabled']]
+  .map(([k,v,l]) => '<div class="stat '+k+'"><b>'+v+'</b><span>'+l+'</span></div>').join('');
+const order = f => sev.indexOf(f.sev);
+$('findings').innerHTML = A.findings.slice().sort((a,b) => order(a) - order(b)).map(f => `
+  <div class="f ${f.sev}">
+    <div class="fh"><span class="vb ${f.sev}">${f.sev}</span><h3>${esc(f.t)}</h3><span class="rid">${f.id}</span></div>
+    <div class="blk"><h4>What the export shows</h4><p>${esc(f.d)}</p></div>
+    <div class="blk"><h4>Why it matters</h4><p>${esc(f.why)}</p></div>
+    <div class="blk"><h4>Action</h4><div class="rem">${esc(f.action)}</div></div>
+    <div class="blk"><h4>Owner</h4><p class="own">${esc(f.owner)}</p></div>
+    <div class="refs">${f.refs.map(r => '<span>'+esc(r)+'</span>').join('')}</div>
+  </div>`).join('');
+let filter = 'all', query = '';
+const stateName = {on:'Enforced', ro:'Report-only', off:'Disabled'};
+function match(p){
+  if (filter === 'on' || filter === 'ro' || filter === 'off') { if (p.s !== filter) return false; }
+  else if (filter === 'kiosk') { if (!/kiosk/i.test(p.n)) return false; }
+  else if (filter === 'wide') { if (!(p.u === 'All' && p.a === 'All')) return false; }
+  if (query && !(p.n + ' ' + p.r).toLowerCase().includes(query)) return false;
+  return true;
+}
+function mark(s){ if (!query) return esc(s); const i = s.toLowerCase().indexOf(query); if (i < 0) return esc(s);
+  return esc(s.slice(0,i)) + '<span class="hit">' + esc(s.slice(i, i+query.length)) + '</span>' + esc(s.slice(i+query.length)); }
+function render(){
+  const list = P.filter(match);
+  $('rows').innerHTML = list.map(p => `<tr>
+    <td class="nm">${mark(p.n)}</td>
+    <td><span class="pill ${p.s}">${stateName[p.s]}</span></td>
+    <td>${esc(p.u || '\u2014')}</td>
+    <td>${p.g ? p.g : '\u2014'}</td>
+    <td>${esc(p.a)}</td>
+    <td class="gr">${p.r ? mark(p.r) : '<span style="color:#41507F">session / auth strength</span>'}</td></tr>`).join('');
+  $('none').style.display = list.length ? 'none' : 'block';
+}
+$('q').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); render(); });
+document.querySelectorAll('button[data-s]').forEach(b => b.addEventListener('click', () => {
+  filter = b.dataset.s;
+  document.querySelectorAll('button[data-s]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  render();
+}));
+render();
+</script>
+</body></html>

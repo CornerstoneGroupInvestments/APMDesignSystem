@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<AssignedAccessConfiguration
+    xmlns="http://schemas.microsoft.com/AssignedAccess/2017/config"
+    xmlns:rs5="http://schemas.microsoft.com/AssignedAccess/201810/config"
+    xmlns:v3="http://schemas.microsoft.com/AssignedAccess/2020/config"
+    xmlns:v5="http://schemas.microsoft.com/AssignedAccess/2022/config">
+  <!-- VARIANT 01 — deploy this file ONLY to the device group that has local account ParticipantKiosk01. Username maps 1:1 to a Zscaler seat. -->
+  <Profiles>
+    <Profile Id="{9A2A490F-10F6-4764-974A-43B19E722C23}">
+      <AllAppsList>
+        <AllowedApps>
+          <App DesktopAppPath="%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" />
+          <App DesktopAppPath="%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge_proxy.exe" />
+          <App AppUserModelId="Microsoft.MicrosoftEdge.Stable_8wekyb3d8bbwe!App" />
+          <App DesktopAppPath="%ProgramFiles%\Zscaler\ZSATray\ZSATray.exe" />
+          <App DesktopAppPath="%SystemRoot%\explorer.exe" />
+          <App DesktopAppPath="%ProgramFiles%\TeamViewer\TeamViewer.exe" />
+        </AllowedApps>
+      </AllAppsList>
+      <v5:StartPins><![CDATA[{"pinnedList":[{"desktopAppLink":"%ALLUSERSPROFILE%\\Microsoft\\Windows\\Start Menu\\Programs\\Microsoft Edge.lnk"},{"desktopAppLink":"%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\File Explorer.lnk"}]}]]></v5:StartPins>
+      <Taskbar ShowTaskbar="true" />
+    </Profile>
+  </Profiles>
+  <Configs>
+    <!-- CHANGED: removed <v3:GlobalProfile .../> — GlobalProfile and a
+         per-account Config are mutually exclusive; you cannot use both. -->
+    <!-- CHANGED: switched from <AutoLogonAccount/> (OS-generated username)
+         to a NAMED <Account> so the username is fixed = "ParticipantKiosk01".
+         Note: username is space-free for validity; the friendly "Participant
+         Kiosk" text is set as the account's Full Name at creation (/fullname).
+         PREREQUISITES (Assigned Access will FAIL to apply if skipped):
+           1. The local account must already exist on the device, with a REAL
+              password and no change-at-first-logon flag. Create + configure it
+              during provisioning, e.g.:
+                net user ParticipantKiosk01 <password> /add /fullname:"Participant Kiosk 01"
+                net user ParticipantKiosk01 /logonpasswordchg:no
+                powershell Set-LocalUser ParticipantKiosk01 -PasswordNeverExpires $true
+              Why: accounts created blank / via a provisioning package get
+              flagged "must change password at next logon" (and the 42-day
+              local expiry), which breaks unattended sign-in. A blank password
+              also trips the default policy "Limit local account use of blank
+              passwords to console logon only" once auto-logon is involved.
+              Keep it a Standard user, not Administrator (Assigned Access
+              will not apply to an admin).
+           2. Apps are NOT installed by this file. <AllowedApps> is an
+              allow-list only — Zscaler Client Connector and TeamViewer must
+              be deployed separately (Intune Win32 apps in production; manual
+              install on a test device) BEFORE applying this config, or the
+              Start pins land as dead shortcuts.
+           3. <Account> does NOT auto-logon on its own (only AutoLogonAccount
+              does). Configure auto sign-in separately via the registry:
+                HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+                  AutoAdminLogon = "1"
+                  DefaultUserName = "ParticipantKiosk01"
+                  DefaultPassword = "<the password set above>"
+                  DefaultDomainName = "<device/hostname>"
+              (Or use Sysinternals Autologon to store it encrypted as an LSA
+               secret rather than plaintext DefaultPassword. Recommended.)
+              Test-box order: install apps -> create/fix account -> apply this
+              config -> set auto-logon -> reboot.
+         Benefit of naming it: you can now target Intune config/policy to this
+         specific user, not just the device. -->
+    <Config>
+      <Account>ParticipantKiosk01</Account>
+      <DefaultProfile Id="{9A2A490F-10F6-4764-974A-43B19E722C23}" />
+    </Config>
+  </Configs>
+</AssignedAccessConfiguration>

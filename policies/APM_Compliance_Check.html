@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><title>APM Compliance Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#F4F5F9;font-family:Mulish,sans-serif;color:#232A3D;line-height:1.5}
+a{color:#1F2D58}a:hover{color:#F89728}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px 80px}
+header{background:linear-gradient(115deg,#1F2D58 0%,#2C3D71 60%,#3A4B85 100%);color:#fff;padding:38px 0 32px}
+header .wrap{padding-bottom:0}
+h1{font-family:Poppins,sans-serif;font-size:28px;margin:0 0 6px;color:#fff;font-weight:600}
+.sub{color:#F89728;font-family:Poppins,sans-serif;font-weight:600;font-size:14px}
+.hmeta{margin-top:12px;font-size:13.5px;color:#C7CEE2}
+.hmeta a{color:#fff;text-decoration:underline}
+.drop{margin:26px 0 0;background:#fff;border:2px dashed #C3CADD;border-radius:16px;padding:34px 28px;text-align:center;transition:.15s}
+.drop.hot{border-color:#F89728;background:#FFFBF5}
+.drop h2{font-family:Poppins,sans-serif;font-size:17px;margin:0 0 6px;color:#1F2D58;font-weight:600}
+.drop p{margin:0 0 16px;font-size:13.5px;color:#5A668C}
+.btn{font-family:Poppins,sans-serif;font-size:13.5px;font-weight:600;padding:11px 24px;border-radius:999px;border:none;background:#F89728;color:#4A2705;cursor:pointer}
+.btn:hover{background:#E9880F}
+.btn.alt{background:#fff;border:1.6px solid #D3D8E6;color:#1F2D58}
+.btn.alt:hover{border-color:#F89728}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+textarea{width:100%;min-height:150px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;padding:14px;border:1.6px solid #D3D8E6;border-radius:12px;margin-top:14px;resize:vertical}
+textarea:focus{outline:none;border-color:#F89728}
+.status{font-size:13.5px;color:#5A668C;margin-top:14px;min-height:20px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 6px}
+.stat{flex:1;min-width:120px;background:#fff;border:1px solid #E1E4EE;border-radius:14px;padding:15px 18px}
+.stat b{display:block;font-family:Poppins,sans-serif;font-size:26px;font-weight:600;line-height:1.1}
+.stat span{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;color:#5A668C}
+.stat.c b{color:#8E1B2C}.stat.g b{color:#8A5008}.stat.p b{color:#2C5C3A}.stat.m b{color:#41507F}.stat.s b{color:#1F2D58}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 18px}
+.chip{font-family:Poppins,sans-serif;font-size:12px;font-weight:600;padding:7px 15px;border-radius:999px;border:1.5px solid #D3D8E6;background:#fff;color:#41507F;cursor:pointer}
+.chip.on{background:#1F2D58;border-color:#1F2D58;color:#fff}
+.f{background:#fff;border:1px solid #E1E4EE;border-left-width:4px;border-radius:12px;margin-bottom:12px;padding:16px 20px}
+.f.conflict{border-left-color:#8E1B2C}.f.gap{border-left-color:#F89728}
+.f.compensated{border-left-color:#3A7D52}.f.met{border-left-color:#41507F}
+.fh{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.vb{font-family:Poppins,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:5px;white-space:nowrap}
+.vb.conflict{background:#8E1B2C;color:#fff}.vb.gap{background:#F89728;color:#4A2705}
+.vb.compensated{background:#3A7D52;color:#fff}.vb.met{background:#E8ECF7;color:#2C3D71}
+.rid{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:#5A668C}
+.f h3{font-family:Poppins,sans-serif;font-size:15.5px;margin:0;color:#1F2D58;font-weight:600;flex:1;min-width:200px}
+.src{font-size:12.5px;color:#5A668C;margin-top:6px}
+.blk{margin-top:12px}
+.blk h4{font-family:Poppins,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5A668C;margin:0 0 4px}
+.blk p{margin:0;font-size:13.5px;color:#3A4560}
+.ev{background:#F7F8FC;border-radius:8px;padding:9px 13px;margin-top:6px;font-size:13px;color:#3A4560}
+.ev i{display:block;font-style:normal;font-size:11.5px;color:#8A5008;font-weight:600;margin-bottom:3px}
+.rem{background:#FFF7EC;border-radius:8px;padding:11px 14px;font-size:13.5px;color:#5A3008;margin-top:6px}
+.comp{background:#EAF3EC;border-radius:8px;padding:9px 13px;font-size:13px;color:#2C5C3A;margin-top:6px}
+.hide{display:none}
+.export{display:flex;gap:10px;margin:18px 0 0;flex-wrap:wrap}
+pre#txt{display:none;background:#1F2D58;color:#E8ECF7;padding:20px;border-radius:12px;font-size:11.5px;overflow:auto;max-height:420px;white-space:pre-wrap}
+.empty{background:#fff;border:1px solid #E1E4EE;border-radius:14px;padding:40px;text-align:center;color:#5A668C;font-size:14px;margin-top:24px}
+</style></head><body>
+
+<header><div class="wrap">
+<h1>APM Compliance Checker</h1>
+<div class="sub">Check a document against the APM policy register</div>
+<div class="hmeta">Runs <b id="nrules">0</b> machine-checkable rules drawn from the policies in <code>policies/</code>. Register: <a href="APM_Policy_Register.html">APM Policy &amp; Standards Register</a></div>
+</div></header>
+
+<div class="wrap">
+  <div class="drop" id="drop">
+    <h2>Drop a document here</h2>
+    <p>Word (.docx), PDF, text, Markdown, HTML, or a design <code>content.txt</code>. Nothing leaves the browser.</p>
+    <div class="btns">
+      <button class="btn" id="pick">Choose a file</button>
+      <button class="btn alt" id="pasteBtn">Paste text instead</button>
+    </div>
+    <input type="file" id="file" class="hide" accept=".docx,.pdf,.txt,.md,.html,.htm,.json,.csv">
+    <textarea id="paste" class="hide" placeholder="Paste the document text, then press Check"></textarea>
+    <div class="btns hide" id="pasteRun" style="margin-top:12px"><button class="btn" id="runPaste">Check pasted text</button></div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div id="results" class="hide">
+    <div class="stats" id="stats"></div>
+    <div class="export">
+      <button class="btn alt" id="showTxt">Show text report</button>
+      <button class="btn alt" id="copyTxt">Copy report</button>
+      <button class="btn alt" id="dl">Download report</button>
+    </div>
+    <pre id="txt"></pre>
+    <div class="filters" id="filters"></div>
+    <div id="findings"></div>
+    <div id="interactions"></div>
+  </div>
+  <div class="empty" id="empty">No document checked yet.</div>
+</div>
+
+<script src="compliance-rules.js"></script>
+<script src="environment-config.js"></script>
+<script src="compliance-check.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+$('nrules').textContent = window.COMPLIANCE_RULES.length;
+let result = null, active = new Set(['conflict','gap','compensated']);
+
+// ---- readers -------------------------------------------------------------
+async function readDocx(file){
+  const buf = new Uint8Array(await file.arrayBuffer()), dv = new DataView(buf.buffer);
+  let eocd = -1;
+  for (let i = buf.length - 22; i >= 0; i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error('not a zip');
+  const cdOff = dv.getUint32(eocd + 16, true), n = dv.getUint16(eocd + 10, true);
+  let p = cdOff, target = null;
+  for (let i = 0; i < n; i++) {
+    const nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true);
+    const name = new TextDecoder().decode(buf.slice(p + 46, p + 46 + nl));
+    if (name === 'word/document.xml') target = { lho: dv.getUint32(p + 42, true), size: dv.getUint32(p + 20, true) };
+    p += 46 + nl + el + cl;
+  }
+  if (!target) throw new Error('no document.xml');
+  const lnl = dv.getUint16(target.lho + 26, true), lel = dv.getUint16(target.lho + 28, true);
+  const method = dv.getUint16(target.lho + 8, true);
+  const start = target.lho + 30 + lnl + lel, data = buf.slice(start, start + target.size);
+  const xml = method === 8
+    ? await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text()
+    : new TextDecoder().decode(data);
+  return xml.split('</w:p>').map(par =>
+    (par.match(/<w:t[^>]*>[^<]*<\/w:t>/g) || []).map(t => t.replace(/<[^>]+>/g, '')).join('')
+  ).filter(s => s.trim()).join('\n')
+   .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
+}
+async function readPdf(file){
+  const { PDFParse } = await import('https://cdn.jsdelivr.net/npm/pdf-parse@2.4.5/dist/pdf-parse/web/pdf-parse.es.js');
+  PDFParse.setWorker('https://cdn.jsdelivr.net/npm/pdf-parse@2.4.5/dist/pdf-parse/web/pdf.worker.min.mjs');
+  const parser = new PDFParse({ data: new Uint8Array(await file.arrayBuffer()) });
+  return (await parser.getText()).text;
+}
+async function readAny(file){
+  const n = file.name.toLowerCase();
+  if (n.endsWith('.docx')) return readDocx(file);
+  if (n.endsWith('.pdf')) return readPdf(file);
+  const t = await file.text();
+  return n.endsWith('.html') || n.endsWith('.htm') ? t.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ') : t;
+}
+
+// ---- run -----------------------------------------------------------------
+async function run(text, name){
+  if (!text || text.trim().length < 40) { $('status').textContent = 'That document had almost no readable text.'; return; }
+  $('status').textContent = `Checked ${name} \u00b7 ${text.length.toLocaleString()} characters`;
+  result = window.checkCompliance(text, window.COMPLIANCE_RULES, { name, env: window.ENVIRONMENT_CONFIG });
+  $('empty').classList.add('hide'); $('results').classList.remove('hide');
+  renderStats(); renderFilters(); renderFindings(); renderInteractions();
+  $('txt').textContent = window.reportText(result);
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderStats(){
+  const s = result.summary;
+  $('stats').innerHTML = [
+    ['c', s.conflict, 'Conflicts'], ['g', s.gap, 'Gaps'], ['p', s.compensated, 'Compensated'],
+    ['m', s.met, 'Met'], ['s', s.score + '%', 'Alignment'], ['i', (result.interactions||[]).length, 'Environment']
+  ].map(([k,v,l]) => `<div class="stat ${k}"><b>${v}</b><span>${l}</span></div>`).join('');
+}
+function renderFilters(){
+  const s = result.summary;
+  $('filters').innerHTML = [['conflict','Conflicts',s.conflict],['gap','Gaps',s.gap],
+    ['compensated','Compensated',s.compensated],['met','Met',s.met],['na','Not applicable',s.na]]
+    .map(([k,l,n]) => `<button class="chip${active.has(k)?' on':''}" data-v="${k}">${l} <span style="opacity:.6">${n}</span></button>`).join('');
+}
+function renderFindings(){
+  const set = window.sortFindings(result.findings).filter(f => active.has(f.verdict));
+  $('findings').innerHTML = set.length ? set.map(f => `
+    <div class="f ${f.verdict}">
+      <div class="fh">
+        <span class="vb ${f.verdict}">${f.verdict}</span>
+        <h3>${esc(f.rule.title)}</h3>
+        <span class="rid">${f.rule.id}</span>
+      </div>
+      <div class="src">${esc(f.rule.doc)} &middot; ${esc(f.rule.clause)}</div>
+      <div class="blk"><h4>Policy requires</h4><p>${esc(f.rule.requires)}</p></div>
+      ${f.evidence.length ? `<div class="blk"><h4>Found in the document</h4>${f.evidence.map(e =>
+        `<div class="ev"><i>${esc(e.detail)}</i>${esc(e.quote)}</div>`).join('')}</div>` : ''}
+      ${f.compensating.length ? `<div class="blk"><h4>Compensating controls already argued</h4>
+        <div class="comp">${f.compensating.map(c => esc(c.pattern)).join(' &middot; ')}</div></div>` : ''}
+      ${f.verdict !== 'met' ? `<div class="blk"><h4>To become compliant</h4><div class="rem">${esc(f.rule.remedy)}</div></div>` : ''}
+    </div>`).join('') : '<div class="empty">Nothing in the selected categories.</div>';
+}
+function renderInteractions(){
+  const xs = result.interactions || [];
+  $('interactions').innerHTML = xs.length ? `
+    <h2 style="font-family:Poppins,sans-serif;font-size:17px;color:#1F2D58;margin:34px 0 4px">Environment interactions <span style="font-size:12px;color:#5A668C;font-weight:400">advisory - existing configuration this design touches; not scored</span></h2>
+    ${xs.map(x => `
+    <div class="f" style="border-left:4px solid #41507F">
+      <div class="fh">
+        <span class="vb" style="background:#F2F5FB;color:#2C3D71">environment</span>
+        <h3>${esc(x.title)}</h3>
+        <span class="rid">${x.id}</span>
+      </div>
+      <div class="src">${esc(x.envName)} &middot; ${esc(x.source)}</div>
+      <div class="blk"><h4>What exists</h4><p>${esc(x.note)}</p></div>
+      ${x.evidence.length ? `<div class="blk"><h4>Where the design touches it</h4><div class="ev"><i>${esc(x.evidence[0].detail)}</i>${esc(x.evidence[0].quote)}</div></div>` : ''}
+      <div class="blk"><h4>Check</h4><div class="rem">${esc(x.remedy)}</div></div>
+    </div>`).join('')}` : '';
+}
+
+// ---- wiring --------------------------------------------------------------
+$('filters').onclick = e => { const b = e.target.closest('.chip'); if(!b) return;
+  active.has(b.dataset.v) ? active.delete(b.dataset.v) : active.add(b.dataset.v);
+  renderFilters(); renderFindings(); };
+$('pick').onclick = () => $('file').click();
+$('file').onchange = async e => { const f = e.target.files[0]; if(!f) return;
+  $('status').textContent = 'Reading ' + f.name + '...';
+  try { await run(await readAny(f), f.name); } catch(err){ $('status').textContent = 'Could not read that file: ' + err.message; } };
+$('pasteBtn').onclick = () => { $('paste').classList.toggle('hide'); $('pasteRun').classList.toggle('hide'); $('paste').focus(); };
+$('runPaste').onclick = () => run($('paste').value, 'pasted text');
+const drop = $('drop');
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('hot'); }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('hot'); }));
+drop.addEventListener('drop', async e => { const f = e.dataTransfer.files[0]; if(!f) return;
+  $('status').textContent = 'Reading ' + f.name + '...';
+  try { await run(await readAny(f), f.name); } catch(err){ $('status').textContent = 'Could not read that file: ' + err.message; } });
+$('showTxt').onclick = () => { const p = $('txt'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; };
+$('copyTxt').onclick = () => navigator.clipboard.writeText($('txt').textContent).then(()=>$('status').textContent='Report copied to the clipboard.');
+$('dl').onclick = () => { const b = new Blob([$('txt').textContent], {type:'text/plain'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+  a.download = 'compliance-check-' + result.doc.replace(/[^\w.-]+/g,'-') + '.txt'; a.click(); };
+</script>
+</body></html>

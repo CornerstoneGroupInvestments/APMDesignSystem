@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../styles.css">
+<script src="./qa-checks.js"></script>
+<style>body{margin:0;background:#EDEFF4}.dgm-fig{margin:0 auto 36px}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px}</style>
+</head><body>
+
+<!-- ===== T1 · BUSINESS CAPABILITY HEATMAP (§3.2) ===== -->
+<div class="dgm-fig" id="t1" style="width:1520px;height:730px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>Business Reference Architecture - Capability Impact Heatmap</b><span class="dgm-ref">FIGURE 1 · §3.2</span></div>
+<div class="dgm-stage" style="height:668px">
+<div class="dgm-zone" style="left:24px;top:92px;width:900px;height:412px"><span>APM BUSINESS CAPABILITY MODEL - IMPACTED DOMAINS</span></div>
+<div class="dgm-heat is-high" style="left:52px;top:136px;width:266px;height:96px"><h5>Capability A</h5><p>What changes, in one line of business language.</p></div>
+<div class="dgm-heat is-high" style="left:338px;top:136px;width:266px;height:96px"><h5>Capability B</h5><p>What changes, in one line of business language.</p></div>
+<div class="dgm-heat is-medium" style="left:624px;top:136px;width:272px;height:96px"><h5>Capability C</h5><p>Process or runbook change only.</p></div>
+<div class="dgm-heat is-medium" style="left:52px;top:252px;width:266px;height:96px"><h5>Capability D</h5><p>Process or runbook change only.</p></div>
+<div class="dgm-heat is-low" style="left:338px;top:252px;width:266px;height:96px"><h5>Capability E</h5><p>Awareness only - no change to how the work is done.</p></div>
+<div class="dgm-heat is-low" style="left:624px;top:252px;width:272px;height:96px"><h5>Capability F</h5><p>Awareness only.</p></div>
+<div class="dgm-heat is-low" style="left:52px;top:368px;width:266px;height:96px"><h5>Capability G</h5><p>Awareness only.</p></div>
+<div class="dgm-heat is-low" style="left:338px;top:368px;width:266px;height:96px"><h5>Capability H</h5><p>Awareness only.</p></div>
+<div class="dgm-heat is-low" style="left:624px;top:368px;width:272px;height:96px"><h5>Capability I</h5><p>Awareness only.</p></div>
+<div class="dgm-zone is-accent" style="left:948px;top:92px;width:548px;height:412px"><span>VALUE STREAM &amp; TARGET OUTCOMES</span></div>
+<div class="dgm-box is-accent" style="left:972px;top:130px;width:238px;height:80px"><h4>Stage 1</h4><p>Value stream step.</p></div>
+<div class="dgm-box is-accent" style="left:972px;top:226px;width:238px;height:80px"><h4>Stage 2</h4><p>Value stream step.</p></div>
+<div class="dgm-box is-accent" style="left:972px;top:322px;width:238px;height:80px"><h4>Stage 3</h4><p>Value stream step.</p></div>
+<div class="dgm-box is-accent" style="left:972px;top:418px;width:238px;height:70px"><h4>Stage 4</h4><p>Value stream step.</p></div>
+<div class="dgm-box is-navy" style="left:1236px;top:130px;width:236px;height:110px"><h4>Outcome 1</h4><p>Measurable business result the design delivers.</p></div>
+<div class="dgm-box is-navy" style="left:1236px;top:256px;width:236px;height:110px"><h4>Outcome 2</h4><p>Measurable business result.</p></div>
+<div class="dgm-box" style="left:1236px;top:382px;width:236px;height:106px"><h4>Outcome 3</h4><p>Measurable business result.</p></div>
+<div class="dgm-key" style="left:52px;top:540px"><span><em style="background:var(--brand-primary)"></em>High - design and operating-model change</span><span><em style="background:var(--apm-orange-200)"></em>Medium - process change</span><span><em style="background:var(--neutral-100);border:1px solid var(--border-default)"></em>Low - awareness only</span></div>
+<p class="dgm-note" style="left:52px;top:584px;width:1420px">Overlay your initiative on the APM Business Capability Model and heat-map the impact. Name each capability exactly as it appears in the model, and say in one line what changes. Reviewers use this to work out who else needs to be in the room.</p>
+</div>
+</div>
+
+<!-- ===== T2 · TECHNOLOGY REFERENCE MODEL (§5) ===== -->
+<div class="dgm-fig" id="t2" style="width:1520px;height:700px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>Technology Reference Model - Solution Placement</b><span class="dgm-ref">FIGURE 4 · §5</span></div>
+<div class="dgm-stage" style="height:638px">
+<div class="dgm-box is-navy" style="left:24px;top:92px;width:1472px;height:74px"><h4>Channel &amp; experience</h4><p>Browser · desktop client · mobile · kiosk - how users reach the service.</p></div>
+<div class="dgm-box is-accent" style="left:24px;top:180px;width:1472px;height:74px"><h4>Application &amp; services</h4><p>Business logic, workflow, published APIs. <b>Components introduced by this design are named here.</b></p></div>
+<div class="dgm-box" style="left:24px;top:268px;width:724px;height:104px"><h4>Integration</h4><p>API management, messaging, event bus, ETL. Name the products and the patterns they carry.</p><div><span class="dgm-chip">Pattern per interface</span></div></div>
+<div class="dgm-box" style="left:772px;top:268px;width:724px;height:104px"><h4>Data &amp; analytics</h4><p>Operational stores, lake, warehouse, semantic model, reporting.</p></div>
+<div class="dgm-box" style="left:24px;top:386px;width:472px;height:104px"><h4>Identity</h4><p>Entra ID, Conditional Access, PIM, service principals and workload identity.</p></div>
+<div class="dgm-box" style="left:520px;top:386px;width:472px;height:104px"><h4>Compute &amp; platform</h4><p>AVD, virtual machines, containers, PaaS services.</p></div>
+<div class="dgm-box" style="left:1016px;top:386px;width:480px;height:104px"><h4>Network</h4><p>Hub-spoke, firewall, private endpoints, DNS, edge security.</p></div>
+<div class="dgm-box is-navy" style="left:24px;top:504px;width:1472px;height:80px"><h4>Operations &amp; assurance</h4><p>Monitoring, logging, SIEM, backup, patching, change control - every layer above reports into here.</p></div>
+<p class="dgm-note" style="left:24px;top:600px;width:1472px">Mark each TRM domain your solution touches and name the vendor product providing it. State the approval status of every component - approved, under review, or new - because anything not already approved becomes a decision this document must carry.</p>
+</div>
+</div>
+
+<!-- ===== T3 · INTEGRATION PATTERNS (§5.2) ===== -->
+<div class="dgm-fig" id="t3" style="width:1520px;height:640px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>Integration Standards &amp; Patterns</b><span class="dgm-ref">FIGURE 5 · §5.2</span></div>
+<div class="dgm-stage" style="height:578px">
+<svg class="dgm-wires" viewBox="0 0 1520 578">
+<defs><marker id="t3a" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="t3o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="356" y1="182" x2="470" y2="182" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t3a)"></line>
+<line x1="826" y1="182" x2="940" y2="182" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t3a)"></line>
+<line x1="356" y1="386" x2="470" y2="386" stroke="#F89728" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#t3o)"></line>
+<line x1="826" y1="386" x2="940" y2="386" stroke="#F89728" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#t3o)"></line>
+</svg>
+<div class="dgm-zone" style="left:24px;top:92px;width:1472px;height:186px"><span>PATTERN 1 - SYNCHRONOUS REQUEST / RESPONSE</span></div>
+<div class="dgm-box" style="left:130px;top:136px;width:226px;height:92px"><h4>Consumer</h4><p>Client or calling service.</p></div>
+<div class="dgm-box is-accent" style="left:470px;top:136px;width:356px;height:92px"><h4>API gateway</h4><p>AuthN/AuthZ, throttling, schema validation, logging.</p></div>
+<div class="dgm-box is-navy" style="left:940px;top:136px;width:356px;height:92px"><h4>Provider service</h4><p>Owns the data and the business rule.</p></div>
+<div class="dgm-zone is-accent" style="left:24px;top:296px;width:1472px;height:186px"><span>PATTERN 2 - ASYNCHRONOUS EVENT</span></div>
+<div class="dgm-box" style="left:130px;top:340px;width:226px;height:92px"><h4>Producer</h4><p>Emits a domain event on state change.</p></div>
+<div class="dgm-box is-accent" style="left:470px;top:340px;width:356px;height:92px"><h4>Event broker</h4><p>Durable topic, retry and dead-letter policy defined.</p></div>
+<div class="dgm-box is-navy" style="left:940px;top:340px;width:356px;height:92px"><h4>Subscriber(s)</h4><p>Idempotent handlers; replay supported.</p></div>
+<div class="dgm-lbl" style="left:372px;top:160px">OAuth 2.0</div>
+<div class="dgm-lbl" style="left:842px;top:160px">private link</div>
+<div class="dgm-lbl is-accent" style="left:376px;top:364px">publish</div>
+<div class="dgm-lbl is-accent" style="left:846px;top:364px">subscribe</div>
+<p class="dgm-note" style="left:24px;top:504px;width:1472px">Show only the patterns your solution actually uses, and for each one state the product, the authentication model, the error and retry behaviour, and the throughput expectation. A reader should be able to tell which pattern any given interface in your catalogue follows.</p>
+</div>
+</div>
+
+<!-- ===== T4 · NETWORK, BUILD-LEVEL DETAIL (§5.3) ===== -->
+<div class="dgm-fig" id="t4" style="width:1520px;height:1120px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>Network &amp; Infrastructure - Build-Level Logical Design</b><span class="dgm-ref">FIGURE 6 · §5.3</span></div>
+<div class="dgm-stage" style="height:1058px">
+<svg class="dgm-wires" viewBox="0 0 1520 1058">
+<defs><marker id="t4a" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="t4o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="286" y1="238" x2="392" y2="238" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t4a)"></line>
+<line x1="286" y1="410" x2="392" y2="342" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t4a)"></line>
+<line x1="700" y1="300" x2="806" y2="300" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#t4a)"></line>
+<line x1="1114" y1="272" x2="1220" y2="238" stroke="#F89728" stroke-width="2.6" marker-end="url(#t4o)"></line>
+<line x1="1114" y1="330" x2="1220" y2="430" stroke="#F89728" stroke-width="2.6" marker-end="url(#t4o)"></line>
+<line x1="1114" y1="360" x2="1220" y2="640" stroke="#F89728" stroke-width="2.6" marker-end="url(#t4o)"></line>
+<line x1="960" y1="470" x2="960" y2="560" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#t4a)"></line>
+<line x1="960" y1="700" x2="960" y2="790" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#t4a)"></line>
+</svg>
+<div class="dgm-zone" style="left:24px;top:92px;width:262px;height:420px"><span>ON-PREMISES</span></div>
+<div class="dgm-box" style="left:44px;top:134px;width:222px;height:118px"><h4>Site LAN</h4><p><code>10.20.0.0/16</code><br>VLAN 10 users · VLAN 20 voice · VLAN 73 kiosk</p></div>
+<div class="dgm-box" style="left:44px;top:268px;width:222px;height:106px"><h4>Edge firewall</h4><p>Palo Alto HA pair. Default deny; egress via secure web gateway.</p></div>
+<div class="dgm-box is-soft" style="left:44px;top:390px;width:222px;height:106px"><h4>ExpressRoute</h4><p>2 Gbps, private peering<br><code>10.255.0.0/30</code> BGP</p></div>
+
+<div class="dgm-zone is-accent" style="left:310px;top:92px;width:806px;height:420px"><span>HUB VNET - vnet-hub-prod-ae · 10.100.0.0/20 · AUSTRALIA EAST</span></div>
+<div class="dgm-box is-accent" style="left:392px;top:140px;width:300px;height:96px"><h4>GatewaySubnet</h4><p><code>10.100.0.0/27</code> - ER gateway, VPN gateway</p></div>
+<div class="dgm-box is-accent" style="left:392px;top:252px;width:300px;height:96px"><h4>AzureFirewallSubnet</h4><p><code>10.100.0.64/26</code> - Azure Firewall Premium, forced-tunnel egress</p></div>
+<div class="dgm-box is-accent" style="left:392px;top:364px;width:300px;height:96px"><h4>AzureBastionSubnet</h4><p><code>10.100.0.128/26</code> - brokered admin access</p></div>
+<div class="dgm-box" style="left:806px;top:140px;width:288px;height:96px"><h4>snet-hub-dns</h4><p><code>10.100.1.0/24</code> - private DNS resolver inbound endpoint</p></div>
+<div class="dgm-box" style="left:806px;top:252px;width:288px;height:96px"><h4>snet-hub-shared</h4><p><code>10.100.2.0/24</code> - Key Vault PE, management jump hosts</p></div>
+<div class="dgm-box is-navy" style="left:806px;top:364px;width:288px;height:96px"><h4>snet-hub-monitor</h4><p><code>10.100.3.0/24</code> - Log Analytics PE, AMPLS scope</p></div>
+
+<div class="dgm-zone" style="left:1140px;top:92px;width:356px;height:812px"><span>SPOKE VNETS</span></div>
+<div class="dgm-box" style="left:1220px;top:140px;width:252px;height:194px"><h4>vnet-prod-ae</h4><p><code>10.101.0.0/20</code></p><p><code>10.101.0.0/24</code> snet-app · NSG-app<br><code>10.101.1.0/24</code> snet-data · NSG-data<br><code>10.101.2.0/24</code> snet-pe · private endpoints</p></div>
+<div class="dgm-box" style="left:1220px;top:352px;width:252px;height:194px"><h4>vnet-nonprod-ae</h4><p><code>10.102.0.0/20</code></p><p>Mirror of production subnetting. No production data. Peered to hub only - no spoke-to-spoke path.</p></div>
+<div class="dgm-box is-accent" style="left:1220px;top:564px;width:252px;height:170px"><h4>vnet-avd-ae</h4><p><code>10.103.0.0/20</code></p><p><code>10.103.0.0/23</code> snet-avd-hosts<br>Session hosts, no public IP</p></div>
+<div class="dgm-box is-navy" style="left:1220px;top:752px;width:252px;height:134px"><h4>PaaS via Private Link</h4><p>Storage, SQL, Key Vault. Public network access disabled on every resource.</p></div>
+
+<div class="dgm-zone" style="left:310px;top:534px;width:806px;height:370px"><span>ROUTING, DNS &amp; EGRESS CONTROL</span></div>
+<div class="dgm-box" style="left:340px;top:578px;width:360px;height:124px"><h4>UDR - rt-spoke-default</h4><p><code>0.0.0.0/0 → 10.100.0.68</code> (Azure Firewall private IP)<br>Applied to every spoke workload subnet. BGP propagation disabled.</p></div>
+<div class="dgm-box" style="left:726px;top:578px;width:360px;height:124px"><h4>DNS</h4><p>VNet DNS → <code>10.100.1.4</code> (private resolver)<br>Private DNS zones linked to hub: <code>privatelink.blob.core.windows.net</code>, <code>privatelink.vaultcore.azure.net</code>, <code>privatelink.database.windows.net</code></p></div>
+<div class="dgm-box is-accent" style="left:340px;top:726px;width:360px;height:148px"><h4>Firewall egress rules</h4><p>Allow: <code>*.microsoftonline.com:443</code>, <code>*.wvd.microsoft.com:443</code>, <code>*.servicebus.windows.net:443</code>, <code>mcr.microsoft.com:443</code><br>Deny: all other outbound. Threat intel mode = Alert and deny.</p></div>
+<div class="dgm-box is-navy" style="left:726px;top:726px;width:360px;height:148px"><h4>NSG baseline (per subnet)</h4><p>Inbound: deny VNet-to-VNet by default; allow only named source subnet + port pairs<br>Outbound: allow 443 to <code>AzureCloud.AustraliaEast</code> service tag; deny Internet<br>Flow logs on, 30-day retention, traffic analytics enabled</p></div>
+
+<div class="dgm-lbl" style="left:294px;top:212px">ER peering</div>
+<div class="dgm-lbl" style="left:294px;top:378px">BGP</div>
+<div class="dgm-lbl" style="left:706px;top:274px">intra-hub</div>
+<div class="dgm-lbl is-accent" style="left:1120px;top:210px">peering</div>
+<div class="dgm-lbl is-accent" style="left:1120px;top:406px">peering</div>
+<div class="dgm-lbl is-accent" style="left:1120px;top:616px">peering</div>
+<div class="dgm-legend" style="left:340px;top:920px"><span><i></i>Routed path</span><span><i class="is-accent"></i>VNet peering</span><span><i class="is-dashed"></i>Control / policy</span></div>
+<p class="dgm-note" style="left:340px;top:960px;width:1130px">This is the level of detail §5.3 requires: named resources, actual address space, subnet allocation with masks, the next-hop address in the UDR, the DNS resolver IP and linked private zones, the specific FQDNs allowed outbound, and the NSG rule intent per subnet. A build engineer should be able to construct the network from this figure and the accompanying tables without asking a further question.</p>
+</div>
+</div>
+
+<!-- ===== T5 · DEPLOYMENT PATTERN (§5.4) ===== -->
+<div class="dgm-fig" id="t5" style="width:1520px;height:660px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>Technology Component Deployment Pattern</b><span class="dgm-ref">FIGURE 7 · §5.4</span></div>
+<div class="dgm-stage" style="height:598px">
+<svg class="dgm-wires" viewBox="0 0 1520 598">
+<defs><marker id="t5a" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker></defs>
+<line x1="336" y1="216" x2="400" y2="216" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#t5a)"></line>
+<line x1="704" y1="216" x2="768" y2="216" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#t5a)"></line>
+<line x1="1072" y1="216" x2="1136" y2="216" stroke="#1F2D58" stroke-width="2.6" marker-end="url(#t5a)"></line>
+<line x1="232" y1="308" x2="232" y2="386" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#t5a)"></line>
+<line x1="600" y1="308" x2="600" y2="386" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#t5a)"></line>
+<line x1="968" y1="308" x2="968" y2="386" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#t5a)"></line>
+<line x1="1336" y1="308" x2="1336" y2="386" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#t5a)"></line>
+</svg>
+<div class="dgm-box is-soft" style="left:106px;top:140px;width:230px;height:130px"><h4>Ring 0 - Dev / test</h4><p>Built from code. Nothing reaches a later ring that was not proven here.</p><div><span class="dgm-chip">IaC</span></div></div>
+<div class="dgm-box" style="left:474px;top:140px;width:230px;height:130px"><h4>Ring 1 - Pilot</h4><p>Small named population. Policy in report-only or monitor mode.</p></div>
+<div class="dgm-box is-accent" style="left:842px;top:140px;width:230px;height:130px"><h4>Ring 2 - Early adopters</h4><p>Enforced, with rollback documented and rehearsed.</p></div>
+<div class="dgm-box is-navy" style="left:1136px;top:140px;width:280px;height:130px"><h4>Ring 3 - Production</h4><p>Full population. Change record approved before enforcement.</p></div>
+<div class="dgm-box is-soft" style="left:118px;top:394px;width:230px;height:112px"><h4>Exit criteria</h4><p>Name the tests that must pass to leave this ring.</p></div>
+<div class="dgm-box is-soft" style="left:486px;top:394px;width:230px;height:112px"><h4>Exit criteria</h4><p>Name the tests that must pass.</p></div>
+<div class="dgm-box is-soft" style="left:854px;top:394px;width:230px;height:112px"><h4>Exit criteria</h4><p>Name the tests that must pass.</p></div>
+<div class="dgm-box is-soft" style="left:1222px;top:394px;width:230px;height:112px"><h4>Exit criteria</h4><p>Sign-off authority named.</p></div>
+<p class="dgm-note" style="left:118px;top:530px;width:1334px">State how a change moves from build to production, what gates each hop, who signs it off, and how it is rolled back. If a change cannot be rolled back, say so explicitly - that is a risk, not a footnote.</p>
+</div>
+</div>
+
+<!-- ===== T6 · INFORMATION MODEL (§6.1) ===== -->
+<div class="dgm-fig" id="t6" style="width:1520px;height:660px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>Conceptual Information Model &amp; Data Flow</b><span class="dgm-ref">FIGURE 8 · §6.1</span></div>
+<div class="dgm-stage" style="height:598px">
+<svg class="dgm-wires" viewBox="0 0 1520 598">
+<defs><marker id="t6a" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker></defs>
+<line x1="300" y1="222" x2="392" y2="222" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t6a)"></line>
+<line x1="700" y1="222" x2="792" y2="222" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t6a)"></line>
+<line x1="1100" y1="222" x2="1192" y2="222" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t6a)"></line>
+<line x1="546" y1="314" x2="546" y2="400" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#t6a)"></line>
+<line x1="946" y1="314" x2="946" y2="400" stroke="#1F2D58" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#t6a)"></line>
+</svg>
+<div class="dgm-box is-navy" style="left:52px;top:140px;width:248px;height:152px"><h4>Source entity</h4><p>Where the data originates and who owns it.</p><div><span class="dgm-chip">System of record</span></div></div>
+<div class="dgm-box" style="left:392px;top:140px;width:308px;height:152px"><h4>Transported entity</h4><p>What moves, in what shape, how often.</p><div><span class="dgm-chip">OFFICIAL</span></div></div>
+<div class="dgm-box is-accent" style="left:792px;top:140px;width:308px;height:152px"><h4>Mastered entity</h4><p>Where it is mastered after this change, and the retention that applies.</p><div><span class="dgm-chip">OFFICIAL: Sensitive</span></div></div>
+<div class="dgm-box is-navy" style="left:1192px;top:140px;width:276px;height:152px"><h4>Consumed by</h4><p>Reports, downstream systems, users.</p></div>
+<div class="dgm-box is-soft" style="left:392px;top:408px;width:308px;height:124px"><h4>Quality &amp; lineage</h4><p>Validation rules, reconciliation, lineage capture.</p></div>
+<div class="dgm-box is-soft" style="left:792px;top:408px;width:308px;height:124px"><h4>Governance</h4><p>Classification, access model, retention, sovereignty.</p></div>
+<div class="dgm-lbl" style="left:306px;top:198px">extract</div>
+<div class="dgm-lbl" style="left:706px;top:198px">master</div>
+<div class="dgm-lbl" style="left:1106px;top:198px">publish</div>
+<p class="dgm-note" style="left:52px;top:552px;width:1416px">Every entity carries a classification and a named custodian. If your solution stores nothing new, say that explicitly - it is the strongest statement you can make in this section.</p>
+</div>
+</div>
+
+<!-- ===== T7 · SYSTEM CONTEXT (§4.1) ===== -->
+<div class="dgm-fig" id="t7" style="width:1520px;height:820px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>System Context Diagram</b><span class="dgm-ref">FIGURE 2 · §4.1</span></div>
+<div class="dgm-stage" style="height:758px">
+<svg class="dgm-wires" viewBox="0 0 1520 758">
+<defs><marker id="t7a" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="t7o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="316" y1="186" x2="548" y2="216" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t7a)"></line>
+<line x1="316" y1="320" x2="548" y2="320" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t7a)"></line>
+<line x1="316" y1="452" x2="548" y2="414" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t7a)"></line>
+<line x1="316" y1="586" x2="548" y2="500" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#t7a)"></line>
+<line x1="964" y1="230" x2="1152" y2="190" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t7a)"></line>
+<line x1="964" y1="320" x2="1152" y2="326" stroke="#F89728" stroke-width="2.6" marker-end="url(#t7o)"></line>
+<line x1="964" y1="420" x2="1152" y2="470" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t7a)"></line>
+<line x1="964" y1="480" x2="1152" y2="612" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#t7a)"></line>
+</svg>
+<div class="dgm-zone" style="left:24px;top:92px;width:292px;height:604px"><span>CONSUMERS &amp; CHANNELS</span></div>
+<div class="dgm-box" style="left:48px;top:136px;width:244px;height:100px"><h4>Internal users</h4><p>Who they are and how they reach the service.</p></div>
+<div class="dgm-box" style="left:48px;top:270px;width:244px;height:100px"><h4>Field / mobile users</h4><p>Channel and device context.</p></div>
+<div class="dgm-box is-accent" style="left:48px;top:404px;width:244px;height:100px"><h4>Administrators</h4><p>Privileged path into the solution.</p></div>
+<div class="dgm-box is-soft" style="left:48px;top:538px;width:244px;height:100px"><h4>External parties</h4><p>Partners or agencies consuming a published service.</p></div>
+<div class="dgm-zone is-boundary" style="left:548px;top:92px;width:416px;height:604px"><span>SOLUTION BOUNDARY</span></div>
+<div class="dgm-box is-accent" style="left:576px;top:136px;width:360px;height:110px"><h4>Presentation / API layer</h4><p>Entry point for every channel.</p><div><span class="dgm-chip">Web</span><span class="dgm-chip">API</span><span class="dgm-chip">SSO</span></div></div>
+<div class="dgm-box is-accent" style="left:576px;top:274px;width:360px;height:104px"><h4>Core services</h4><p>Business logic, workflow, orchestration.</p></div>
+<div class="dgm-box is-accent" style="left:576px;top:406px;width:360px;height:104px"><h4>Integration layer</h4><p>Adapters to platform and external systems.</p></div>
+<div class="dgm-box is-soft" style="left:576px;top:538px;width:360px;height:104px"><h4>Solution data store</h4><p>Data the solution owns.</p></div>
+<div class="dgm-zone" style="left:996px;top:92px;width:500px;height:604px"><span>ENTERPRISE PLATFORM &amp; EXTERNAL</span></div>
+<div class="dgm-box is-navy" style="left:1152px;top:136px;width:320px;height:100px"><h4>Microsoft Entra ID</h4><p>SSO, MFA, Conditional Access.</p></div>
+<div class="dgm-box is-navy" style="left:1152px;top:270px;width:320px;height:100px"><h4>Enterprise data platform</h4><p>Analytics and reporting.</p></div>
+<div class="dgm-box is-navy" style="left:1152px;top:404px;width:320px;height:100px"><h4>Monitoring &amp; SIEM</h4><p>Log Analytics, Microsoft Sentinel.</p></div>
+<div class="dgm-box is-soft" style="left:1152px;top:538px;width:320px;height:100px"><h4>External / SaaS systems</h4><p>Third-party interfaces.</p></div>
+<div class="dgm-lbl" style="left:322px;top:164px">HTTPS / SSO</div>
+<div class="dgm-lbl" style="left:322px;top:296px">HTTPS</div>
+<div class="dgm-lbl" style="left:322px;top:424px">privileged path</div>
+<div class="dgm-lbl" style="left:322px;top:558px">partner API</div>
+<div class="dgm-lbl" style="left:972px;top:176px">OIDC / SAML</div>
+<div class="dgm-lbl is-accent" style="left:972px;top:296px">events / data</div>
+<div class="dgm-lbl" style="left:972px;top:436px">telemetry</div>
+<div class="dgm-legend" style="left:48px;top:706px"><span><i></i>Synchronous</span><span><i class="is-dashed"></i>Asynchronous</span><span><i class="is-accent"></i>Primary data path</span></div>
+</div>
+</div>
+
+<!-- ===== T8 · SOLUTION INTERFACE SEQUENCE (§4.3) ===== -->
+<div class="dgm-fig" id="t8" style="width:1520px;height:760px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>Solution Interface Diagram - Interaction Sequence</b><span class="dgm-ref">FIGURE 3 · §4.3</span></div>
+<div class="dgm-stage" style="height:698px">
+<svg class="dgm-wires" viewBox="0 0 1520 698">
+<defs><marker id="t8a" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="t8o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="164" y1="160" x2="164" y2="654" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="470" y1="160" x2="470" y2="654" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="776" y1="160" x2="776" y2="654" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="1082" y1="160" x2="1082" y2="654" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="1372" y1="160" x2="1372" y2="654" stroke="#C7CEE0" stroke-width="2"></line>
+<line x1="164" y1="228" x2="470" y2="228" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t8a)"></line>
+<line x1="470" y1="298" x2="776" y2="298" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t8a)"></line>
+<line x1="776" y1="368" x2="1082" y2="368" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t8a)"></line>
+<line x1="1082" y1="438" x2="776" y2="438" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#t8a)"></line>
+<line x1="776" y1="508" x2="1372" y2="508" stroke="#F89728" stroke-width="2.4" marker-end="url(#t8o)"></line>
+<line x1="776" y1="578" x2="470" y2="578" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#t8a)"></line>
+<line x1="470" y1="648" x2="164" y2="648" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#t8a)"></line>
+</svg>
+<div class="dgm-box is-navy is-centred" style="left:88px;top:96px;width:152px;height:58px"><h4>User</h4></div>
+<div class="dgm-box is-centred" style="left:394px;top:96px;width:152px;height:58px"><h4>Client app</h4></div>
+<div class="dgm-box is-navy is-centred" style="left:700px;top:96px;width:152px;height:58px"><h4>API gateway</h4></div>
+<div class="dgm-box is-centred" style="left:1006px;top:96px;width:152px;height:58px"><h4>Core service</h4></div>
+<div class="dgm-box is-navy is-centred" style="left:1296px;top:96px;width:152px;height:58px"><h4>Event bus</h4></div>
+<div class="dgm-step" style="left:190px;top:214px">1</div><div class="dgm-lbl" style="left:236px;top:200px">Authenticated request (SSO token)</div>
+<div class="dgm-step" style="left:496px;top:284px">2</div><div class="dgm-lbl" style="left:542px;top:270px">API call with bearer token</div>
+<div class="dgm-step" style="left:802px;top:354px">3</div><div class="dgm-lbl" style="left:848px;top:340px">Token validated, request routed</div>
+<div class="dgm-step" style="left:1024px;top:424px">4</div><div class="dgm-lbl" style="left:786px;top:400px">Business logic executed, response returned</div>
+<div class="dgm-step" style="left:802px;top:494px">5</div><div class="dgm-lbl is-accent" style="left:848px;top:480px">Domain event published (asynchronous)</div>
+<div class="dgm-step" style="left:718px;top:564px">6</div><div class="dgm-lbl" style="left:480px;top:550px">Result payload</div>
+<div class="dgm-step" style="left:412px;top:634px">7</div><div class="dgm-lbl" style="left:174px;top:620px">Response rendered to the user</div>
+<div class="dgm-legend" style="left:88px;top:664px"><span><i></i>Request</span><span><i class="is-dashed"></i>Response</span><span><i class="is-accent"></i>Asynchronous event</span></div>
+</div>
+</div>
+
+<!-- ===== T9 · CYBER TRUST ZONES (§7) ===== -->
+<div class="dgm-fig" id="t9" style="width:1520px;height:820px">
+<div class="dgm-cap"><span class="dgm-tag">EXAMPLE</span><b>Cyber &amp; Security Architecture - Trust Zones and Controls</b><span class="dgm-ref">FIGURE 9 · §7</span></div>
+<div class="dgm-stage" style="height:758px">
+<svg class="dgm-wires" viewBox="0 0 1520 758">
+<defs><marker id="t9a" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="t9o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker></defs>
+<line x1="308" y1="300" x2="452" y2="300" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t9a)"></line>
+<line x1="308" y1="470" x2="452" y2="430" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#t9a)"></line>
+<line x1="900" y1="270" x2="1058" y2="230" stroke="#F89728" stroke-width="2.6" marker-end="url(#t9o)"></line>
+<line x1="900" y1="360" x2="1058" y2="420" stroke="#F89728" stroke-width="2.6" marker-end="url(#t9o)"></line>
+<line x1="900" y1="430" x2="1058" y2="610" stroke="#1F2D58" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#t9a)"></line>
+</svg>
+<div class="dgm-zone" style="left:24px;top:92px;width:284px;height:560px"><span>DEVICES &amp; IDENTITIES</span></div>
+<div class="dgm-box" style="left:48px;top:136px;width:236px;height:112px"><h4>Managed endpoints</h4><p>Intune enrolled, compliant, EDR present.</p></div>
+<div class="dgm-box is-soft" style="left:48px;top:270px;width:236px;height:112px"><h4>Unmanaged / BYOD</h4><p>Access brokered; state your position explicitly.</p></div>
+<div class="dgm-box is-accent" style="left:48px;top:404px;width:236px;height:112px"><h4>Privileged identities</h4><p>Separate accounts, phishing-resistant MFA.</p></div>
+<div class="dgm-box is-navy" style="left:48px;top:538px;width:236px;height:96px"><h4>Workload identities</h4><p>Managed identities, no stored secrets.</p></div>
+<div class="dgm-zone is-boundary" style="left:340px;top:92px;width:560px;height:560px"><span>IDENTITY &amp; POLICY CONTROL PLANE</span></div>
+<div class="dgm-box is-accent" style="left:452px;top:136px;width:424px;height:96px"><h4>Conditional Access</h4><p>Device compliance, location, risk and authentication-strength gates on every request.</p></div>
+<div class="dgm-box is-accent" style="left:452px;top:252px;width:204px;height:112px"><h4>MFA / passkeys</h4><p>Method strength defined per population.</p></div>
+<div class="dgm-box is-accent" style="left:672px;top:252px;width:204px;height:112px"><h4>PIM</h4><p>Just-in-time elevation with approval.</p></div>
+<div class="dgm-box" style="left:452px;top:384px;width:204px;height:112px"><h4>Identity Protection</h4><p>Sign-in and user risk.</p></div>
+<div class="dgm-box" style="left:672px;top:384px;width:204px;height:112px"><h4>Access reviews</h4><p>Periodic recertification.</p></div>
+<div class="dgm-box is-navy" style="left:452px;top:516px;width:424px;height:104px"><h4>Continuous monitoring</h4><p>Sign-in, audit and PIM logs to Microsoft Sentinel with named analytics.</p></div>
+<div class="dgm-zone" style="left:932px;top:92px;width:564px;height:560px"><span>SEGMENTED WORKLOAD ZONES</span></div>
+<div class="dgm-box" style="left:1058px;top:136px;width:414px;height:140px"><h4>Management zone</h4><p>Admin tooling, jump hosts, build agents.</p><div><span class="dgm-chip">Bastion</span><span class="dgm-chip">PAW</span></div></div>
+<div class="dgm-box" style="left:1058px;top:300px;width:414px;height:140px"><h4>Production zone</h4><p>Business workloads. NSG per tier, private endpoints, no direct internet.</p></div>
+<div class="dgm-box is-navy" style="left:1058px;top:464px;width:414px;height:110px"><h4>Data &amp; secrets zone</h4><p>Key Vault, storage, databases over Private Link.</p></div>
+<div class="dgm-box is-soft" style="left:1058px;top:598px;width:414px;height:96px"><h4>Non-production zone</h4><p>Isolated, no production data.</p></div>
+<div class="dgm-lbl" style="left:314px;top:276px">authenticate</div>
+<div class="dgm-lbl" style="left:314px;top:446px">authenticate</div>
+<div class="dgm-lbl is-accent" style="left:906px;top:228px">authorised session</div>
+<div class="dgm-lbl is-accent" style="left:906px;top:398px">authorised session</div>
+<div class="dgm-lbl" style="left:906px;top:560px">telemetry</div>
+<p class="dgm-note" style="left:340px;top:706px;width:1150px">Name the control at every boundary, not just the zones. A reviewer should be able to point at any arrow and read which policy permits it.</p>
+</div>
+</div>
+
+<div id="tweak-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="./tweaks-panel.jsx"></script>
+<script type="text/babel">
+const DGM_TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#F89728",
+  "zoneStyle": "dashed",
+  "corners": "soft",
+  "density": "regular",
+  "pageBg": "#EDEFF4",
+  "showCaptionBar": true,
+  "showExampleTag": true,
+  "showLegend": true,
+  "showNotes": true,
+  "showSteps": true,
+  "showWireLabels": true,
+  "figureWidth": 1520
+}/*EDITMODE-END*/;
+
+const DGM_CORNERS = { sharp: [0, 0, 0], soft: [11, 16, 14], round: [20, 24, 20] };
+const DGM_DENSITY = { compact: [14, 11.5, 12.5, 10], regular: [15.5, 13, 13.5, 11.5], large: [17.5, 14.5, 15, 13] };
+
+function dgmApply(t) {
+  const a = t.accent;
+  const [rBox, rZone, rFig] = DGM_CORNERS[t.corners] || DGM_CORNERS.soft;
+  const [fH, fP, fHeat, fChip] = DGM_DENSITY[t.density] || DGM_DENSITY.regular;
+  let css = `
+:root{--brand-primary:${a};--dgm-line-accent:${a}}
+body{background:${t.pageBg}}
+.dgm-fig{width:${t.figureWidth}px;border-radius:${rFig}px}
+.dgm-box,.dgm-heat{border-radius:${rBox}px}
+.dgm-zone{border-radius:${rZone}px}
+.dgm-box h4{font-size:${fH}px}
+.dgm-box p{font-size:${fP}px}
+.dgm-heat h5{font-size:${fHeat}px}
+.dgm-chip{font-size:${fChip}px}
+.dgm-cap .dgm-tag{color:${a};border-color:color-mix(in oklab, ${a} 50%, transparent)}
+.dgm-box.is-accent{background:color-mix(in oklab, ${a} 12%, #fff);border-color:${a}}
+.dgm-box.is-accent h4{color:color-mix(in oklab, ${a} 42%, #17171c)}
+.dgm-box.is-accent p{color:color-mix(in oklab, ${a} 26%, #221704)}
+.dgm-box.is-accent .dgm-chip{background:color-mix(in oklab, ${a} 24%, #fff);color:color-mix(in oklab, ${a} 42%, #17171c)}
+.dgm-zone.is-accent{border-color:color-mix(in oklab, ${a} 55%, #fff);background:color-mix(in oklab, ${a} 7%, transparent)}
+.dgm-zone.is-boundary{border-color:${a}}
+.dgm-zone.is-accent>span,.dgm-zone.is-boundary>span{color:color-mix(in oklab, ${a} 42%, #17171c)}
+.dgm-step{background:${a};box-shadow:0 2px 6px color-mix(in oklab, ${a} 45%, transparent);color:color-mix(in oklab, ${a} 20%, #1d1002)}
+.dgm-lbl.is-accent{color:color-mix(in oklab, ${a} 42%, #17171c);border-color:color-mix(in oklab, ${a} 42%, #fff);background:color-mix(in oklab, ${a} 9%, #fff)}
+.dgm-heat.is-high{background:${a};border-color:color-mix(in oklab, ${a} 78%, #000);color:color-mix(in oklab, ${a} 20%, #1d1002)}
+.dgm-heat.is-high p{color:color-mix(in oklab, ${a} 26%, #231503)}
+.dgm-heat.is-medium{background:color-mix(in oklab, ${a} 34%, #fff);border-color:color-mix(in oklab, ${a} 52%, #fff);color:color-mix(in oklab, ${a} 34%, #17171c)}
+.dgm-heat.is-medium p{color:color-mix(in oklab, ${a} 24%, #221704)}
+.dgm-legend i.is-accent{border-top-color:${a}}
+`;
+  if (t.zoneStyle === 'solid') css += `.dgm-zone{border-style:solid}\n`;
+  if (t.zoneStyle === 'hidden') css += `.dgm-zone{border-color:transparent;background:none}.dgm-zone>span{display:none}\n`;
+  if (!t.showCaptionBar) css += `.dgm-cap{display:none}.dgm-stage{padding-top:24px}\n`;
+  if (!t.showExampleTag) css += `.dgm-cap .dgm-tag{display:none}\n`;
+  if (!t.showLegend) css += `.dgm-legend,.dgm-key{display:none}\n`;
+  if (!t.showNotes) css += `.dgm-note{display:none}\n`;
+  if (!t.showSteps) css += `.dgm-step{display:none}\n`;
+  if (!t.showWireLabels) css += `.dgm-lbl{display:none}\n`;
+  let el = document.getElementById('dgm-tweak-overrides');
+  if (!el) { el = document.createElement('style'); el.id = 'dgm-tweak-overrides'; document.head.appendChild(el); }
+  el.textContent = css;
+  document.querySelectorAll('svg.dgm-wires line').forEach(l => {
+    if (!l.dataset.origStroke) l.dataset.origStroke = l.getAttribute('stroke') || '';
+    l.setAttribute('stroke', l.dataset.origStroke.toUpperCase() === '#F89728' ? a : l.dataset.origStroke);
+  });
+  document.querySelectorAll('svg.dgm-wires marker path').forEach(p => {
+    if (!p.dataset.origFill) p.dataset.origFill = p.getAttribute('fill') || '';
+    p.setAttribute('fill', p.dataset.origFill.toUpperCase() === '#F89728' ? a : p.dataset.origFill);
+  });
+}
+
+function DiagramTweaks() {
+  const [t, setTweak] = useTweaks(DGM_TWEAK_DEFAULTS);
+  React.useEffect(() => { dgmApply(t); }, [t]);
+  return (
+    <TweaksPanel>
+      <TweakSection label="Palette" />
+      <TweakColor label="Accent" value={t.accent}
+        options={['#F89728', '#E51C84', '#2E3192', '#1E8E5A']}
+        onChange={v => setTweak('accent', v)} />
+      <TweakColor label="Page background" value={t.pageBg}
+        options={['#EDEFF4', '#FFFFFF', '#1F2D58']}
+        onChange={v => setTweak('pageBg', v)} />
+      <TweakSection label="Form" />
+      <TweakRadio label="Zones" value={t.zoneStyle} options={['dashed', 'solid', 'hidden']}
+        onChange={v => setTweak('zoneStyle', v)} />
+      <TweakRadio label="Corners" value={t.corners} options={['sharp', 'soft', 'round']}
+        onChange={v => setTweak('corners', v)} />
+      <TweakRadio label="Density" value={t.density} options={['compact', 'regular', 'large']}
+        onChange={v => setTweak('density', v)} />
+      <TweakSlider label="Figure width" value={t.figureWidth} min={1080} max={1920} step={40} unit="px"
+        onChange={v => setTweak('figureWidth', v)} />
+      <TweakSection label="Annotation" />
+      <TweakToggle label="Caption bar" value={t.showCaptionBar} onChange={v => setTweak('showCaptionBar', v)} />
+      <TweakToggle label="EXAMPLE tag" value={t.showExampleTag} onChange={v => setTweak('showExampleTag', v)} />
+      <TweakToggle label="Step numbers" value={t.showSteps} onChange={v => setTweak('showSteps', v)} />
+      <TweakToggle label="Wire labels" value={t.showWireLabels} onChange={v => setTweak('showWireLabels', v)} />
+      <TweakToggle label="Legends &amp; keys" value={t.showLegend} onChange={v => setTweak('showLegend', v)} />
+      <TweakToggle label="Footnotes" value={t.showNotes} onChange={v => setTweak('showNotes', v)} />
+    </TweaksPanel>
+  );
+}
+ReactDOM.createRoot(document.getElementById('tweak-root')).render(<DiagramTweaks />);
+</script>
+</body></html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>APM AVD Program — Live Tracker</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  /* Self-contained brand tokens (fallback so the exported file is standalone) */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Mulish:wght@400;500;600;700;800&display=swap');
+  :root {
+    --font-display:'Poppins',system-ui,sans-serif; --font-ui:'Mulish',system-ui,sans-serif;
+    --apm-orange-50:#FEF4E6; --apm-orange-500:#F89728; --apm-orange-700:#C0680A;
+    --apm-navy-50:#EEF0F6; --apm-navy-100:#D4D9E8; --apm-navy-600:#1F2D58; --apm-navy-700:#182447; --apm-navy-900:#0B1226;
+    --apm-magenta:#E51C84; --apm-indigo:#2E3192;
+    --neutral-0:#fff; --neutral-50:#F7F8FA; --neutral-100:#EFF1F5; --neutral-200:#E1E5EC; --neutral-300:#CBD2DC; --neutral-400:#A3ADBC; --neutral-500:#74808F; --neutral-600:#545F6E; --neutral-700:#3C4654;
+    --surface-page:#F7F8FA; --surface-card:#fff; --surface-sunken:#EFF1F5;
+    --text-body:#182447; --text-strong:#1F2D58; --text-muted:#74808F; --text-subtle:#A3ADBC;
+    --border-subtle:#E1E5EC; --border-default:#CBD2DC;
+    --brand-primary:#F89728; --brand-on-primary:#1F2D58;
+    --status-success:#1E8E5A; --status-success-bg:#E6F4ED; --amber-500:#E2920E; --status-warning-bg:#FCF2DD;
+    --status-danger:#D43A3A; --status-danger-bg:#FBE9E9; --status-info:#2C6FD6; --status-info-bg:#E7F0FC;
+    --radius-md:10px; --radius-lg:16px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(17,26,54,.08),0 1px 2px rgba(17,26,54,.04);
+    --shadow-md:0 4px 12px rgba(17,26,54,.10),0 2px 4px rgba(17,26,54,.05);
+    --gradient-navy:linear-gradient(135deg,#1F2D58 0%,#0B1226 100%);
+  }
+  body { background: var(--surface-page); color: var(--text-body); font-family: var(--font-ui); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 0 28px 80px; }
+
+  /* Header */
+  .topband { position: relative; overflow: hidden; background: var(--gradient-navy); color: #fff; }
+  .topband .ribbon { position: absolute; top: -40px; right: -30px; width: 34%; opacity: .85; pointer-events: none; }
+  .topband-inner { max-width: 1320px; margin: 0 auto; padding: 28px 28px 54px; position: relative; z-index: 2; }
+  .topband .logo { height: 40px; filter: brightness(0) invert(1); margin-bottom: 18px; }
+  .sot { display: inline-flex; align-items: center; gap: 7px; background: var(--brand-primary); color: var(--brand-on-primary);
+         font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 4px 12px; border-radius: var(--radius-pill); }
+  h1.title { font-size: 34px; margin: 14px 0 6px; color: #fff; }
+  .sub { color: var(--apm-navy-100); font-size: 15px; }
+  .meta { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 16px; font-size: 13px; color: var(--apm-navy-100); }
+  .meta b { color: #fff; font-weight: 700; }
+
+  /* KPIs */
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 13px; margin: -34px 0 28px; position: relative; z-index: 3; }
+  .kpi { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px 16px 14px; box-shadow: var(--shadow-md); }
+  .kpi .n { font-family: var(--font-display); font-size: 30px; font-weight: 600; color: var(--text-strong); line-height: 1; }
+  .kpi .l { font-size: 11.5px; color: var(--text-muted); margin-top: 7px; font-weight: 600; }
+  .kpi.alert .n { color: var(--status-danger); }
+  .kpi.warn .n { color: var(--amber-500); }
+
+  section.block { margin-top: 30px; }
+  h2.sec { font-size: 20px; margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  h2.sec .bar { width: 4px; height: 22px; background: var(--brand-primary); border-radius: 2px; }
+
+  /* Analysis */
+  .analysis { background: #fff; border: 1px solid var(--border-subtle); border-left: 5px solid var(--amber-500); border-radius: var(--radius-lg); padding: 22px 24px; box-shadow: var(--shadow-sm); }
+  .analysis h3 { font-size: 16px; margin: 0 0 4px; color: var(--text-strong); }
+  .cap-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 26px; margin-top: 16px; }
+  .gauge { background: var(--surface-sunken); border-radius: var(--radius-md); padding: 18px; }
+  .gauge .big { font-family: var(--font-display); font-size: 42px; font-weight: 700; color: var(--status-danger); line-height: 1; }
+  .bar-cap { height: 14px; border-radius: 999px; background: var(--neutral-200); overflow: hidden; margin: 14px 0 6px; position: relative; }
+  .bar-cap .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--status-danger); border-radius: 999px; }
+  .bar-cap .cap { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--apm-navy-600); }
+  .finding { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border-subtle); font-size: 13.5px; line-height: 1.5; }
+  .finding:last-child { border-bottom: none; }
+  .finding .ic { color: var(--amber-500); flex-shrink: 0; font-weight: 800; }
+  .finding.bad .ic { color: var(--status-danger); }
+  .finding.ok .ic { color: var(--status-success); }
+  .recs { margin: 14px 0 0; padding: 14px 18px; background: var(--apm-navy-50); border-radius: var(--radius-md); font-size: 13.5px; }
+  .recs ol { margin: 8px 0 0; padding-left: 20px; } .recs li { margin: 5px 0; line-height: 1.5; }
+
+  /* Controls */
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+  .chip { font-size: 12.5px; font-weight: 600; padding: 7px 13px; border-radius: var(--radius-pill); border: 1.5px solid var(--border-default);
+          background: #fff; color: var(--text-body); cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 7px; }
+  .chip .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .chip.off { opacity: .4; }
+  .chip.toggle.on { background: var(--brand-primary); border-color: var(--brand-primary); color: var(--brand-on-primary); }
+
+  /* Gantt */
+  .gantt-scroll { overflow-x: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); }
+  .gantt { position: relative; min-width: 1040px; }
+  .gantt .months { display: flex; border-bottom: 1px solid var(--border-default); position: sticky; top: 0; background: #fff; z-index: 4; }
+  .gantt .labelcol-h { width: 300px; flex-shrink: 0; padding: 10px 14px; font-size: 12px; font-weight: 700; color: var(--text-muted); border-right: 1px solid var(--border-default); }
+  .month { border-right: 1px solid var(--border-subtle); font-size: 11.5px; font-weight: 700; color: var(--text-muted); padding: 10px 0 8px 8px; box-sizing: border-box; }
+  .grow { display: flex; align-items: stretch; border-bottom: 1px solid var(--neutral-100); }
+  .grow:hover { background: var(--neutral-50); }
+  .grow.group { background: var(--apm-navy-50); }
+  .grow.group .labelcol { font-weight: 800; color: var(--apm-navy-700); font-size: 13px; }
+  .labelcol { width: 300px; flex-shrink: 0; padding: 7px 14px; font-size: 12.5px; border-right: 1px solid var(--border-default); display: flex; align-items: center; gap: 8px; box-sizing: border-box; }
+  .labelcol .tid { font-size: 10px; font-weight: 700; color: var(--text-subtle); width: 30px; flex-shrink: 0; }
+  .labelcol .tt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track { position: relative; flex: 1; min-height: 30px; }
+  .gridv { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--neutral-100); }
+  .today { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--apm-magenta); z-index: 3; }
+  .bar { position: absolute; top: 6px; height: 18px; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; font-size: 10.5px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; box-sizing: border-box; }
+  .bar.crit { box-shadow: 0 0 0 2px var(--brand-primary); }
+  .bar.mine { outline: 2px dashed rgba(255,255,255,.55); outline-offset: -4px; }
+  .bar.beng { outline: 2px dotted rgba(255,255,255,.7); outline-offset: -4px; }
+  .ms { position: absolute; top: 7px; width: 16px; height: 16px; background: var(--apm-orange-500); transform: rotate(45deg); border: 2px solid #fff; box-shadow: var(--shadow-sm); z-index: 2; }
+  .ms.crit { background: var(--status-danger); }
+
+  /* Tables */
+  table.tbl { width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); font-size: 13px; }
+  .tbl thead th { background: var(--apm-navy-600); color: #fff; text-align: left; padding: 10px 12px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+  .tbl td { padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr.mine td { background: var(--apm-orange-50); }
+  .pill { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 9px; border-radius: var(--radius-pill); white-space: nowrap; }
+  .s-prog { background: var(--status-info-bg); color: var(--status-info); }
+  .s-not { background: var(--neutral-100); color: var(--neutral-600); }
+  .s-done { background: var(--status-success-bg); color: var(--status-success); }
+  .s-block { background: var(--status-danger-bg); color: var(--status-danger); }
+  .tbl tr.beng td { background: var(--status-info-bg); }
+  .owner-build { color: var(--status-info); font-weight: 700; }
+  .dep-ok { color: var(--status-success); font-weight: 700; }
+  .dep-bad { color: var(--status-danger); font-weight: 700; }
+  .owner-you { color: var(--apm-orange-700); font-weight: 700; }
+  .crit-y { color: var(--status-danger); font-weight: 800; }
+  .legend { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+  .note { font-size: 12.5px; color: var(--text-muted); margin-top: 10px; line-height: 1.55; }
+  footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-subtle); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+  @media print {
+    .gantt-scroll { overflow: visible; } .controls { display: none; }
+    .kpis { margin-top: 16px; } body { background: #fff; }
+    .topband { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="topband">
+  <img class="ribbon" src="../assets/ribbon-magenta.png" alt="" />
+  <div class="topband-inner">
+    <img class="logo" src="../assets/apm-logo.png" alt="APM" />
+    <span class="sot">● Source of truth</span>
+    <h1 class="title">Digital Workplace — AVD Program Tracker</h1>
+    <div class="sub">5 AVD use cases on Azure Virtual Desktop via Nerdio · delivered by Twiki Corp for APM</div>
+    <div class="meta">
+      <span>Program window <b>23 Jun – 30 Sep 2026 (contract) · Developer GA ~20 Nov</b></span>
+      <span>Exported <b id="today-label"></b></span>
+      <span>Version <b>v1.8 — Standard User whole workstream (design→GA) completed 13 Jul–14 Aug; Priv 17 Aug–28 Sep; Developer after Priv — GA ~20 Nov</b></span>
+      <span>Build stack <b>Intune · Nerdio · Function App · DDDs</b></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+
+  <section class="block">
+    <h2 class="sec"><span class="bar"></span>Sequencing &amp; dependencies</h2>
+    <div class="analysis">
+      <h3>The schedule is gated by APM dependencies — not by our delivery capacity.</h3>
+      <p class="note">Delivery is a tight, AI-assisted two-person team (Shaun Struik on design/DDDs/documentation/KB + identity &amp; the Function App, and the AVD Build Engineer on the hands-on AVD / Nerdio / Intune / image build) — efficient and on track. The real risk to 30 Sep is <b>APM-side dependencies</b>: APM is running several tier-one projects at once, so network build, decisions, approvals and pen-test scheduling sit with APM departments. The panel below tracks those dependencies; the findings call out what is gating progress now.</p>
+      <div class="cap-grid">
+        <div class="gauge">
+          <div class="l" style="font-size:12px;color:var(--text-muted);font-weight:700;margin-bottom:10px">JOB SEEKER — GATING DEPENDENCIES (in order)</div>
+          <div id="dep-list" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+        <div>
+          <div class="finding bad"><span class="ic">●</span><span><b>Code-signing certificate is the master gate (D-14).</b> One fleet-trusted cert — added by APM Cyber as a WDAC allowed signer (D-7) — unblocks the <i>entire</i> device-side credential pipeline (token fetch, lock-screen render, LSA write) and Nerdio session-host script signing at once. Sits with APM.</span></div>
+          <div class="finding bad"><span class="ic">●</span><span><b>Network design must be finalised &amp; approved by APM</b> before any networking or credential-pipeline deploys — the public-endpoint workaround was rejected. The live build is running in the <b>FVE</b> (test), not prod.</span></div>
+          <div class="finding"><span class="ic">●</span><span><b>Job Seeker built work is real but gated.</b> Golden image captured (WDAC-hardened); CA set built but <b>report-only</b> until cyber re-approves; AVD is <b>definitions/logic only</b> until network lands; credential pipeline blocked pending the cert + network.</span></div>
+          <div class="finding"><span class="ic">●</span><span><b>Credential Proxy public ingress (D-3)</b> is the single biggest <i>unverified</i> link — no site→Azure private path exists, so remote kiosks need a hardened EasyAuth-protected public ingress.</span></div>
+          <div class="finding"><span class="ic">●</span><span><b>Pen test gates go-live.</b> Design update + re-CAB, then penetration test and remediation must clear before rollout.</span></div>
+        </div>
+      </div>
+      <div class="recs">
+        <b>Recommendation to the Portfolio Manager:</b>
+        <ol>
+          <li><b>Critical chain: Job Seeker (Intune → Nerdio/autoscale → Function App → design update → pen test) → Standard User.</b> Both depend on the Network Team delivering the Azure spoke (N7) on time — that hand-off is the #1 external dependency.</li>
+          <li><b>Lock the APM dependencies</b> — confirm an APM owner and date for the prod network, DR-010/011 decisions, the pen-test vendor/windows, and the Developer (PDE) owner. These, not delivery throughput, decide the 30 Sep outcome.</li>
+          <li><b>Four of five use cases complete inside the contract</b> — Network, Job Seeker, Standard User (whole workstream design→GA, 13 Jul–14 Aug), ES and Privileged (17 Aug–28 Sep) all land by 30 Sep. <b>Developer is the exception:</b> with one build engineer the workstreams run one after another (Standard → Privileged → Developer), so Developer cannot start until Privileged finishes (28 Sep) and GA lands ~20 Nov, past contract end. Pulling it inside 30 Sep needs a second build engineer from mid-Aug, otherwise confirm APM accepts Developer GA post-contract. <b>Watch the Standard User window</b> — image complete ~2 Aug then pilot, pen-test, remediation and rollout all inside ~12 days; pre-book the pen-test. Job Seeker rollout stays split: <b>Phase 1 (~360 of 540) end Aug</b>, <b>Phase 2 (~180) in Sep, dependent on old-device returns + condition</b>.</li>
+          <li>Close the gating decisions now: Job Seeker code-signing cert (D-14) + WDAC allowed-signer rule (D-7) + network-design approval + Credential Proxy ingress (D-3); SU printing (DR-010) &amp; mapped drive (DR-011); confirm Nerdio is live; nominate the Developer (PDE) owner.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2 class="sec"><span class="bar"></span>Timeline</h2>
+    <div class="controls" id="controls"></div>
+    <div class="gantt-scroll"><div class="gantt" id="gantt"></div></div>
+    <div class="legend">◆ milestone · solid bar = task · <span style="outline:2px dashed var(--neutral-500);outline-offset:1px;padding:0 4px">dashed</span> = Shaun Struik · <span style="outline:2px dotted var(--status-info);outline-offset:1px;padding:0 4px">dotted</span> = build-engineer task · orange ring / red = critical path · <span style="color:var(--apm-magenta);font-weight:700">▎</span> today</div>
+  </section>
+
+  <section class="block">
+    <h2 class="sec"><span class="bar"></span>Milestones</h2>
+    <table class="tbl"><thead><tr><th>ID</th><th>Milestone</th><th>Workstream</th><th>Date</th><th>Critical</th></tr></thead><tbody id="ms-body"></tbody></table>
+  </section>
+
+  <section class="block">
+    <h2 class="sec"><span class="bar"></span>Task register</h2>
+    <p class="note">Filter by workstream or person above. <span style="background:var(--apm-orange-50);padding:0 4px">Orange rows</span> are <b>yours</b> (Architect / Design); <span style="background:var(--status-info-bg);padding:0 4px">blue rows</span> are the <b>AVD Build Engineer</b>'s. “Dep check” recomputes live: <span class="dep-bad">Overlap</span> means the task starts before a predecessor finishes.</p>
+    <table class="tbl"><thead><tr><th>ID</th><th>Task</th><th>Owner</th><th>Support</th><th>Dep</th><th>Start</th><th>End</th><th>Days</th><th>Status</th><th>Dep check</th></tr></thead><tbody id="task-body"></tbody></table>
+  </section>
+
+  <section class="block">
+    <h2 class="sec"><span class="bar"></span>Risks &amp; open decisions</h2>
+    <table class="tbl"><thead><tr><th>#</th><th>Risk / open decision</th><th>Impact</th><th>Likelihood</th><th>Owner</th><th>Mitigation</th></tr></thead><tbody id="risk-body"></tbody></table>
+  </section>
+
+  <footer>
+    <span>APM Digital Workplace — AVD Program · Commercial in confidence · © APM</span>
+    <span>Twiki Corp delivery · live source of truth — edit the data block to update, then export (Cmd/Ctrl+P → PDF)</span>
+  </footer>
+</div>
+
+<script src="program-data.js"></script>
+<script>
+(function () {
+  const T0 = new Date(2026, 5, 22);            // timeline start (Mon 22 Jun)
+  const T1 = new Date(2026, 11, 6);            // timeline end (06 Dec — Developer GA ~20 Nov, past contract end)
+  const TODAY = new Date(2026, 5, 23);         // program "today"
+  const DAYMS = 86400000;
+  const DAYW = 6;                              // px per day
+  const totalDays = Math.round((T1 - T0) / DAYMS);
+
+  const WS = window.PROGRAM.workstreams;       // ordered [{key,label,color}]
+  const TASKS = window.PROGRAM.tasks;
+  const RISKS = window.PROGRAM.risks;
+  const fmt = d => d.toLocaleDateString('en-AU', { day: '2-digit', month: 'short' });
+  const wsOf = k => WS.find(w => w.key === k);
+  const x = d => Math.round((d - T0) / DAYMS) * DAYW;
+
+  document.getElementById('today-label').textContent = new Date().toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  // ---- live dependency check + mine flag ----
+  const byId = {}; TASKS.forEach(t => byId[t.id] = t);
+  TASKS.forEach(t => {
+    t.you = ['ENG', 'ARCH'].includes(t.o) || ['ENG', 'ARCH'].includes(t.s);
+    t.build = t.o === 'ENG2' || t.s === 'ENG2';
+    t.mine = t.you;
+    let predFin = null;
+    (t.dep || []).forEach(d => { const p = byId[d]; if (p) { const e = new Date(p.en); if (!predFin || e > predFin) predFin = e; } });
+    t.predFin = predFin;
+    t.depOk = !predFin || new Date(t.st) >= predFin;
+  });
+
+  // ---- dependency panel + counts ----
+  const depBad = TASKS.filter(t => !t.depOk).length;
+  const APM_DEPS = [
+    { name: 'Code-signing certificate (D-14) + WDAC allowed-signer rule (D-7)', meta: 'APM Cyber / PKI · master gate', tone: 'red', status: 'Open — unblocks whole device-side pipeline' },
+    { name: 'Network design finalised + approved', meta: 'APM Network + Cyber', tone: 'red', status: 'Open — gates all networking + pipeline' },
+    { name: 'Credential Proxy public ingress (D-3)', meta: 'APM Cyber + project team', tone: 'amber', status: 'Open — biggest unverified link' },
+    { name: 'NSG Storage / MCR egress (D-5)', meta: 'APM Network', tone: 'amber', status: 'Open — breaks Nerdio CSE host deploy' },
+    { name: 'Block legacy auth (D-11) · kiosk VLAN allow-list (D-10)', meta: 'APM Cyber / Network', tone: 'navy', status: 'Open (default yes)' },
+    { name: 'Pen-test vendor & window', meta: 'APM Cyber / Portfolio', tone: 'navy', status: 'Not booked' },
+  ];
+  const toneCol = { red: 'var(--status-danger)', amber: 'var(--amber-500)', navy: 'var(--apm-navy-600)' };
+  const depEl = document.getElementById('dep-list');
+  if (depEl) depEl.innerHTML = APM_DEPS.map(d =>
+    `<div style="display:flex;gap:10px;align-items:flex-start"><span style="width:10px;height:10px;border-radius:50%;background:${toneCol[d.tone]};margin-top:5px;flex-shrink:0"></span><div><div style="font-weight:700;color:var(--text-strong);font-size:13.5px;line-height:1.3">${d.name}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">${d.meta} · ${d.status}</div></div></div>`).join('');
+  // ---- KPIs ----
+  const ms = TASKS.filter(t => t.ty === 'Milestone');
+  const doneCount = TASKS.filter(t => t.su === 'Complete').length;
+  const blockedCount = TASKS.filter(t => t.su === 'Blocked').length;
+  const kpis = [
+    { n: '5', l: 'AVD use cases + network' },
+    { n: ms.length, l: 'Milestones' },
+    { n: TASKS.filter(t => t.cr).length, l: 'Critical-path items' },
+    { n: doneCount, l: 'Tasks complete', cls: '' },
+    { n: blockedCount, l: 'Blocked on prod network', cls: 'alert' },
+    { n: APM_DEPS.length, l: 'APM dependencies to lock', cls: 'alert' },
+  ];
+  document.getElementById('kpis').innerHTML = kpis.map(k =>
+    `<div class="kpi ${k.cls || ''}"><div class="n">${k.n}</div><div class="l">${k.l}</div></div>`).join('');
+
+  // ---- controls ----
+  const active = new Set(WS.map(w => w.key));
+  let person = 'all'; // all | you | build
+  const ctr = document.getElementById('controls');
+  WS.forEach(w => {
+    const c = document.createElement('span');
+    c.className = 'chip'; c.dataset.k = w.key;
+    c.innerHTML = `<span class="dot" style="background:${w.color}"></span>${w.label}`;
+    c.onclick = () => { active.has(w.key) ? active.delete(w.key) : active.add(w.key); c.classList.toggle('off'); render(); };
+    ctr.appendChild(c);
+  });
+  const sep = document.createElement('span'); sep.style.cssText = 'width:1px;height:22px;background:var(--border-default);margin:0 4px'; ctr.appendChild(sep);
+  [['all','Everyone'],['you','★ Shaun’s tasks'],['build','◆ Build engineer']].forEach(([k, lbl]) => {
+    const c = document.createElement('span');
+    c.className = 'chip toggle' + (k === 'all' ? ' on' : '');
+    c.textContent = lbl;
+    c.onclick = () => { person = k; ctr.querySelectorAll('.chip.toggle').forEach(x => x.classList.remove('on')); c.classList.add('on'); render(); };
+    ctr.appendChild(c);
+  });
+
+  // ---- gantt ----
+  function render() {
+    const g = document.getElementById('gantt');
+    // month header
+    let months = '<div class="months"><div class="labelcol-h">Task</div>';
+    let cur = new Date(T0);
+    while (cur < T1) {
+      const mEnd = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+      const span = Math.round((Math.min(mEnd, T1) - cur) / DAYMS) * DAYW;
+      months += `<div class="month" style="width:${span}px">${cur.toLocaleDateString('en-AU', { month: 'short' })} '${String(cur.getFullYear()).slice(2)}</div>`;
+      cur = mEnd;
+    }
+    months += '</div>';
+
+    let rows = '';
+    WS.forEach(w => {
+      if (!active.has(w.key)) return;
+      let list = TASKS.filter(t => t.w === w.key);
+      if (person === 'you') list = list.filter(t => t.you);
+      else if (person === 'build') list = list.filter(t => t.build);
+      if (!list.length) return;
+      rows += `<div class="grow group"><div class="labelcol">${w.label}</div><div class="track"></div></div>`;
+      list.forEach(t => {
+        const s = new Date(t.st), e = new Date(t.en);
+        let bar;
+        if (t.ty === 'Milestone') {
+          bar = `<div class="ms ${t.cr ? 'crit' : ''}" style="left:${x(s) - 8}px" title="${t.t}"></div>`;
+        } else {
+          const w2 = Math.max(DAYW * 2, (x(e) - x(s)));
+          const who = t.mine ? 'mine' : t.build ? 'beng' : '';
+          bar = `<div class="bar ${t.cr ? 'crit' : ''} ${who}" style="left:${x(s)}px;width:${w2}px;background:${w.color}" title="${t.t} (${fmt(s)}–${fmt(e)})">${t.id}</div>`;
+        }
+        rows += `<div class="grow"><div class="labelcol"><span class="tid">${t.id}</span><span class="tt" title="${t.t}">${t.t}</span></div><div class="track">${bar}</div></div>`;
+      });
+    });
+    g.innerHTML = months + rows;
+    // gridlines + today on every track
+    const todayX = x(TODAY);
+    g.querySelectorAll('.track').forEach(tr => {
+      let gl = '';
+      let c = new Date(T0);
+      while (c < T1) { const mEnd = new Date(c.getFullYear(), c.getMonth() + 1, 1); gl += `<div class="gridv" style="left:${x(mEnd)}px"></div>`; c = mEnd; }
+      gl += `<div class="today" style="left:${todayX}px"></div>`;
+      tr.insertAdjacentHTML('afterbegin', gl);
+    });
+  }
+  render();
+
+  // ---- milestones table ----
+  document.getElementById('ms-body').innerHTML = ms.map(t => {
+    const w = wsOf(t.w);
+    return `<tr class="${t.mine ? 'mine' : ''}"><td><b>${t.id}</b></td><td>${t.t.replace(/^MILESTONE:\s*/i, '')}</td><td>${w ? w.label : t.w}</td><td>${fmt(new Date(t.st))}</td><td>${t.cr ? '<span class="crit-y">Critical</span>' : '—'}</td></tr>`;
+  }).join('');
+
+  // ---- task table ----
+  const oname = window.PROGRAM.owners;
+  const on = c => oname[c] || c;
+  const youCodes = ['ENG', 'ARCH'];
+  document.getElementById('task-body').innerHTML = TASKS.map(t => {
+    const oc = youCodes.includes(t.o) ? 'owner-you' : t.o === 'ENG2' ? 'owner-build' : '', sc = youCodes.includes(t.s) ? 'owner-you' : t.s === 'ENG2' ? 'owner-build' : '';
+    const st = t.su === 'In progress' ? 's-prog' : t.su === 'Complete' ? 's-done' : t.su === 'Blocked' ? 's-block' : 's-not';
+    const dep = (t.dep || []).join(', ') || '—';
+    const depc = t.su === 'Complete' ? '<span class="dep-ok">✓</span>' : !t.predFin ? '<span class="dep-ok">—</span>' : (t.depOk ? '<span class="dep-ok">OK</span>' : '<span class="dep-bad">Overlap</span>');
+    const rowcls = t.mine ? 'mine' : t.build ? 'beng' : '';
+    return `<tr class="${rowcls}"><td><b>${t.id}</b>${t.cr ? ' <span class="crit-y" title="critical path">▲</span>' : ''}</td><td>${t.t}</td><td class="${oc}">${on(t.o)}</td><td class="${sc}">${on(t.s)}</td><td>${dep}</td><td>${fmt(new Date(t.st))}</td><td>${fmt(new Date(t.en))}</td><td>${t.dy || '—'}</td><td><span class="pill ${st}">${t.su}</span></td><td>${depc}</td></tr>`;
+  }).join('');
+
+  // ---- risks ----
+  const sevPill = v => `<span class="pill ${v === 'High' ? 's-not' : 's-not'}" style="background:${v === 'High' ? 'var(--status-danger-bg)' : v === 'Med' ? 'var(--status-warning-bg)' : 'var(--status-success-bg)'};color:${v === 'High' ? 'var(--status-danger)' : v === 'Med' ? '#9A6206' : 'var(--status-success)'}">${v}</span>`;
+  document.getElementById('risk-body').innerHTML = RISKS.map(r =>
+    `<tr><td><b>${r.n}</b></td><td>${r.risk}</td><td>${sevPill(r.impact)}</td><td>${sevPill(r.like)}</td><td>${r.owner}</td><td>${r.mit}</td></tr>`).join('');
+})();
+</script>
+</body>
+</html>

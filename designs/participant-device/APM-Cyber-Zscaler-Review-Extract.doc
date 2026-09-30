@@ -1,0 +1,27 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Participant Device - Session Account and Zscaler Enforcement Model</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt}h1{font-size:16pt}h2{font-size:13pt}table{border-collapse:collapse;width:100%;margin-bottom:16pt}td,th{border:1px solid #999;padding:6px;text-align:left;vertical-align:top}th{background:#eee}</style></head><body>
+<h1>Participant Device - Session Account and Zscaler Enforcement Model</h1>
+<p>Extract from Participant Kiosk DDD V1.2 for review against the Zscaler fix.</p>
+
+<h2>Session account model (no user identity)</h2>
+<table><tr><th>Aspect</th><th>Design</th></tr>
+<tr><td>Account creation</td><td>Created on the device by the signed remediation CDG-W11-REM-Kiosk Session Account-P-1.0, named Kiosk-[SERIAL] from the BIOS serial. No account is created in any directory</td></tr>
+<tr><td>Account scope</td><td>Local to the device only. No meaning on any other device or service</td></tr>
+<tr><td>Credential</td><td>32 random characters generated on the device, held only in the Winlogon LSA secret. Not stored in Intune, Key Vault or any document, never displayed</td></tr>
+<tr><td>Credential rotation</td><td>Regenerated whenever the remediation repairs the account, and on demand fleet-wide. No schedule or key material held by APM</td></tr>
+<tr><td>Sign-in</td><td>Automatic at every boot, no credential prompt</td></tr>
+<tr><td>Privilege</td><td>Standard user, not a member of Administrators</td></tr>
+</table>
+
+<h2>Decision register entries relevant to Zscaler</h2>
+<table><tr><th>ID</th><th>Decision</th><th>Status</th></tr>
+<tr><td>DR-007</td><td>Identity model for the fleet: no user identity, participant session runs as a local account created and managed by Assigned Access</td><td>Approved - APM Cyber Security, APM Digital lead</td></tr>
+<tr><td>DR-011</td><td>Session credential: no password known to any person, session account Kiosk-[SERIAL] created on the device by a signed remediation</td><td>Approved with amendment - APM Cyber Security confirmation required</td></tr>
+<tr><td>DR-013</td><td>Zscaler enforcement model without user identity: enforcement is device and location based. There are no users on this fleet</td><td>Model approved - APM Cyber Security; mechanism open</td></tr>
+</table>
+
+<h2>Naming convention (for Zscaler device/account matching)</h2>
+<p>Kiosk-[SERIAL], for example Kiosk-63TFTJ4 - one account per device, derived from the BIOS serial, capped at the 20-character account-name limit. Unique per device (resolves max-devices-per-user constraints raised against the prior naming model).</p>
+
+<h2>Open item</h2>
+<p>DR-013 mechanism remains open pending the Zscaler provisioning workshop with a validated device. Zscaler tenant configuration is otherwise reproduced as supplied in section 5.3.4, with the identity plane (SAML, SCIM, IdP objects) removed rather than revalidated, since enforcement is device and location based throughout.</p>
+</body></html>

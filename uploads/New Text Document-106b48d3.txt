@@ -1,0 +1,79 @@
+Participant Kiosk - per-user restriction policies
+   Device                                     APM-PK-63TFTJ4
+   Run at                                     2026-08-24 02:46:12
+   Running as                                 nt authority\system
+   Language mode                              ConstrainedLanguage
+   Kiosk account                              kiosk-63tftj4
+   SID                                        S-1-5-21-768058671-838940902-4216314193-1002
+
+== 1. Reaching the kiosk hive
+   Not mounted, loading                       C:\Users\kiosk-63tftj4\NTUSER.DAT
+   WARN  Loaded from file. These are the values as last written, not necessarily what a live session sees.
+
+== 2. RestrictRun
+         Maps to the policy "Run only specified Windows applications". Matches on the executable
+         NAME only, never the path, so no path correction affects this layer.
+   RestrictRun                                1
+   FAIL  RestrictRun is enforced. Only the executable names listed below can run in this session.
+   Entries                                    20
+           AssignedAccess_1 msedge.exe
+           AssignedAccess_18 Narrator.exe
+           AssignedAccess_17 select.pyd
+           AssignedAccess_16 LanguageToolLO.dll
+           AssignedAccess_15 soffice.bin
+           AssignedAccess_14 soffice.exe
+           AssignedAccess_13 simpress.exe
+           AssignedAccess_12 scalc.exe
+           AssignedAccess_11 swriter.exe
+           AssignedAccess_10 VoiceAccess.exe
+           AssignedAccess_9 explorer.exe
+           AssignedAccess_8 Magnify.exe
+           AssignedAccess_7 TeamViewer.exe
+           AssignedAccess_6 _socket.pyd
+           AssignedAccess_5 Narrator.exe
+           AssignedAccess_4 osk.exe
+           AssignedAccess_3 msedge_proxy.exe
+           AssignedAccess_2 ZSATray.exe
+           AssignedAccess_19 Magnify.exe
+           AssignedAccess_20 msedge_proxy.exe
+   DisallowRun                                not set
+
+== 3. RestrictRun list against the applied Assigned Access allow-list
+   Executables in AllowedApps                 17
+   Names in RestrictRun                       20
+   OK    Every allowed application also appears in RestrictRun.
+     msedge.exe                               AllowedApps: True   RestrictRun: True
+     msedge_proxy.exe                         AllowedApps: True   RestrictRun: True
+     explorer.exe                             AllowedApps: True   RestrictRun: True
+     soffice.bin                              AllowedApps: True   RestrictRun: True
+
+== 4. Edge registration for the kiosk account
+         The Start pin resolves through Edge package registration. If that registration has not
+         completed when Start renders, the pin is dropped with no error anywhere.
+   Per-user App Paths entry                   absent
+   MSEdgeHTM class registration               ABSENT, the desktopAppId MSEdge pin resolves through this
+   Start menu state folder                    present
+
+== 5. Assigned Access events (last 3 days)
+   Microsoft-Windows-AssignedAccess/Admin     not readable or empty
+   Microsoft-Windows-AssignedAccess/Operational not readable or empty
+Cannot invoke method. Method invocation is supported only on core types in this language mode.
+At line:232 char:5
++     [gc]::Collect() 2>$null | Out-Null
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (:) [], RuntimeException
+    + FullyQualifiedErrorId : MethodInvocationNotSupportedInConstrainedLanguage
+ 
+         Unloaded HKU\APMKioskDiag
+
+== 6. Verdict
+
+   1 finding(s): Edge class registration missing for the kiosk user
+
+   Edge is not registered for this account
+         The desktopAppId MSEdge pin resolves through the per-user class registration, so it cannot
+         appear until that exists. This is consistent with the session purge deleting the profile:
+         the registration has to be rebuilt on every boot and races Start rendering.
+         Test by disabling the purge for one boot cycle. If the pin becomes reliable, that is it.
+
+

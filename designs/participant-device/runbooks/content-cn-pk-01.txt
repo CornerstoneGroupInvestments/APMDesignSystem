@@ -1,0 +1,280 @@
+H1 |Solution overview
+P |The APM ES Participant Kiosk is a Dell desktop running Windows 11 Enterprise, Microsoft Entra ID joined and managed by Microsoft Intune. It is deployed to APM Employment Services sites for participant use.
+P |The device operates under a multi-application restricted user experience. The available application set is Microsoft Edge, LibreOffice Writer, Calc and Impress, and File Explorer scoped to the Downloads and Desktop folders. No other application, and no Windows administrative interface, is reachable from the session.
+P |There is no participant identity and no credential. The device authenticates automatically to a Windows-managed local account, so no username or password exists for a participant to enter and none is displayed. On restart, all session data written by the previous user is purged.
+P |**CompNow performs the build.** Receive and inspect the device and record its serial number. Verify the firmware settings, where the model requires it. Install the APM image from USB, which erases the internal drive and replaces the factory operating system. Register the device in Windows Autopilot with the group tag PARTICIPANT. Initiate provisioning. Verify the outcome against the acceptance criteria in Stage 8. Then pack, label and dispatch the device, and update the asset register.
+P |Everything between provisioning and the acceptance tests is automated. Once the device is registered and provisioning has begun, Intune applies the configuration, the security baseline and the application set with no operator intervention.
+H1 |Critical build requirements
+NUM|The **APM image** is installed from USB at Stage 3, before Autopilot registration. It carries the required Windows version, the current updates and the APM certificates, and replaces the factory operating system. Autopilot provisions on top of it and does not change the Windows version.
+NUM|Registration in **Windows Autopilot** is the first action performed against APM's systems, and it must be complete before provisioning is initiated at Stage 7. No configuration, application or lockdown reaches an unregistered device. Stages 4 and 5 deliver registration.
+NUM|The Autopilot group tag must read **PARTICIPANT** in upper case. The tag is the sole mechanism that assigns the kiosk deployment profile. An incorrect or absent tag results in a standard Windows desktop with no lockdown applied.
+NUM|**Userless enrolment status** must read **Allowed** before provisioning is initiated at Stage 7, and before any rebuild. A device at Blocked fails during the account setup phase of provisioning.
+NUM|No device is dispatched until it has been **restarted and has returned to the restricted session unattended**. Stage 8 is the acceptance test for the build.
+H1 |Prerequisites
+TBL|2900,6460
+TH |**Item**||**Detail**
+TR |Device allocation list||Quantity per site and destination site code. Issued by APM.
+TR |**Build USB drive**||One drive, prepared once and reused for every device. Holds the APM image and the build scripts. Prepare it as set out below. 16 GB minimum.
+TR |Files from APM||APM emails a download link for the image, alongside the scripts. Four files: Windows11_25H2_PK_Updated_20260827.iso - get-autopilothash.bat - run-CreateMIREGKey.bat - the PowerShell script run-CreateMIREGKey.bat invokes. Before starting a batch, confirm the image filename matches the one in the most recent APM email: the date in the filename is the image version.
+TR |Workstation with Rufus||A build facility workstation running **Rufus** 4.5 or later, used once to prepare the build USB drive. Also used at Stage 5 to reach the Intune admin centre.
+TR |Wired network at the build facility||Ethernet with internet access. See the network requirements below.
+TR |Keyboard, mouse, monitor||Required for the build. Not shipped with the device unless the allocation list specifies otherwise.
+TR |Asset register access||Every device action is recorded against the register.
+TR |Build record sheet||Located at the end of this document. One per device.
+END
+H2 |Preparing the build USB drive
+P |**APM to confirm before issue:** Two things a technician needs before assembling the kit: the exact filename of the PowerShell script that run-CreateMIREGKey.bat invokes, so its receipt and its placement on the drive can be confirmed; and the USB preparation tool. This procedure specifies Rufus 4.5 or later; confirm that is the tool CompNow is to use, since it is third-party software the build facility may not carry.
+P |Done once, on a build facility workstation, not per device. One drive serves every device in the batch. Prepare a spare as well: a failed drive stops every build at the facility.
+NUM|Obtain the four files listed above from APM.
+NUM|Insert a USB drive of 16 GB or larger. Anything on it is erased.
+NUM|Open **Rufus** on the workstation.
+NUM|Under **Device**, select the USB drive. Check the drive letter and capacity match the drive inserted.
+NUM|Next to **Boot selection**, choose **SELECT** and pick Windows11_25H2_PK_Updated_20260827.iso.
+NUM|Set **Partition scheme** to **GPT** and **Target system** to **UEFI (non CSM)**.
+NUM|Set **File system** to **FAT32**. Where Rufus warns that the Windows image file exceeds the FAT32 limit and offers to split it, accept. FAT32 is required: it boots under Secure Boot without a third-party bootloader, so Secure Boot stays enabled throughout the build.
+NUM|Choose **START**. Where Rufus offers Windows customisation options, accept the defaults and choose **OK**. Confirm the warning that the drive will be erased.
+NUM|Wait for Rufus to report **READY**, then close Rufus.
+NUM|Open the USB drive in File Explorer. Copy the three script files to the **top level of the drive**, not into a folder.
+P |**Check before use:** The top level of the drive shows get-autopilothash.bat, run-CreateMIREGKey.bat, the PowerShell script, and the Windows installation folders (sources, boot and others).
+P |**Report to APM if** Rufus reports an error, or the ISO is refused as not bootable. Do not attempt to build a device from a drive that did not reach READY. Quote the message Rufus showed.
+H2 |Network requirements at the build facility
+P |Autopilot self-deploying mode attests the device TPM against Microsoft endpoints during provisioning, so outbound internet access is required throughout the build. Wired ethernet is preferred. Where any address below is blocked, provisioning halts at the Securing your hardware stage and returns error 0x800705B4.
+TBL|2900,6460
+TH |**Must be reachable**||**Address**
+TR |Outbound internet||TCP 443 and TCP 80
+TR |TPM attestation, all devices||*.microsoftaik.azure.net
+TR |TPM attestation, Intel||https://ekop.intel.com/ekcertservice
+TR |TPM attestation, AMD||https://ftpm.amd.com/pki/aia
+END
+P |Confirm these with the network team as tested, before the first batch. Blocked attestation endpoints are the most common cause of a stalled provisioning run.
+H1 |Stage 1 - Receipt and power-on inspection (3 minutes)
+NUM|Open the carton. Remove the device, the power supply and all accessories. Retain the carton and all packaging for repacking at Stage 9.
+NUM|Record the serial number on the build record sheet. It is printed on the carton label and on the device.
+NUM|Connect the monitor, keyboard, mouse, ethernet cable and power.
+NUM|Press the power button once.
+P |**On screen:** The Dell logo, followed by the factory operating system starting, or a first-run screen. Either state is expected. The factory operating system is replaced at Stage 3, so its state does not matter.
+P |**Report to APM if** the device does not power on, shows physical damage, or halts on an error before the Dell logo. Do not attempt repair and do not proceed. Set the device aside, photograph it, record it as **DOA** on the build record sheet and in the asset register, and follow the faulty-goods return process.
+P |Record in the asset register: serial number, model, destination site, status **In build**.
+H1 |Stage 2 - Firmware verification (4 minutes, only where required)
+P |The device model APM has purchased for this use case ships with the correct firmware configuration, so no firmware change is expected and this stage is not performed on those units. Where any other model is used, verify the three settings below before proceeding.
+NUM|Switch the device off. Hold the power button for 10 seconds if it will not shut down.
+NUM|Press the power button, then **immediately start tapping** the firmware entry key about once a second until the firmware screen opens. This is **F2** on Dell; **Delete** and **F10** are common on other vendors. Where Windows starts instead, switch off and repeat, tapping earlier.
+NUM|Locate and confirm the three settings in the table below. The paths given are for Dell firmware. On another vendor's firmware the settings carry the same or similar names under equivalent menus, so locate each by name rather than by path.
+TBL|2700,2100,4560
+TH |**Setting**||**Must be**||**Dell menu path**
+TR |TPM 2.0 / Security Device||**On** and **Enabled**||Security, or Security > TPM 2.0 Security
+TR |Boot mode||**UEFI**, not Legacy||Boot Configuration
+TR |Secure Boot||**Enabled**||Boot Configuration > Secure Boot
+END
+NUM|Where a setting was changed, choose **Apply Changes**, then **OK**.
+NUM|Choose **Exit**. The device restarts.
+P |**Report to APM if** TPM 2.0 cannot be enabled, or reports a state other than Enabled. Set the device aside, record the serial number, and follow the faulty-goods process.
+H1 |Stage 3 - Install the APM Windows image (25 to 40 minutes)
+P |The APM image carries the required Windows version, the current updates and the APM certificates. It is installed from USB before Autopilot registration, so that the correct Windows version is present and the factory operating system is replaced. Autopilot provisions on top of this image and does not change the Windows version.
+P |**This stage erases the internal drive.** Every existing partition is deleted, including the factory operating system. That is intended. Confirm the unit is correct, that Stage 1 is complete, and that Stage 2 is complete where it applies.
+H2 |3.1 Boot from the build USB drive
+NUM|Shut the device down. Hold the power button for 10 seconds where it will not shut down from the screen.
+NUM|With the device off, connect the **build USB drive**.
+NUM|Press the power button, then **immediately start tapping** the one-time boot menu key about once a second. This is **F12** on Dell.
+NUM|From the boot menu, select the USB device listed under **UEFI Boot**. Do not select a legacy or non-UEFI entry.
+P |**On screen:** Windows Setup, beginning with a language and keyboard screen.
+P |Where the device boots into the factory Windows instead, the boot selection did not register. Switch off and repeat, tapping the key earlier.
+P |**Report to APM if** the device reports a Secure Boot violation, or refuses the USB device as untrusted. The build USB drive must be FAT32 with GPT and UEFI (non CSM), per Prerequisites: a drive prepared as NTFS boots through a third-party bootloader that Secure Boot refuses. Re-prepare the drive. Do not disable Secure Boot.
+H2 |3.2 Install the image
+NUM|Work through the language and keyboard screens, then choose **Install now**.
+NUM|At the installation type screen, choose **Custom: Install Windows only (advanced)**. Do not choose Upgrade.
+NUM|Delete every partition listed against the internal drive. Select each in turn, choose **Delete**, then **OK** to confirm.
+NUM|Continue until the internal drive shows a single entry reading **Unallocated Space**.
+NUM|Select that entry and choose **Next**. Setup creates the partitions and installs the image.
+P |**On screen:** An installation progress screen. The device restarts one or more times without operator input.
+P |Installation takes 25 to 40 minutes depending on the device. Begin the next device at Stage 1 while this one installs.
+P |**Report to APM if** Windows Setup returns an error, no internal drive is listed, or the installation does not complete. Provide a photograph of the screen and the serial number.
+H2 |3.3 Stop at the out-of-box experience
+NUM|Wait until the device restarts into the **out-of-box experience (OOBE)**, the first screen after installation, which requests a country or region.
+NUM|**Stop there. Do not work through OOBE and do not create an account.** Autopilot completes OOBE itself at Stage 7, and an account created here breaks the self-deploying enrolment the build depends on.
+NUM|Leave the build USB drive connected. Where Stage 4 applies, it runs the scripts on this drive.
+P |**Report to APM if OOBE has been worked through, or an account has been created.** The device cannot be recovered by restarting it: the local account and the completed OOBE persist, and Autopilot self-deploying will not run. Rebuild the device from Stage 3, which erases the drive and clears both. Record the serial number and report it, so the Autopilot record can be checked before the rebuild.
+H1 |Stage 4 - Hardware hash capture (5 minutes)
+P |The hardware hash is the device identifier Autopilot uses to match a device to its deployment profile. APM requires it before provisioning can begin.
+P |**Omit this stage where APM has confirmed the batch is already registered** (Dell can register devices at the point of manufacture). Where registration is unconfirmed, capture the hash. A duplicate capture has no adverse effect.
+H2 |4.1 Open a command prompt on the device
+NUM|The device is at the out-of-box experience from Stage 3. Where it has since been switched off, power it on and wait for that screen.
+NUM|Confirm the **build USB drive** is still connected from Stage 3. Where it was removed, reconnect it.
+NUM|Press **Shift** + **F10** together.
+P |**On screen:** A black console window ending in a prompt similar to X:\windows\system32>. Commands are entered at this prompt.
+P |If nothing happens, try **Shift** + **Fn** + **F10**. On some keyboards the function keys need **Fn** held as well.
+H2 |4.2 Switch to the build USB drive
+P |Type the following. Press **Enter** at the end of each line.
+P |Type: d:   then press Enter
+P |Type: dir   then press Enter
+P |**On screen:** A directory listing of the USB drive. Both get-autopilothash.bat and run-CreateMIREGKey.bat appear in the list.
+P |Where the response is The system cannot find the drive specified, the USB drive holds a different letter. Enter e: then **Enter**, then f:, and so on, running dir at each until the build files are listed.
+H2 |4.3 Run the hash capture file
+P |Type: get-autopilothash.bat   then press Enter
+P |The batch file opens PowerShell and collects the hash. Do not interrupt it. Capture takes two to three minutes and the console may appear inactive during that period.
+P |**APM to confirm before issue:** The message get-autopilothash.bat returns on completion, the name of the file it writes, and its location. The technician requires both to confirm success and to identify the file for import.
+NUM|When it has finished, check the file was created. Type dir then **Enter** and look for a new .csv file.
+NUM|Leave the USB drive connected. It is required again at Stage 6.
+NUM|**Do not restart the device yet.**
+P |**Report to APM if** the console returns errors, closes immediately, or no .csv file is written. Provide a photograph of the screen and the serial number.
+H1 |Stage 5 - Autopilot registration and group tag (5 to 20 minutes)
+P |Where Stage 4 was performed, CompNow imports the hardware hash to the APM tenant directly, at 5.1. The group tag applied at import determines the configuration the device receives.
+P |**5.2 and 5.3 are performed on every device, by either path.** A device registered at manufacture arrives without a group tag more often than one imported here, so 5.2 matters most on exactly the path that skips 5.1.
+P |**APM to confirm before issue:** The sign-in account CompNow uses for the import, and the permissions it carries.
+H2 |5.1 Import the hash to the APM tenant
+P |**Omit 5.1 where Stage 4 was omitted**, that is where the batch was registered at manufacture. Confirm the device already appears in the Autopilot devices list by its serial number, then continue at 5.2.
+P |**Report to APM if** a device from a batch registered at manufacture does not appear in the Autopilot devices list at all. It cannot provision until it is registered. Provide the serial number and do not proceed to Stage 6.
+NUM|On the build workstation, open **intune.microsoft.com** and sign in with the account APM has provided.
+NUM|In the left menu choose **Devices**.
+NUM|Choose **Enrolment**.
+NUM|Choose **Devices** under the Windows Autopilot heading.
+NUM|Choose **Import** at the top of the page.
+NUM|Choose **Select a file**, select the .csv file, then choose **Import**.
+NUM|Wait for the import to complete. This can take up to 15 minutes. Choose **Sync**, then **Refresh**, until the device appears in the list.
+P |**Report to APM if** the import returns an error, or the device does not appear in the list after 30 minutes. Provide the serial number and the error shown. Do not proceed to Stage 6: an unregistered device cannot provision.
+H2 |5.2 Verify the group tag on every device
+P |Verify the tag on every device, by either path. Locate the device in the Autopilot devices list by serial number and read the **Group Tag** column.
+TBL|2900,6460
+TH |**Group Tag column shows**||**Action**
+TR |PARTICIPANT||Compliant. Proceed.
+TR |Empty, or any other value||Select the device, choose **Edit** on the right-hand panel, enter PARTICIPANT in upper case in the Group Tag field, choose **Save**.
+TR |participant or Participant||Non-compliant. Correct to upper case as above.
+END
+H2 |5.3 Verify Userless enrolment status
+P |On the same device row, read the **Userless enrolment status** column. Scroll right if the column is not visible.
+TBL|2900,6460
+TH |**Status shows**||**Action**
+TR |**Allowed**||Compliant. Proceed to Stage 6.
+TR |**Blocked**||Select the device and choose **Unblock**. Wait for the status to change to Allowed. Expected on any device that has previously completed a kiosk build, including returned units.
+END
+P |**Do not omit this check.** A device left at Blocked begins provisioning normally and fails during the account setup phase, forfeiting the full provisioning run. Verify the status before Stage 7, and again before any rebuild.
+H1 |Stage 6 - Run the registry key script (2 minutes)
+P |**APM to confirm before issue:** The function and purpose of run-CreateMIREGKey.bat, stated in one sentence, and the message it returns on success. This procedure sequences the script here, after Autopilot registration and before provisioning; confirm that placement, and whether devices registered at manufacture require it.
+P |Return to the device. A command prompt at the USB drive is required. Where Stage 4 was omitted, or the prompt has since closed, perform steps 4.1 and 4.2 to open one.
+P |Type: run-CreateMIREGKey.bat   then press Enter
+P |The batch file opens PowerShell, sets the execution policy for the session, then runs the script. No operator input is required.
+P |**On screen:** PowerShell text scrolling past, then it returns to the command prompt.
+P |**Report to APM if** the console returns errors, or reports that script execution is disabled on the system. Provide a photograph of the screen and the serial number.
+H1 |Stage 7 - Initiate provisioning (20 to 60 minutes, unattended)
+NUM|At the command prompt, enter the following.
+P |Type: shutdown /r /t 0   then press Enter
+NUM|The device restarts and provisioning begins. **Do not use the keyboard or mouse. Do not disconnect power or the network cable.**
+P |**On screen, in this order:** The out-of-box experience briefly, then a screen headed **Device preparation** or **Setting up your device** showing a list of stages and a progress indicator. The device restarts itself once or twice during the run. Both are expected.
+P |During provisioning the device joins Microsoft Entra ID, enrols in Intune, renames itself, and installs LibreOffice, the Zscaler Client Connector and the remote support client. The Enrolment Status Page blocks device use until all required applications have installed, so the device cannot be used before the build completes.
+P |Begin the next device at Stage 1 while this one provisions. Multiple devices can be built concurrently.
+P |**Where the device remains on the same screen beyond 90 minutes,** or displays an error code, stop and report to APM. Provide a photograph of the screen, the serial number and the provisioning start time. Do not restart or wipe the device: APM requires it in its current state for diagnosis.
+H1 |Stage 8 - Acceptance testing (10 minutes)
+P |Seven tests. All seven must pass before the device is dispatched. Record each result on the build record sheet.
+P |**Any test that fails stops the device.** Do not dispatch it, do not attempt a fix, and do not move on to the next test. Report the failing test number and the serial number to APM.
+H2 |Test 1 - Automatic sign-in to the restricted session
+P |Allow the device to settle. The expected state is a desktop showing the APM wallpaper and a taskbar.
+P |**Fail if** a sign-in screen requests a username, password or PIN. The device is configured to authenticate automatically with no operator input, so a prompt means provisioning did not complete correctly. Allow a further 30 minutes and restart once. Report to APM if the prompt persists. Do not attempt to sign in.
+H2 |Test 2 - Application set
+P |Inspect the taskbar and the Start menu against the following.
+TBL|2900,6460
+TH |**Must be present**||**Must not be present**
+TR |Microsoft Edge||Microsoft Word, Excel or PowerPoint
+TR |LibreOffice Writer||Settings
+TR |LibreOffice Calc||Command Prompt or PowerShell
+TR |LibreOffice Impress||Microsoft Store
+TR |File Explorer||Anything else at all
+END
+P |**Fail if** any application in the right-hand column is present, or any in the left-hand column is absent. The restricted user experience has not applied. Report to APM, naming the applications found.
+H2 |Test 3 - Microsoft Edge and managed favourites
+NUM|Open **Microsoft Edge**.
+NUM|Confirm a page loads rather than an error.
+NUM|Confirm the favourites bar displays the APM managed favourites.
+NUM|Open one favourite and confirm the page loads.
+P |**Fail if** no page loads, the favourites bar is absent, or the favourites are not the APM set. Report to APM, stating which of the three applies.
+H2 |Test 4 - LibreOffice
+P |All three applications are opened. Each is a separate executable with its own entry in the restricted session's allowed list, so one launching does not prove another will.
+NUM|Open **LibreOffice Writer**.
+NUM|Enter several words of text.
+NUM|Save the document. Name it test.odt and confirm the location offered is **Downloads**.
+NUM|Close Writer.
+NUM|Open **LibreOffice Calc**. Confirm a spreadsheet window opens, then close it. Do not save.
+NUM|Open **LibreOffice Impress**. Confirm a presentation window opens, then close it. Do not save.
+NUM|Open **File Explorer** and confirm test.odt is in **Downloads** before continuing.
+P |Leave test.odt in place. Tests 5 and 7 both use it, and Test 7 cannot be run without it.
+P |**Fail if** any of the following. Report to APM, naming which. Writer, Calc or Impress does not open, or opens and then closes on its own. Name which of the three. test.odt is not in Downloads after saving. Launch failure is the most frequently observed fault on this build.
+H2 |Test 5 - File Explorer namespace restriction
+NUM|Open **File Explorer**.
+NUM|Confirm **Downloads** and **Desktop** are present, and that test.odt from Test 4 is in Downloads.
+NUM|Click the address bar at the top of the window, type C:\ and press **Enter**.
+NUM|Click the address bar again, type C:\Windows and press **Enter**.
+NUM|Confirm neither opens. The expected result is that the location is refused or nothing happens.
+P |**Fail if** either address opens, or Downloads and Desktop are absent, or test.odt is not in Downloads. An address that opens means the namespace restriction has not applied. Report to APM, naming what was reachable.
+H2 |Test 6 - Zscaler Client Connector
+P |Inspect the notification area at the right of the taskbar. The Zscaler icon must be present. Hover over it and confirm it does not report a disconnected or error state.
+P |**Fail if** the icon is absent, or reports a disconnected or error state. Report to APM, quoting the state shown.
+H2 |Test 7 - Restart session purge
+P |This test verifies that participant data does not persist between sessions. It is the primary control this build exists to deliver.
+NUM|Confirm test.odt from Test 4 is present in the Downloads folder. **Where it is absent, stop: Test 4 did not complete. Return to Test 4 and do not record Test 7 at all.** An empty Downloads folder proves nothing if nothing was saved into it.
+NUM|Restart the device. Press **Ctrl** + **Alt** + **Delete**, then choose the power icon, then **Restart**. Where that is blocked, hold the power button for 10 seconds and switch it back on.
+NUM|Wait for the device to return to the restricted session unattended, with no sign-in prompt.
+NUM|Open **File Explorer** and inspect **Downloads**.
+P |**Pass:** The document is no longer present and the Downloads folder is empty. Edge retains no history and no saved credentials.
+P |**Fail if** test.odt persists after the restart. The session purge is not operating. Report to APM. **This test is void, not passed,** where test.odt was not present before the restart.
+H1 |Stage 9 - Packaging, labelling and asset record (5 minutes)
+NUM|Record the device name. Open File Explorer, right-click **This PC** and choose **Properties**, or read it from the Autopilot devices list in Intune. The name begins APM-PK- followed by six characters.
+P |**Do not proceed where the device name does not begin** APM-PK-**.** The device has not received the kiosk configuration, which in almost all cases indicates an incorrect group tag at Stage 5. Correct the tag at Stage 5, then rebuild the device from Stage 3.
+NUM|Shut the device down through Windows. **Ctrl** + **Alt** + **Delete**, power icon, **Shut down**.
+NUM|Disconnect the build monitor, keyboard, mouse and cables. These remain at the build facility unless the allocation list specifies otherwise.
+NUM|Repack the device into its original carton with its power supply and all supplied accessories.
+NUM|Label the carton exterior with the **device name** and the **destination site address**.
+NUM|Place the APM site instruction sheet inside the carton, uppermost. APM supplies it, and it covers unboxing, connecting and power-on for site staff, so it must be the first thing seen when the carton is opened.
+NUM|Update the asset register: device name, serial number, status **Dispatched**, date, destination site.
+NUM|Release to the courier. Record the consignment number in the asset register.
+H1 |Fault diagnosis and escalation
+P |Provide APM with the **serial number**, the **stage reached**, and a **photograph of the screen**. These three items allow APM to diagnose without further contact.
+TBL|2900,6460
+TH |**Symptom**||**Cause and action**
+TR |Securing your hardware fails, or error 0x800705B4||TPM 2.0 is disabled, so verify the firmware settings at Stage 2 even where it was omitted for an APM-purchased unit. Otherwise the build facility network is blocking the attestation endpoints listed under Prerequisites. Verify both.
+TR |OOBE was worked through at Stage 3, or a local account was created||Autopilot self-deploying will not run on a device where OOBE is already complete. Rebuild from Stage 3. Restarting the device does not clear it.
+TR |Account setup phase fails, or error 0x80180014||Userless enrolment status was Blocked, or a device record persists from a previous enrolment. Request APM clear the device record, then rebuild from Stage 3.
+TR |Provisioning completes to a standard Windows desktop with Settings and full application access||The group tag was not PARTICIPANT. Correct the tag at Stage 5, then rebuild from Stage 3.
+TR |Device presents a sign-in prompt requesting a password||Automatic sign-in has not applied. Allow 30 minutes, restart once. Escalate to APM if the prompt persists. Do not attempt to sign in.
+TR |LibreOffice fails to open, or opens then closes||Known fault, and it can affect one application without affecting the others. Do not dispatch the device. Report the serial number and which of Writer, Calc or Impress failed.
+TR |Device name does not begin APM-PK-||Same cause as the standard desktop symptom above. Verify the group tag at Stage 5, then rebuild from Stage 3.
+TR |Provisioning static on one screen beyond 90 minutes||Leave the device in its current state. Photograph the screen and escalate to APM. Do not restart or wipe: APM requires the device as-is for diagnosis.
+END
+H1 |Build record sheet
+P |One per device. Retain with the carton until dispatch, then file.
+TBL|2900,6460
+TR |**Serial number**||
+TR |**Device name**||APM-PK-
+TR |**Destination site**||
+TR |**Built by**||
+TR |**Date**||
+END
+TBL|900,1200,7260
+TH |**Done**||**Stage**||**Verified**
+TR |||1||Powered on, no physical damage, serial number recorded
+TR |||2||TPM 2.0 enabled, UEFI boot mode, Secure Boot enabled. Not required on the APM-purchased model
+TR |||3.2||APM image installed, all factory partitions deleted
+TR |||3.3||Stopped at the out-of-box experience, no account created
+TR |||4||Hardware hash captured, CSV file written. Not required where the batch was registered at manufacture
+TR |||5.1||Hash imported to the APM tenant, device appears in the list. Where Stage 4 was omitted, confirm the device appears in the list
+TR |||5.2||Group Tag reads **PARTICIPANT** in upper case
+TR |||5.3||Userless enrolment status reads **Allowed**
+TR |||6||Registry key script completed, no errors reported
+TR |||7||Provisioning completed unattended
+TR |||Test 1||Restricted session reached, no sign-in prompt
+TR |||Test 2||Edge, Writer, Calc, Impress, File Explorer present. No other application
+TR |||Test 3||Edge loads a page, APM managed favourites present
+TR |||Test 4||Writer, Calc and Impress all open. test.odt saved to Downloads
+TR |||Test 5||test.odt in Downloads, Desktop present, C:\ and C:\Windows both refused
+TR |||Test 6||Zscaler Client Connector present, no error state
+TR |||Test 7||test.odt present before restart, restricted session reached unattended, test.odt purged
+TR |||9||Device name begins APM-PK-
+TR |||9||Packed, labelled, instruction sheet enclosed, asset register updated
+END
+H1 |Open items - for closure by APM before issue to CompNow
+P |Each item is marked at the point in the document where it applies. The procedure is otherwise complete.
+TBL|700,1500,7160
+TH |**#**||**Stage**||**Requirement**
+TR |1||Prerequisites||The exact filename of the PowerShell script run-CreateMIREGKey.bat invokes, and confirmation of the USB preparation tool and version.
+TR |2||4.3||The message get-autopilothash.bat returns on success, the name of the file it writes, and its location.
+TR |3||5.1||The sign-in account CompNow uses to import hardware hashes to the APM tenant, and the permissions it carries.
+TR |4||6||The function and purpose of run-CreateMIREGKey.bat, stated in one sentence, and the message it returns on success. This procedure sequences it at Stage 6, after Autopilot registration and before provisioning; confirm that placement, and whether devices registered at manufacture require it. A change to the placement renumbers the stages after it.
+END

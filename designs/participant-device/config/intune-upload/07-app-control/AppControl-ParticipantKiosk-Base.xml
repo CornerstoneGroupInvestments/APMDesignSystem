@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  CDG-W11-SEC-AppControl - Participant Kiosk base policy
+  APM Digital Workplace Transformation. Technical Configuration Document 12.1.3, Appendix A.8.
+
+  This file is the hand-authored half of the policy: rule options, explicit deny rules and
+  policy identity. It is NOT deployable on its own - it carries no allow rules, so a device
+  receiving it in enforced mode would run nothing.
+
+  Build-AppControlPolicy.ps1 merges this file with a reference-device scan (which supplies the
+  six publisher allow rules) and with the Microsoft recommended block rules, then emits the
+  enforced, audit and rollback variants. Run that script; do not hand-edit the merged output.
+
+  Rule options below are the ENFORCED set from TCD 12.1.3 with two deliberate exceptions that
+  the build script resolves last:
+    - Enabled:Unsigned System Integrity Policy (option 6) is PRESENT here so the policy can be
+      converted and tested before signing. The script removes it after Add-SignerRule has put
+      the APM code-signing certificate into UpdatePolicySigners (A.8.3, A.8.5, DR-017).
+    - Enabled:Audit Mode (option 3) is ABSENT here. The script adds it to the audit and
+      rollback variants only.
+  Disabled:Script Enforcement is absent by design: its absence is what turns script
+  enforcement ON. That is the first of the two tightenings in TCD 12.1.3.
+-->
+<SiPolicy xmlns="urn:schemas-microsoft-com:sipolicy" PolicyType="Base Policy">
+  <VersionEx>1.0.0.0</VersionEx>
+  <BasePolicyID>{A7C41B92-6D3E-4F58-9E14-2B7D5A0C8F31}</BasePolicyID>
+  <PolicyID>{A7C41B92-6D3E-4F58-9E14-2B7D5A0C8F31}</PolicyID>
+  <PlatformID>{2E07F7E4-194C-4D20-B7C9-6F44A6C5A234}</PlatformID>
+  <Rules>
+    <Rule>
+      <Option>Enabled:UMCI</Option>
+    </Rule>
+    <Rule>
+      <Option>Enabled:Inherit Default Policy</Option>
+    </Rule>
+    <Rule>
+      <Option>Required:Enforce Store Applications</Option>
+    </Rule>
+    <Rule>
+      <Option>Enabled:Revoked Expired As Unsigned</Option>
+    </Rule>
+    <Rule>
+      <Option>Enabled:Boot Audit On Failure</Option>
+    </Rule>
+    <Rule>
+      <Option>Enabled:Update Policy No Reboot</Option>
+    </Rule>
+    <Rule>
+      <Option>Enabled:Unsigned System Integrity Policy</Option>
+    </Rule>
+  </Rules>
+  <!--EKUS-->
+  <EKUs />
+  <!--File Rules-->
+  <!--
+    Deny rules match the INTERNAL name in the binary's version resource (OriginalFileName),
+    not the name on disk. Renaming the file on disk does not evade these rules; a build that
+    matched on the disk name would be evaded by a copy.
+
+    Everything denied here has no role on this fleet AND nothing in the build depends on it.
+    Read the note in the config README before adding to this list: powershell.exe, cmd.exe,
+    msiexec.exe and reg.exe are deliberately NOT denied, because a WDAC deny rule applies in
+    every context including SYSTEM, and denying them would break the session-account
+    remediation, the idle watchdog, the purge scripts and every Win32 application install.
+  -->
+  <FileRules>
+    <Deny ID="ID_DENY_PK_MSHTA" FriendlyName="mshta.exe - HTML application host" FileName="MSHTA.EXE" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_WSCRIPT" FriendlyName="wscript.exe - Windows Script Host" FileName="wscript.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_CSCRIPT" FriendlyName="cscript.exe - Windows Script Host" FileName="cscript.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_PSISE" FriendlyName="powershell_ise.exe - PowerShell ISE" FileName="powershell_ise.EXE" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_BITSADMIN" FriendlyName="bitsadmin.exe - background file transfer" FileName="bitsadmin.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_CERTUTIL" FriendlyName="certutil.exe - file download and decode" FileName="CertUtil.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_FTP" FriendlyName="ftp.exe - file transfer" FileName="ftp.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_CURL" FriendlyName="curl.exe - file download" FileName="curl.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_WMIC" FriendlyName="wmic.exe - WMI command line" FileName="wmic.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_MSBUILD" FriendlyName="MSBuild.exe - code compilation and execution" FileName="MSBuild.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_REGEDIT" FriendlyName="regedit.exe - Registry Editor (T-03)" FileName="REGEDIT.EXE" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_TASKMGR" FriendlyName="taskmgr.exe - Task Manager (T-03)" FileName="Taskmgr.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_SETTINGS" FriendlyName="SystemSettings.exe - Settings app (T-03)" FileName="SystemSettings.exe" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_CONTROL" FriendlyName="control.exe - Control Panel" FileName="CONTROL.EXE" MinimumFileVersion="65535.65535.65535.65535" />
+    <Deny ID="ID_DENY_PK_MMC" FriendlyName="mmc.exe - Microsoft Management Console" FileName="MMC.EXE" MinimumFileVersion="65535.65535.65535.65535" />
+  </FileRules>
+  <!--Signers-->
+  <!-- Populated by the reference-device scan. Review against the six publishers in TCD 12.1.3 (A.8.4). -->
+  <Signers />
+  <!--Driver Signing Scenarios-->
+  <SigningScenarios>
+    <SigningScenario Value="131" ID="ID_SIGNINGSCENARIO_KMCI" FriendlyName="Participant Kiosk - kernel mode">
+      <ProductSigners />
+    </SigningScenario>
+    <SigningScenario Value="12" ID="ID_SIGNINGSCENARIO_UMCI" FriendlyName="Participant Kiosk - user mode">
+      <ProductSigners>
+        <FileRulesRef>
+          <FileRuleRef RuleID="ID_DENY_PK_MSHTA" />
+          <FileRuleRef RuleID="ID_DENY_PK_WSCRIPT" />
+          <FileRuleRef RuleID="ID_DENY_PK_CSCRIPT" />
+          <FileRuleRef RuleID="ID_DENY_PK_PSISE" />
+          <FileRuleRef RuleID="ID_DENY_PK_BITSADMIN" />
+          <FileRuleRef RuleID="ID_DENY_PK_CERTUTIL" />
+          <FileRuleRef RuleID="ID_DENY_PK_FTP" />
+          <FileRuleRef RuleID="ID_DENY_PK_CURL" />
+          <FileRuleRef RuleID="ID_DENY_PK_WMIC" />
+          <FileRuleRef RuleID="ID_DENY_PK_MSBUILD" />
+          <FileRuleRef RuleID="ID_DENY_PK_REGEDIT" />
+          <FileRuleRef RuleID="ID_DENY_PK_TASKMGR" />
+          <FileRuleRef RuleID="ID_DENY_PK_SETTINGS" />
+          <FileRuleRef RuleID="ID_DENY_PK_CONTROL" />
+          <FileRuleRef RuleID="ID_DENY_PK_MMC" />
+        </FileRulesRef>
+      </ProductSigners>
+    </SigningScenario>
+  </SigningScenarios>
+  <UpdatePolicySigners />
+  <CiSigners />
+  <HvciOptions>0</HvciOptions>
+  <Settings>
+    <Setting Provider="PolicyInfo" Key="Information" ValueName="Name">
+      <Value>
+        <String>CDG-W11-SEC-AppControl Enforced-P-1.0</String>
+      </Value>
+    </Setting>
+    <Setting Provider="PolicyInfo" Key="Information" ValueName="Id">
+      <Value>
+        <String>CDG-W11-PK-1.0</String>
+      </Value>
+    </Setting>
+  </Settings>
+</SiPolicy>

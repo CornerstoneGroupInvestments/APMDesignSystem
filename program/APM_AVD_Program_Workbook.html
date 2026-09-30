@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>APM AVD Program — Workbook</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Mulish:wght@400;500;600;700;800&display=swap');
+  :root{
+    --font-display:'Poppins',system-ui,sans-serif; --font-ui:'Mulish',system-ui,sans-serif;
+    --orange:#F89728; --orange-50:#FEF4E6; --orange-700:#C0680A;
+    --navy:#1F2D58; --navy-700:#182447; --navy-900:#0B1226; --navy-50:#EEF0F6; --navy-100:#D4D9E8;
+    --magenta:#E51C84;
+    --n0:#fff; --n50:#F7F8FA; --n100:#EFF1F5; --n200:#E1E5EC; --n300:#CBD2DC; --n400:#A3ADBC; --n500:#74808F; --n600:#545F6E; --n700:#3C4654;
+    --green:#1E8E5A; --green-50:#E6F4ED; --amber:#E2920E; --amber-50:#FCF2DD; --red:#D43A3A; --red-50:#FBE9E9; --blue:#2C6FD6; --blue-50:#E7F0FC;
+    --rad:14px; --pill:999px;
+    --sh-sm:0 1px 3px rgba(17,26,54,.08),0 1px 2px rgba(17,26,54,.04);
+    --sh-md:0 4px 12px rgba(17,26,54,.10),0 2px 4px rgba(17,26,54,.05);
+    --grad-navy:linear-gradient(135deg,#1F2D58 0%,#0B1226 100%);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-ui);color:var(--navy-700);background:var(--n50);-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:var(--font-display);color:var(--navy);margin:0;}
+  .topband{position:relative;overflow:hidden;background:var(--grad-navy);color:#fff;}
+  .topband .ribbon{position:absolute;top:-40px;right:-30px;width:30%;opacity:.85;pointer-events:none;}
+  .tb-inner{max-width:1340px;margin:0 auto;padding:26px 28px 22px;position:relative;z-index:2;}
+  .topband .logo{height:38px;filter:brightness(0) invert(1);margin-bottom:14px;}
+  .sot{display:inline-flex;align-items:center;gap:7px;background:var(--orange);color:var(--navy);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:var(--pill);}
+  h1.title{font-size:30px;margin:12px 0 6px;color:#fff;}
+  .sub{color:var(--navy-100);font-size:13.5px;max-width:1000px;line-height:1.5;}
+  .note-line{color:var(--navy-100);font-size:12px;margin-top:6px;opacity:.85;}
+  .meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--navy-100);}
+  .meta b{color:#fff;font-weight:700;}
+
+  .tabs{position:sticky;top:0;z-index:20;background:var(--n0);border-bottom:1px solid var(--n200);box-shadow:var(--sh-sm);}
+  .tabs-inner{max-width:1340px;margin:0 auto;padding:0 28px;display:flex;gap:4px;flex-wrap:wrap;}
+  .tab{appearance:none;border:none;background:transparent;font-family:var(--font-ui);font-size:14px;font-weight:600;color:var(--n500);padding:15px 16px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+  .tab:hover{color:var(--navy);}
+  .tab.active{color:var(--navy);border-bottom-color:var(--orange);}
+
+  .wrap{max-width:1340px;margin:0 auto;padding:26px 28px 70px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .panel-head{margin-bottom:16px;}
+  .panel-head h2{font-size:21px;}
+  .panel-head p{margin:4px 0 0;color:var(--n500);font-size:13px;}
+
+  table.tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--rad);overflow:hidden;box-shadow:var(--sh-sm);font-size:12.5px;}
+  .tbl thead th{background:var(--navy);color:#fff;text-align:left;padding:10px 11px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;position:sticky;top:49px;}
+  .tbl td{padding:8px 11px;border-bottom:1px solid var(--n200);vertical-align:top;}
+  .tbl tr:last-child td{border-bottom:none;}
+  .grp td{background:var(--navy-50);font-weight:800;color:var(--navy-700);font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  .you td{background:var(--orange-50);}
+  .ms-row td{background:#FFF7EC;}
+  .tid{font-weight:700;color:var(--n500);}
+  .pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--pill);white-space:nowrap;}
+  .s-prog{background:var(--blue-50);color:var(--blue);}
+  .s-not{background:var(--n100);color:var(--n600);}
+  .s-done{background:var(--green-50);color:var(--green);}
+  .s-block{background:var(--red-50);color:var(--red);}
+  .s-draft{background:var(--amber-50);color:#9A6206;}
+  .dep-ok{color:var(--green);font-weight:700;}
+  .dep-bad{color:var(--red);font-weight:700;}
+  .crit-y{color:var(--red);font-weight:800;}
+  .you-name{color:var(--orange-700);font-weight:700;}
+  .mini{font-size:11px;color:var(--n500);}
+
+  /* progress bar cell */
+  .prog{position:relative;height:14px;width:60px;background:var(--n200);border-radius:var(--pill);overflow:hidden;}
+  .prog > i{position:absolute;left:0;top:0;bottom:0;background:var(--green);border-radius:var(--pill);}
+  .prog > span{position:absolute;inset:0;font-size:9px;font-weight:700;color:var(--navy);display:flex;align-items:center;justify-content:center;}
+
+  /* gantt */
+  .gantt-scroll{overflow-x:auto;border:1px solid var(--n200);border-radius:var(--rad);background:#fff;box-shadow:var(--sh-sm);}
+  .gantt{position:relative;min-width:1080px;}
+  .months{display:flex;border-bottom:1px solid var(--n300);position:sticky;top:49px;background:#fff;z-index:4;}
+  .labelcol-h{width:320px;flex-shrink:0;padding:9px 12px;font-size:11px;font-weight:700;color:var(--n500);border-right:1px solid var(--n300);}
+  .month{border-right:1px solid var(--n200);font-size:11px;font-weight:700;color:var(--n500);padding:9px 0 7px 7px;box-sizing:border-box;}
+  .grow{display:flex;align-items:stretch;border-bottom:1px solid var(--n100);}
+  .grow:hover{background:var(--n50);}
+  .grow.group{background:var(--navy-50);}
+  .grow.group .labelcol{font-weight:800;color:var(--navy-700);font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  .labelcol{width:320px;flex-shrink:0;padding:6px 12px;font-size:12px;border-right:1px solid var(--n300);display:flex;align-items:center;gap:8px;box-sizing:border-box;}
+  .labelcol .tt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .track{position:relative;flex:1;min-height:28px;}
+  .gridv{position:absolute;top:0;bottom:0;width:1px;background:var(--n100);}
+  .today{position:absolute;top:0;bottom:0;width:2px;background:var(--magenta);z-index:3;}
+  .bar{position:absolute;top:6px;height:16px;border-radius:5px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;box-sizing:border-box;}
+  .bar.crit{box-shadow:0 0 0 2px var(--red);}
+  .bar > i{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.32);}
+  .bar span{position:relative;z-index:2;}
+  .ms{position:absolute;top:6px;width:15px;height:15px;background:var(--orange);transform:rotate(45deg);border:2px solid #fff;box-shadow:var(--sh-sm);z-index:2;}
+  .ms.crit{background:var(--red);}
+  .legend{font-size:12px;color:var(--n500);margin-top:8px;}
+
+  .controls{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:12px;}
+  .chip{font-size:12px;font-weight:600;padding:6px 12px;border-radius:var(--pill);border:1.5px solid var(--n300);background:#fff;color:var(--navy-700);cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:6px;}
+  .chip .dot{width:9px;height:9px;border-radius:50%;}
+  .chip.off{opacity:.4;}
+
+  footer{max-width:1340px;margin:0 auto;padding:18px 28px 40px;font-size:12px;color:var(--n400);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+
+  @media print{
+    .tabs{display:none;} .controls{display:none;} .gantt-scroll{overflow:visible;}
+    .panel{display:block !important;page-break-before:always;}
+    .panel:first-of-type{page-break-before:avoid;}
+    .topband{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    body{background:#fff;}
+    .tbl thead th,.months{position:static;}
+  }
+</style>
+</head>
+<body>
+<div class="topband">
+  <img class="ribbon" src="../assets/ribbon-magenta.png" alt="" />
+  <div class="tb-inner">
+    <img class="logo" src="../assets/apm-logo.png" alt="APM" />
+    <span class="sot">● Source of truth · living workbook</span>
+    <h1 class="title" id="m-title"></h1>
+    <div class="sub" id="m-sub"></div>
+    <div class="note-line" id="m-note"></div>
+    <div class="meta">
+      <span>Exported <b id="m-exported"></b></span>
+      <span>Delivery <b>Twiki Corp · contractors to APM</b></span>
+      <span>Tasks <b id="m-tcount"></b> · Milestones <b id="m-mcount"></b></span>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tabs-inner" id="tabbar"></div>
+</div>
+
+<div class="wrap">
+  <section class="panel active" data-tab="plan">
+    <div class="panel-head"><h2>Program Plan</h2><p>Every task by workstream &amp; phase, with owner (accountable), support (responsible), dependencies and live dependency check. Rows in <b style="color:var(--orange-700)">orange</b> are yours; milestones are highlighted.</p></div>
+    <div class="controls" id="plan-controls"></div>
+    <table class="tbl"><thead><tr>
+      <th>ID</th><th>Phase</th><th>Task</th><th>Owner (Accountable)</th><th>Support (Responsible)</th><th>Dep</th><th>Start</th><th>End</th><th>Days</th><th>%</th><th>Status</th><th>Dep check</th>
+    </tr></thead><tbody id="plan-body"></tbody></table>
+  </section>
+
+  <section class="panel" data-tab="gantt">
+    <div class="panel-head"><h2>Gantt Chart</h2><p>Bars by workstream · green fill = % complete · gold diamond = milestone · red ring = critical path · <span style="color:var(--magenta);font-weight:700">▎</span> today.</p></div>
+    <div class="controls" id="gantt-controls"></div>
+    <div class="gantt-scroll"><div class="gantt" id="gantt"></div></div>
+    <div class="legend" id="gantt-legend"></div>
+  </section>
+
+  <section class="panel" data-tab="raci">
+    <div class="panel-head"><h2>Stakeholders &amp; RACI</h2><p>Who owns what, and who reports to whom.</p></div>
+    <table class="tbl"><thead><tr><th>Name</th><th>Org</th><th>Role</th><th>Accountable / Owns</th><th>Reports to</th></tr></thead><tbody id="raci-body"></tbody></table>
+  </section>
+
+  <section class="panel" data-tab="kb">
+    <div class="panel-head"><h2>KB Register</h2><p>Build by Shaun Struik → validate by Kath Nash → validate by process stakeholder → publish under the APM KB standard.</p></div>
+    <table class="tbl"><thead><tr><th>KB ID</th><th>Workstream</th><th>Process / KB Title</th><th>Built by</th><th>Validate 1</th><th>Validate 2 (stakeholder)</th><th>Owning team</th><th>Status</th></tr></thead><tbody id="kb-body"></tbody></table>
+  </section>
+
+  <section class="panel" data-tab="risks">
+    <div class="panel-head"><h2>Assumptions, Risks &amp; Open Decisions</h2><p>Live risk register with owner and mitigation / recommendation.</p></div>
+    <table class="tbl"><thead><tr><th>#</th><th>Risk / Assumption / Open decision</th><th>Impact</th><th>Likelihood</th><th>Owner</th><th>Mitigation / Recommendation</th></tr></thead><tbody id="risks-body"></tbody></table>
+  </section>
+</div>
+
+<footer>
+  <span>APM Digital Workplace — AVD Program · Commercial in confidence · © APM</span>
+  <span>Living workbook · edit program_workbook_data.js to update, then export (Cmd/Ctrl+P → PDF)</span>
+</footer>
+
+<script src="program_workbook_data.js"></script>
+<script>
+(function(){
+  const WB=window.WB, WS=WB.workstreams, TASKS=WB.tasks;
+  const T0=new Date(2026,5,22), T1=new Date(2026,9,20), TODAY=new Date(2026,5,23), DAYMS=864e5, DAYW=6;
+  const wsColor=k=>{const w=WS.find(w=>w.key===k);return w?w.color:'#888';};
+  const fmt=d=>d?new Date(d).toLocaleDateString('en-AU',{day:'2-digit',month:'short'}):'—';
+  const x=d=>Math.round((new Date(d)-T0)/DAYMS)*DAYW;
+  const isYou=s=>/Shaun Struik|Shaun \+ Dave|Shaun \(build\)/.test(s||'');
+
+  // meta
+  document.getElementById('m-title').textContent=WB.meta.title;
+  document.getElementById('m-sub').textContent=WB.meta.sub;
+  document.getElementById('m-note').textContent=WB.meta.note;
+  document.getElementById('m-exported').textContent=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('m-tcount').textContent=TASKS.filter(t=>t.type==='Task').length;
+  document.getElementById('m-mcount').textContent=TASKS.filter(t=>t.type==='Milestone').length;
+
+  // dependency check
+  const byId={}; TASKS.forEach(t=>byId[t.id]=t);
+  TASKS.forEach(t=>{ let pf=null; t.dep.forEach(d=>{const p=byId[d]; if(p&&p.en){const e=new Date(p.en); if(!pf||e>pf)pf=e;}}); t.predFin=pf; t.depOk=!pf||(t.st&&new Date(t.st)>=pf); });
+
+  const stPill=s=>{const c=s==='In progress'?'s-prog':s==='Complete'?'s-done':s==='Blocked'?'s-block':s==='Drafted'?'s-draft':'s-not';return '<span class="pill '+c+'">'+(s||'Not started')+'</span>';};
+
+  // ---- tabs ----
+  const TABDEF=[['plan','Program Plan'],['gantt','Gantt Chart'],['raci','Stakeholders & RACI'],['kb','KB Register'],['risks','Assumptions & Risks']];
+  const tabbar=document.getElementById('tabbar');
+  TABDEF.forEach(([k,lbl],i)=>{
+    const b=document.createElement('button'); b.className='tab'+(i===0?' active':''); b.textContent=lbl; b.dataset.k=k;
+    b.onclick=()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');
+      document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.dataset.tab===k));
+      if(k==='gantt') renderGantt();};
+    tabbar.appendChild(b);
+  });
+
+  // ---- Program Plan table ----
+  const planActive=new Set(WS.map(w=>w.key));
+  function renderPlan(){
+    let html='';
+    WS.forEach(w=>{
+      if(!planActive.has(w.key))return;
+      const list=TASKS.filter(t=>t.ws===w.key);
+      if(!list.length)return;
+      html+='<tr class="grp"><td colspan="12"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+w.color+';margin-right:8px"></span>'+w.key+'</td></tr>';
+      list.forEach(t=>{
+        const you=isYou(t.owner)||isYou(t.support);
+        const cls=t.type==='Milestone'?'ms-row':(you?'you':'');
+        const oc=isYou(t.owner)?'you-name':''; const sc=isYou(t.support)?'you-name':'';
+        const depc=t.status==='Complete'?'<span class="dep-ok">✓</span>':!t.predFin?'<span class="dep-ok">—</span>':(t.depOk?'<span class="dep-ok">OK</span>':'<span class="dep-bad">Overlap</span>');
+        const prog=t.type==='Milestone'?'':'<div class="prog"><i style="width:'+(t.pct||0)+'%"></i><span>'+(t.pct||0)+'%</span></div>';
+        html+='<tr class="'+cls+'"><td><span class="tid">'+t.id+'</span>'+(t.crit?' <span class="crit-y" title="critical">▲</span>':'')+'</td>'
+          +'<td class="mini">'+t.phase+'</td><td>'+t.task+'</td>'
+          +'<td class="'+oc+'">'+t.owner+'</td><td class="'+sc+'">'+t.support+'</td>'
+          +'<td class="mini">'+(t.dep.join(', ')||'—')+'</td>'
+          +'<td class="mini">'+fmt(t.st)+'</td><td class="mini">'+fmt(t.en)+'</td><td class="mini">'+(t.days||'—')+'</td>'
+          +'<td>'+prog+'</td><td>'+stPill(t.status)+'</td><td>'+depc+'</td></tr>';
+      });
+    });
+    document.getElementById('plan-body').innerHTML=html;
+  }
+  // plan workstream filter chips
+  const pc=document.getElementById('plan-controls');
+  WS.forEach(w=>{const c=document.createElement('span');c.className='chip';c.innerHTML='<span class="dot" style="background:'+w.color+'"></span>'+w.key;
+    c.onclick=()=>{planActive.has(w.key)?planActive.delete(w.key):planActive.add(w.key);c.classList.toggle('off');renderPlan();};pc.appendChild(c);});
+
+  // ---- Gantt ----
+  const gActive=new Set(WS.map(w=>w.key));
+  let ganttDone=false;
+  function renderGantt(){
+    const g=document.getElementById('gantt');
+    let months='<div class="months"><div class="labelcol-h">Task</div>';
+    let cur=new Date(T0);
+    while(cur<T1){const mEnd=new Date(cur.getFullYear(),cur.getMonth()+1,1);const span=Math.round((Math.min(mEnd,T1)-cur)/DAYMS)*DAYW;
+      months+='<div class="month" style="width:'+span+'px">'+cur.toLocaleDateString('en-AU',{month:'short'})+" '"+String(cur.getFullYear()).slice(2)+'</div>';cur=mEnd;}
+    months+='</div>';
+    let rows='';
+    WS.forEach(w=>{
+      if(!gActive.has(w.key))return;
+      const list=TASKS.filter(t=>t.ws===w.key); if(!list.length)return;
+      rows+='<div class="grow group"><div class="labelcol">'+w.key+'</div><div class="track"></div></div>';
+      list.forEach(t=>{
+        let bar='';
+        if(t.type==='Milestone'){ bar='<div class="ms '+(t.crit?'crit':'')+'" style="left:'+(x(t.st)-7)+'px" title="'+t.task+'"></div>'; }
+        else { const w2=Math.max(DAYW*2,x(t.en)-x(t.st));
+          bar='<div class="bar '+(t.crit?'crit':'')+'" style="left:'+x(t.st)+'px;width:'+w2+'px;background:'+w.color+'" title="'+t.task+' ('+fmt(t.st)+'–'+fmt(t.en)+')"><i style="width:'+(t.pct||0)+'%"></i><span>'+t.id+'</span></div>'; }
+        rows+='<div class="grow"><div class="labelcol"><span class="tid">'+t.id+'</span><span class="tt" title="'+t.task+'">'+t.task+'</span></div><div class="track">'+bar+'</div></div>';
+      });
+    });
+    g.innerHTML=months+rows;
+    const tX=x(TODAY);
+    g.querySelectorAll('.track').forEach(tr=>{let gl='';let c=new Date(T0);while(c<T1){const mEnd=new Date(c.getFullYear(),c.getMonth()+1,1);gl+='<div class="gridv" style="left:'+x(mEnd)+'px"></div>';c=mEnd;}gl+='<div class="today" style="left:'+tX+'px"></div>';tr.insertAdjacentHTML('afterbegin',gl);});
+    ganttDone=true;
+  }
+  const gc=document.getElementById('gantt-controls');
+  WS.forEach(w=>{const c=document.createElement('span');c.className='chip';c.innerHTML='<span class="dot" style="background:'+w.color+'"></span>'+w.key;
+    c.onclick=()=>{gActive.has(w.key)?gActive.delete(w.key):gActive.add(w.key);c.classList.toggle('off');renderGantt();};gc.appendChild(c);});
+  document.getElementById('gantt-legend').innerHTML='◆ milestone · green fill = % complete · red ring = critical path · <span style="color:var(--magenta);font-weight:700">▎</span> today';
+
+  // ---- RACI ----
+  document.getElementById('raci-body').innerHTML=WB.raci.map(r=>{
+    const you=isYou(r.name);
+    return '<tr class="'+(you?'you':'')+'"><td style="font-weight:700;white-space:nowrap" class="'+(you?'you-name':'')+'">'+r.name+'</td><td class="mini">'+r.org+'</td><td>'+r.role+'</td><td class="mini">'+r.owns+'</td><td class="mini">'+r.reports+'</td></tr>';
+  }).join('');
+
+  // ---- KB ----
+  document.getElementById('kb-body').innerHTML=WB.kb.map(k=>(
+    '<tr><td class="tid">'+k.id+'</td><td class="mini">'+k.ws+'</td><td>'+k.title+'</td><td class="mini">'+k.built+'</td><td class="mini">'+k.v1+'</td><td class="mini">'+k.v2+'</td><td class="mini">'+k.team+'</td><td>'+stPill(k.status)+'</td></tr>'
+  )).join('');
+
+  // ---- Risks ----
+  const sev=v=>{const bg=v==='High'?'var(--red-50)':v==='Med'?'var(--amber-50)':'var(--green-50)';const fg=v==='High'?'var(--red)':v==='Med'?'#9A6206':'var(--green)';return '<span class="pill" style="background:'+bg+';color:'+fg+'">'+v+'</span>';};
+  document.getElementById('risks-body').innerHTML=WB.risks.map(r=>(
+    '<tr><td><b>'+r.n+'</b></td><td>'+r.risk+'</td><td>'+sev(r.impact)+'</td><td>'+sev(r.like)+'</td><td class="mini">'+r.owner+'</td><td class="mini">'+r.mit+'</td></tr>'
+  )).join('');
+
+  renderPlan();
+  // pre-render gantt so print shows it
+  renderGantt();
+})();
+</script>
+</body>
+</html>

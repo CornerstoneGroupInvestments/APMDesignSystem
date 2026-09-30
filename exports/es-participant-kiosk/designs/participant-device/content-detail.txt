@@ -1,0 +1,404 @@
+H1 |1. Introduction
+H2 |1.1 Purpose
+P |This document specifies the architecture for the APM ES Participant Kiosk solution, referred to throughout as the Participant Kiosk: business and application architecture, technology and network architecture, information and cyber security architecture, and the service availability and service management model.
+P |Build settings, console paths and device scripts are in the companion Technical Configuration Document.
+P |Approval is sought to build the solution as specified. Three positions require explicit acceptance, all specified in [[7]]: automatic sign-in with no participant credential, USB read and write on a device in a public area, and retention of TeamViewer as a variation to the hardening standard.
+H2 |1.2 Audience
+TBL|2800,6560
+TH |**Audience**||**What they are asked for, and where to start**
+TR |Business Sponsor||Endorse the participant experience and the email-to-case-manager document model: [[2]], [[3.3]]
+TR |Digital Transformation and Architecture||Approve the architecture and the device-only identity model: [[4]], [[5]], [[7]]
+TR |Cyber Security, End User Computing||Approve automatic sign-in without a credential, the USB exceptions, the App Control variant, the remote-support model, the RFFR exclusions and the SOE hardening inheritance including the conversion of the Edge and ISM baselines to device scope: [[7]]
+TR |Digital Delivery, Project Management Office||Build from the Technical Configuration Document using this document for architectural context, and accept the decisions recorded in [[3.5]]: [[4]], [[5]], [[7]]
+TR |Digital Operations, network delivery team (Stratus)||Accept the support, monitoring and availability model, and confirm the network and Zscaler architecture for a fleet with no user identity: [[5.3]], [[8]], [[9]]
+END
+H1 |2. Overview
+H2 |2.1 Scope
+P |**In scope**
+P |• Physical Participant Kiosk provisioning and configuration: Dell hardware, Windows 11 Enterprise, Autopilot self-deploying enrolment into the existing APM corporate tenant, creating a device object only
+P |• A named local session account (Kiosk-[SERIAL]) created on-device and signed in automatically, with no participant credential and no sign-in step
+P |• Multi-app Assigned Access restricted experience: Microsoft Edge, LibreOffice, File Explorer scoped to Downloads, Desktop and removable drives, Zscaler tray, TeamViewer, with LibreOffice configuration locked by policy
+P |• Device-based licensing only: Intune device licence, Windows 11 Enterprise E5, Defender for Endpoint P2
+P |• Conditional Access, browser and web-filtering controls that prevent any Microsoft 365 sign-in from a Participant Kiosk
+P |• Session hygiene: ten-minute inactivity sign-out and restart, with a full purge of participant data on every restart
+P |• USB storage access for participants, and Zscaler web filtering and logging with local breakout from the device
+P |• APM Windows SOE Hardening Standard inheritance, Edge CIS Level 2 hardening and the ISM Windows 11 baseline at device scope, with RFFR compliance alignment
+P |**Out of scope**
+P |• Standard User SOE, Developer SOE, Privileged Access and ES take-home device designs (separate documents)
+P |• Network infrastructure and site cabling, and printer hardware procurement and physical placement
+P |• Printing from Participant Kiosks, and any Microsoft 365 service access from a Participant Kiosk
+P |• End-user training material and laminated instruction sheets (operational deliverable)
+P |• RFFR formal accreditation audit. This document supports the ISMS; it does not constitute it
+P |• Decommissioning of the retired kiosk components, raised as a separate change request ([[9.1]])
+H2 |2.2 Guiding Principles
+TBL|1416,7944
+TH |**ID**||**Principle**
+TR |Zero Trust||The device is the only identity. It is Entra-joined, Intune-managed and continuously assessed against a compliance policy. No corporate identity can authenticate from it: Conditional Access blocks every APM account on Participant Kiosk hardware.
+TR |Ephemeral by Default||No participant data persists beyond the session. Edge browsing data never reaches the disk, downloads live only inside the profile, and the profile is purged on every restart.
+TR |Least Privilege||The participant runs as a standard local account with Edge, LibreOffice and File Explorer scoped to Downloads, Desktop and removable drives. No settings, command prompt, task manager, installation or cloud sign-in.
+TR |Simplicity||The end-user experience is frictionless. The device powers on directly into the participant session. There is no username, no password and no credential displayed anywhere.
+TR |Compliance||The architecture meets RFFR requirements for the handling of participant personal information, aligning with ISO 27001 and the ASD ISM, and inherits the APM Windows SOE Hardening Standard V3.0.
+END
+H2 |2.3 Assumptions
+TBL|682,4354,4324
+TH |**Ref**||**Assumption**||**Impact If Incorrect**
+TR |A-01||Dell hardware is procured with TPM 2.0 and supports Autopilot self-deploying enrolment||Hardware re-specified; deployment model changes
+TR |A-02||Hardware hashes are registered in Autopilot at the point of procurement||Manual hash registration per device on-site
+TR |A-03||Zscaler web filtering is applied via the on-device Client Connector (existing APM standard)||Device-level web filtering must be designed into the image
+TR |A-04||Device-based licences are available for 540 devices: Windows 11 Enterprise E5, Intune device licence, Defender for Endpoint P2||Licensing procured through SoftwareOne before deployment; without an Intune device licence, self-deploying enrolment fails
+TR |A-05||Participant Kiosks enrol into the existing APM corporate tenant. No new tenant, subscription, domain or DNS namespace is required||A separate identity plane returns, with the operational overhead that carries
+TR |A-06||Participants have a personal email address for document retrieval; where they do not, the case manager assists||USB becomes the only document handoff method
+TR |A-07||RFFR compliance is managed under APM's existing ISMS with APM Cyber Security||Statement of Applicability held separately (Participant Kiosk RFFR SoA, ISM September 2025 v7.7m)
+TR |A-08||Patch My PC Publisher (Server edition) is licensed and integrated with Intune||LibreOffice updates repackaged manually each release, against the ISM patching window
+TR |A-09||The APM code-signing certificate is issued in time (SOE-02)||App Control cannot deploy signed, and signed-scripts-only execution policy blocks the session scripts
+TR |A-10||Corporate profiles, application assignments and Conditional Access policies targeting All Devices or All Users can be scoped to exclude the Kiosk group||Corporate policy lands on a public-area device, contradicting this design
+TR |A-11||The APM-KIOSK VLAN, hidden SSID and Meraki template remain as approved (DR-003, DR-005)||Site network re-work before rollout
+END
+H1 |3. Business Architecture
+H2 |3.2 Business Reference architecture
+P |The solution answers three business outcomes: consistent data privacy across all sites, standardised device management at scale, and RFFR compliance under the Workforce Australia and Inclusive Employment Australia Service Deeds.
+P |Two business changes follow. Participants do not sign in, which removes credential handling from a public device and removes the risk of one participant using another's session. Documents are created in LibreOffice on the device rather than a browser-based Office suite, so no participant holds a Microsoft identity and every document stays on the participant's own media.
+H2 |3.3 Business Requirements
+P |Source: Unified SOE Requirements V2 and the Participant Kiosk High-Level Design.
+TBL|551,1500,4000,1600,1709
+TH |**ID**||**Category**||**Requirement and acceptance criteria**||**Priority**||**Met by**
+TR |01||User Access||Access the device without an account: it powers on directly into the participant session, no account, no password, no credential displayed||Must||[[7]]
+TR |02, 03||Accessibility||Windows accessibility features work: Narrator, Magnifier, high contrast, font scaling, speech-to-text, on-screen keyboard, plus Edge translation and Read Aloud. Shortcuts function and tools are pinned where technically feasible||Must||[[4.2]]; Technical Configuration Document A.3
+TR |04||Session Management||Session wiped whenever the session ends: the profile and all locally stored data are destroyed on every restart, and every session ends in a restart||Must||[[6.1]], [[6.2]]
+TR |05||Session Management||Automatic sign-out after 10 minutes of inactivity, ending the session and restarting into a clean participant session||Must||[[6.1]]; Technical Configuration Document 12.1.5
+TR |06||Device Maintenance||Forced restarts for updates occur outside business hours only, never while a participant is using the device||Must||[[9.1]]; Technical Configuration Document 12.6
+TR |07||Applications||A modern browser with a default homepage: Microsoft Edge||Must||[[4.2]]
+TR |08||Applications||Office productivity: LibreOffice Writer, Calc and Impress, reading and writing the Microsoft formats. Microsoft Office is not provided (DR-008)||Must||[[4.2]]
+TR |09||Applications||PDF reader: PDFs open in the Edge viewer, no additional application installed (DR-004)||Must||[[4.2]]
+TR |10||Applications||No Teams or Zoom. No webcam or drivers required||Could||[[4.2]]
+TR |11, 13, 14||Web Filtering||Category filtering blocks adult, gambling, explicit, violence and illegal content. Facebook is allowed for community job boards; TikTok, Instagram and X are blocked; public AI tools are allowed unless categorised high risk||Must||[[7]]
+TR |12||Web Filtering||Required job search sites are permitted, whitelisted via the managed favourites set||Must||[[3.3]]; [[7]]
+TR |15||USB Storage||USB mass storage enabled so a participant can load or save a resume; the device mounts the drive, with no scanning beyond the existing security layers||Must||[[7]]
+TR |16, 17, 18||Printing||No direct printing from Participant Kiosks. Documents are emailed to the case manager via webmail and printed by them as an operational process, approved by the APM Business Owner. A technical print-limit solution was assessed and is not required||Must||[[2.1]]; DR-001
+TR |19||Security & Compliance||Existing web logging levels maintained: Zscaler logs retained per current policy, no new log depth introduced||Must||[[9.2]]
+TR |20||Security & Compliance||Devices isolated from the corporate network: the APM-KIOSK VLAN restricts connectivity to approved destinations only, with no access to corporate systems or internal business applications||Must||[[5.3]]; [[7]]
+END
+P |Requirements 12 and 13 are met in part by a managed bookmark set deployed to Edge as managed favourites: ten folders (favourites bar, Workforce Australia, Centrelink and Services Australia, job search, essential support, other services, transport, training, resume and cover letters, national police check) carrying 55 links, fixed and not participant-editable. The full link-by-link set is in the Technical Configuration Document, A.7.
+H2 |3.4 Gap treatment
+P |N/A - no requirement gap. All 20 functional requirements in [[3.3]] are met as specified. Requirements 10 and 17, both Could priority, require no build: no video-conferencing application is installed, and the fleet has no printing capability for a print-limit solution to constrain.
+H2 |3.5 Decision Register
+P |Identifiers are never re-sequenced, so the numbering is not contiguous.
+TBL|620,2340,1560,3640,1200
+TH |**ID**||**Decision**||**Status**||**Resolution and options assessed**||**Where specified**
+TR |DR-001||Printing approach||Agreed - APM Business Owner||No direct printing. Participants email documents to their case manager via webmail for printing.||[[2.1]]
+TR |DR-002||Bookmark consolidation||Agreed||A single bookmark list with clearly visible folders.||[[3.3]]
+TR |DR-003||Wi-Fi VLAN||Agreed - APM Infrastructure lead||Re-use the existing VLAN, one subnet per site via the Meraki template, hidden SSID with EAP-TLS device-certificate authentication. Reserved for Participant Kiosks only.||[[5.3]]
+TR |DR-004||PDF viewer||Agreed||PDFs are viewed in Microsoft Edge. No other application is installed for the purpose.||[[4.2]]
+TR |DR-005||SSID naming||Approved - APM Infrastructure lead||APM-KIOSK, hidden, EAP-TLS device-certificate authentication.||[[5.3]], DR-015
+TR |DR-006||IP address requirement||Agreed||135 addresses in total; a /26 per site from the supernet, 62 usable. Up to five devices per site, 540 in total.||[[5.3]]
+TR |DR-007||Identity model for the fleet||Approved - APM Cyber Security, APM Digital lead||No user identity: the session runs as a local account created and managed by Assigned Access on an Entra-joined, Intune-managed device. Options assessed: (a) one Entra ID account per device with a passphrase published on the lock screen, rejected as it needs a dedicated tenant, a licence per device and a credential pipeline to protect nothing; (b) one shared Entra ID account, rejected as a single credential across 540 public devices cannot be bound to hardware or revoked without a fleet outage; (c) a local automatic-logon account, selected. APM Cyber Security confirmed no password is required, given the device holds no corporate data and can reach no corporate service.||[[7]]
+TR |DR-008||Productivity suite||Approved - APM Digital lead||LibreOffice Fresh, installed locally. Options assessed: (a) Microsoft 365 Office for the web and (b) Microsoft 365 Apps installed locally, both rejected because each requires a licensed identity per participant and (a) writes every document to a cloud store; (c) LibreOffice, selected: no identity, no cloud store, no licence, and it reads and writes the Microsoft formats participants exchange.||[[4.2]]
+TR |DR-009||Licensing model||Approved - APM Digital lead||Device-based licensing only: Intune device licence, Windows 11 Enterprise E5 and the Defender for Endpoint P2 entitlement. No Microsoft 365 user licences. Confirmed with SoftwareOne as the model for a fleet with no user accounts.||[[4.2]], [[7]]
+TR |DR-010||Microsoft 365 access from the device||Approved - APM Cyber Security||Block outright: no participant has a business need to sign in to any APM or Microsoft 365 service from a Kiosk, so the surface is removed rather than narrowed. Enforced at three layers (Conditional Access, Edge URL blocklist, Zscaler filtering); personal webmail remains available.||[[7]]
+TR |DR-011||Session credential||Approved with amendment - APM Cyber Security confirmation required||No password known to any person: the session account is created on-device by a signed remediation with a 32-character random password generated in memory, held only in the Winlogon LSA secret, never displayed. Options assessed: (a) Assigned Access AutoLogonAccount, rejected because the account name is not configurable and Security Operations require the endpoint identifiable by account name; (b) a named account with a blank password, rejected against the 14-character minimum in the hardening standard; (c) a named account with a device-generated credential in the LSA secret, selected. The naming amendment is with Cyber for confirmation.||[[7]]; Technical Configuration Document A.2
+TR |DR-012||Remote-support account credentials||Approved - APM Cyber Security||Windows LAPS with Entra ID backup, per device. Options assessed: (a) Azure Key Vault with an Automation rotation runbook, rejected because nothing else in this design needs cloud infrastructure; (b) a shared support password, rejected outright; (c) Windows LAPS, selected: native, licensed, rotated automatically and audited on each retrieval.||[[7]]
+TR |DR-013||Zscaler enforcement without user identity||Approved - APM Cyber Security||Enforcement is device based. The Entra user group, SAML enterprise application, SCIM provisioning and identity provider in the supplied Zscaler configuration are not created; the app profile and URL filtering rules bind to the device group. Mechanism confirmed under DR-020: Client Connector on the device, local breakout to ZIA.||[[5.3]], [[7]]
+TR |DR-014||Operating system edition||Approved - APM Digital lead||Windows 11 Enterprise on the standard servicing channel, replacing Windows 11 IoT Enterprise LTSC, aligning the fleet with the rest of the estate and the hardening standard as written.||[[4.2]], [[9.1]]
+TR |DR-015||Naming after the fleet rename||Agreed||The fleet, device names, groups and Intune profiles are renamed to Participant Kiosk; the APM-KIOSK VLAN and SSID keep their approved names, since renaming a deployed network object requires site-by-site change for no functional gain.||[[5.3]]
+TR |DR-016||Decommissioning the retired kiosk components||Agreed - requested by APM Cyber Security||Every component this design does not use is removed under change control rather than left dormant as unowned attack surface. Components another use case needs are retained and handed over. Raised as a separate change request.||[[9.1]]
+TR |DR-017||Signed versus unsigned App Control policy||Approved - APM Cyber Security||Sign the enforced policy and deploy it through the ApplicationControl CSP. Options assessed: (a) unsigned policy on the built-in Intune profile, removable by deleting the profile, rejected for the enforced fleet because a removable policy is weakest exactly where this fleet lives; (b) signed policy through the CSP, selected, with the trade that removal needs an update signed by the same certificate; (c) signed with no rollback artefact, rejected outright. Recovery for 540 devices is the escrowed pre-signed audit policy.||[[7]], [[8.2]]
+TR |DR-018||Location-based component in the device name||Rejected - APM Digital lead||The device name carries a random component only, assigned once by Autopilot. The prior design's location suffix depended on the device-prep partner assigning each device to its Entra ID location group, which cannot be relied on at fleet scale and fails silently rather than visibly. Site and hardware traceability sit in Intune and the asset register instead.||Technical Configuration Document
+TR |DR-019||Meraki-level enforcement verification||Agreed - APM Digital lead||The default-deny egress ruleset is confirmed active on the Meraki dashboard at every site during the pilot, not assumed from the design. A recent RFFR audit found Palo Alto and Zscaler enforcement was not mirrored at the Meraki layer, i.e. the control existed on paper but was not verified in the product.||[[5.3]]
+TR |DR-020||Wi-Fi authentication, and Palo Alto's role in the traffic path||Approved - APM network lead||Wi-Fi authentication moves from a pre-shared key to EAP-TLS with a per-device certificate, and the Zscaler Client Connector on the device performs local breakout directly to ZIA, removing Palo Alto from the traffic path entirely, on-site and in Azure. Requested by the network delivery lead to align with standard practice and remove the bottleneck of routing all traffic through a shared Palo Alto pair. No certificate rotation mechanism exists: the certificate is issued once at provisioning (R-09).||[[5.3]], DR-003, DR-005
+TR |DR-021||Ownership of the Assigned Access configuration object||Open - decision required from Digital Transformation and Architecture||Two Intune objects write ./Vendor/MSFT/AssignedAccess/Configuration: the Custom profile CDG-W11-CFG-Assigned Access XML-P-1.0, and the remediation CDG-W11-REM-Kiosk Session Account-P-1.0, which renders the same configuration with the session account name substituted per device. The object that applies last determines the live configuration, and the Custom profile carries the literal account .\Kiosk-[SERIAL], which does not resolve. Options assessed: (a) the remediation owns the configuration and the Custom profile is not deployed; (b) the Custom profile owns the configuration and the remediation performs the account substitution only. One object must own it.||Technical Configuration Document 4.6.5, A.1, A.2.2
+TR |DR-022||Shut down the system user right for the session account||Open - decision required from APM Cyber Security||The inactivity watchdog runs in the participant session as a standard user and calls shutdown /r /t 0 /f at 600 seconds. Users hold the Shut down the system right by default; CDG-W11-SEC-Logon Lockdown-P-1.0 applies a user-rights allow-list and does not name it. Without the right the device does not restart, the purge does not run, and the deletion statement on the participant wallpaper is not met. Options assessed: (a) name the right in the logon-lockdown allow-list for the session account; (b) move the restart to a SYSTEM-context scheduled task the watchdog triggers.||Technical Configuration Document 12.1.5, A.4.2
+TR |DR-023||Profile deletion mechanism of record at restart||Open - confirmation required from APM End User Computing||The shutdown pass excludes a still-loaded profile, and the startup pass competes with automatic logon reloading the same path, because Kiosk-[SERIAL] is constant per device. The ADMX policy Delete user profiles older than a specified number of days on system restart, set to 0, runs before logon and is therefore the layer that deletes the profile in the ordinary case. Confirmation required that the ADMX layer is the mechanism of record and the script passes secondary.||[[6.2]]; Technical Configuration Document 12.1.7, A.5.1, A.5.2
+END
+H1 |4. Application Architecture
+H2 |4.1 System Context Diagram
+P |Figure 1 shows what manages the device, what it may reach, and what it is prevented from reaching.
+FIG|solution-context.png|Figure 1. Participant Kiosk solution context - management plane, permitted destinations and blocked corporate services|1520|1240
+H2 |4.2 Solution/Product Component Inventory
+TBL|2399,1541,1541,1541,2338
+TH |**Component**||**Product / Service**||**Version**||**Licensing**||**Purpose**
+TR |Device operating system||Windows 11 Enterprise||Validated feature version, standard channel||Windows 11 Enterprise E5, per device||Participant Kiosk operating system. Changed from Windows 11 IoT Enterprise LTSC (DR-014)
+TR |Productivity suite||LibreOffice||Fresh release, 64-bit||Open source, Mozilla Public Licence 2.0. No licence cost||Writer, Calc and Impress for document creation, reading and writing the Microsoft file formats. New in this design (DR-008)
+TR |Browser and PDF viewer||Microsoft Edge||Stable channel||Included with Windows||Job search, government services, personal webmail, PDF viewing
+TR |Endpoint protection||Microsoft Defender for Endpoint P2||Latest platform and intelligence||Entitlement included with Windows 11 Enterprise E5||Real-time protection, EDR telemetry to Defender, feeds the Intune compliance policy
+TR |Device management||Microsoft Intune||Current||Microsoft Intune device licence||Configuration profiles, application deployment, compliance, Autopilot
+TR |Identity provider||Microsoft Entra ID||Current||Existing APM tenant licensing||Device join and device object only. No user identity is created for this fleet
+TR |Local credential management||Windows LAPS with Entra ID backup||Built in to Windows 11||Included||Rotates and escrows the local support account password per device (DR-012)
+TR |Web filtering||Zscaler Internet Access, Client Connector on-device||Existing APM standard||APM licensed||Category-based web filtering and logging, local breakout
+TR |Third-party patching||Patch My PC Publisher, Server edition||Current||APM licensed (A-08)||Publishes LibreOffice updates into Intune as superseding Win32 applications
+TR |Remote support||TeamViewer||Single pinned major version||APM licensed||Attended and administrative remote support ([[7]])
+END
+P |The following are absent by design. Microsoft Defender for Identity has no user identity or on-premises directory to monitor on this fleet. Microsoft Purview Information Barriers require an identity on the device that could reach a corporate store, and none exists. Teams, Zoom, Microsoft 365 Apps, OneDrive sync and Company Portal are not installed: no approved requirement calls for them, and each widens the App Control trust surface.
+H2 |4.3 Solution Interface Diagram
+P |N/A - the context diagram in [[4.1]] serves both purposes. Every interface is device-initiated, outbound, and terminates at one of a small set of Microsoft, Zscaler or vendor destinations, catalogued in [[4.4]]. The network-zone view in [[5.3]] overlays the same interfaces on the physical network path.
+H2 |4.4 Solution/Product Interface catalogue
+P |Every connection a Participant Kiosk makes is listed below. All are device-initiated and outbound. Nothing connects inbound to a device.
+TBL|700,2000,2200,2200,2260
+TH |**ID**||**Source**||**Destination**||**Protocol / port**||**Purpose**
+TR |INT-01||Participant Kiosk||Microsoft Entra ID (login.microsoftonline.com, enterpriseregistration.windows.net)||HTTPS 443||Device authentication and Entra join. No user authentication occurs
+TR |INT-02||Participant Kiosk||Microsoft Intune (manage.microsoft.com, r.manage.microsoft.com)||HTTPS 443||MDM check-in, policy, application and script delivery
+TR |INT-03||Participant Kiosk||Windows Update and Delivery Optimization endpoints||HTTPS 443||Operating system and Microsoft component patching ([[9.1]])
+TR |INT-04||Participant Kiosk||Microsoft Defender for Endpoint cloud service||HTTPS 443||EDR telemetry, intelligence updates and response actions
+TR |INT-05||Participant Kiosk||Zscaler Internet Access, via the on-device Client Connector||HTTPS 443||All internet traffic, filtered and logged ([[5.3]])
+TR |INT-06||Zscaler Internet Access||Approved internet destinations||HTTPS 443||Job search, government services, personal webmail, training
+TR |INT-07||Participant Kiosk||TeamViewer service endpoints||HTTPS 443, outbound only||Remote support session establishment ([[7]])
+TR |INT-08||Participant Kiosk||Intune content delivery (Microsoft CDN)||HTTPS 443||LibreOffice package and update content published by Patch My PC
+TR |INT-09||Participant||USB removable media on the device||USB mass storage||Participant carries documents to and from the device ([[7]])
+TR |INT-10||Support operator||Participant Kiosk, via the TeamViewer service||HTTPS 443||Attended and administrative remote support ([[7]])
+END
+H1 |5. Technology Architecture
+H2 |5.1 Technology Component Standards
+TBL|1900,2400,2400,2660
+TH |**TRM domain**||**Component**||**Product / version**||**Approval status**
+TR |Endpoint management||Microsoft Intune||Current tenant release||Approved
+TR |Enrolment||Windows Autopilot||Self-deploying mode||Approved
+TR |Patching||Windows Autopatch||Current tenant release||Approved
+TR |Identity||Microsoft Entra ID||Device authentication only||Approved
+TR |Web filtering||Zscaler Client Connector / ZIA||Current version||Approved
+TR |Endpoint protection||Microsoft Defender for Endpoint||P2||Approved
+TR |Application control||App Control for Business (WDAC)||Fleet variant||Approved, new fleet-specific policy
+TR |Local password management||Windows LAPS||Built into Windows 11 / Entra ID||Approved
+END
+H2 |5.2 Integration standards and patterns
+P |N/A - no ETL, API or message-based integration pattern. One recurring integration exists: Patch My PC Publisher detects each LibreOffice Fresh release and publishes it into Intune as a superseding Win32 application. Cadence and approval steps are in the Technical Configuration Document, 12.6.
+H2 |5.3 Network & Infrastructure Standards & Patterns
+P |The fleet uses the existing site network at APM sites. No Azure resource exists for a device to reach, so the solution holds no Azure subscription and no cloud infrastructure pattern beyond SaaS management-plane connectivity to Intune, Entra ID, Defender and Zscaler.
+P |Devices connect to the existing VLAN, repurposed and renamed APM-KIOSK. The existing wireless service is updated to carry the fleet; no new network is deployed. The APM-KIOSK SSID is hidden and access is controlled by an EAP-TLS device certificate deployed by Intune (DR-020). The names APM-KIOSK and VLAN 73 are retained as approved under DR-003 and DR-005.
+TBL|1520,2723,5117
+TH |**Element**||**Specification**||**Rationale**
+TR |Network type||Re-purposed VLAN (APM-KIOSK)||Provides a controlled access network with restricted connectivity and no general corporate or personal device access
+TR |Supernet||10.73.0.0/16||A unique /26 from 10.73.0.0/16 is assigned to each site through the Meraki template
+TR |Per-site allocation||/26 (64 addresses, 62 usable)||Up to five devices per site, 540 devices in total (DR-006)
+TR |VLAN ID||73||Existing VLAN, retained
+TR |Wi-Fi authentication||Hidden SSID, EAP-TLS device certificate||DR-020. No pre-shared key
+TR |Security model||Default deny with explicitly permitted connectivity||Only explicitly allowed services are reachable
+END
+P |All device traffic egresses through Zscaler. The Client Connector on the device performs local breakout, forwarding directly to Zscaler Internet Access with no site firewall in the path (DR-020). Enforcement binds to the device group, because the fleet has no user identity (DR-013). No device reaches APM corporate systems, internal business applications or unrestricted internet services. Zscaler inspects all permitted traffic and the Meraki edge enforces default-deny egress. FQDN allow-lists, rate limits and Meraki console configuration are in the Technical Configuration Document, 6.1.
+P |Figure 2 shows the network and security zones end to end, from the device at the site to the approved destinations.
+FIG|network-zones.png|Figure 2. Participant Kiosk logical network and security zones|1520|1560
+H2 |5.4 Technology component Deployment Patterns
+TBL|1600,2600,2600,2560
+TH |**Environment**||**Purpose**||**Deployment method**||**Promotion gate**
+TR |Pilot ring||Validate configuration and application updates on a small device set (approximately 10 devices)||Static Entra ID device group, assigned first to every new profile, application and policy||Pilot test plan passes with no unexpected block (Technical Configuration Document, 14.3)
+TR |Production ring||Roll out to the full fleet (540 devices)||Dynamic Entra ID device group, staged assignment after pilot validation||Change record approval
+END
+H1 |6. Information & Data Architecture
+H2 |6.1 Information Model
+P |The solution introduces no persistent data store: no cloud store, no mailbox, no OneDrive, no server-side profile. Data exists transiently on the device during a session, and on the participant's own USB media if they save it there. A session carries participant input (resumes, cover letters, applications, form submissions), browser data held in memory, application data in the local profile, and device telemetry from Intune, Defender and Zscaler. Absent by design: participant accounts, sign-in records, mailboxes, cloud documents, and directory objects naming a member of the public. The only identity in the system is the device.
+P |A session begins when the device powers on and the session account signs in. It ends when the device restarts, either from the inactivity watchdog or a manual restart. Nothing carries from one session to the next. Figure 3 places the controls on the session timeline.
+FIG|session-lifecycle.png|Figure 3. Session lifecycle and data purge - what is written, when it is destroyed, and what survives|1520|1080
+H2 |6.2 Information Classification
+P |The solution processes participant personally identifiable information with session-only retention. Every element below is destroyed when the session ends, except the operational telemetry, which carries no participant identity.
+TBL|3089,1561,1703,3007
+TH |**Data Element**||**Classification**||**Retention**||**Protection Mechanism**
+TR |Resumes, cover letters, job applications, Centrelink medical forms||PII - Sensitive and Health||Session only||Written to the local profile, purged on restart, or to the participant's own USB media
+TR |Webmail credentials if entered, financial information, browsing history||PII - Credentials and Financial; activity data||Session only||Edge ephemeral profile with password manager and autofill disabled; browsing data cleared on exit as a second layer; nothing written to disk
+TR |Zscaler web logs||Activity data||Per APM retention policy (approximately 180 days)||Retained in Zscaler and Sentinel per the existing standard. Attributed to a device and a site, not a person
+TR |Device management and security logs||Operational data||Per APM retention policy||Intune, Defender for Endpoint and Entra ID device events. No participant identity is present
+END
+P |Three purge layers act in the order below, so no participant data survives a session. Scripts and mechanisms are in the Technical Configuration Document, A.5 and A.6.
+TBL|1500,2100,5760
+TH |**Layer**||**Mechanism**||**Detail**
+TR |1. Nothing written||Edge ephemeral profiles, LibreOffice autorecovery and backup copies disabled, recent-documents list disabled||Most session data never reaches the disk. Prevention, so it does not depend on anything running correctly later
+TR |2. Shutdown purge||Signed script, run as the device restarts, after the participant session has ended||Deletes the participant profile and residual session data. Errors are logged and never block shutdown
+TR |3. Boot purge||Policy setting deletes user profiles on system restart, plus the same purge routine registered as a startup task||Removes any profile that survived a hard power-off. Runs before the session account signs in, so the session that starts is always on a fresh profile
+END
+P |Two things are deliberately not purged: the participant's own USB media, which leaves with them, and the operational telemetry in Intune, Defender and Zscaler, which carries no participant identity and is retained under the existing APM retention policy.
+H2 |6.3 Analytics and reporting Patterns
+P |N/A - no new analytics or business intelligence pattern. Reporting uses the existing Intune compliance dashboard, Defender for Endpoint reporting and the Microsoft Sentinel correlation layer. The monitoring model is in [[9.2]].
+H1 |7. Cyber & Security Architecture
+P |APM operates under the Workforce Australia and Inclusive Employment Australia Service Deeds. Both require compliance with the Right Fit for Risk (RFFR) framework administered by DEWR, based on ISO 27001 and the ASD ISM. RFFR compliance is managed under APM's existing ISMS, and the Statement of Applicability for this fleet is held separately (A-07). The fleet holds no standing cloud identity and no published credential, no key material or credential endpoint for the Cryptography and Key Management Standard to attach to, and no Microsoft 365 data plane, so participant information cannot reach a cloud service.
+P |**Identity and access control.** The fleet has no cloud user identity. The participant session runs as a local account that Windows creates, credentials and signs in on its own behalf. The device authenticates to Entra ID; the person using it authenticates to nothing.
+TBL|2600,6760
+TH |**Aspect**||**Design**
+TR |Account creation||Created on the device by a signed remediation, named Kiosk-[SERIAL] from the device serial. No account is created in any directory
+TR |Credential||32 random characters generated on the device, held only in the Winlogon LSA secret. Not set by a person, not stored in Intune or any document, never displayed. Extractable only with local administrator rights, which LAPS gates and audits
+TR |Credential rotation||Regenerated whenever the remediation repairs the account, and on demand fleet-wide. The account is exempted from the baseline's maximum password age, because an expiry on a credential nobody holds would end automatic logon fleet-wide
+TR |Privilege||Standard user. Not a member of Administrators. Cannot install, elevate, or change configuration
+TR |Break-glass||A defined breakout sequence leaves the restricted session and presents the standard logon screen, where the LAPS-managed local administrator account can sign in
+TR |Failure mode||If the session account does not exist, the device presents the standard logon screen with no account a member of the public can use: unusable rather than open. Intune reports the failure and the device is repaired before it returns to service
+END
+P |With no cloud identity there is no password to rotate, no licence to assign and no sign-in log to monitor. Device-level control replaces them: the compliance policy, App Control, the Conditional Access device filter and Defender for Endpoint telemetry. The fleet is licensed by device, because no user object exists to licence (DR-009).
+P |Each of the 540 devices carries Windows 11 Enterprise E5, the edition the hardening standard requires and the entitlement for Defender for Endpoint P2, plus a Microsoft Intune device licence covering enrolment, Autopilot self-deploying, configuration profiles, Win32 delivery, compliance and remediations. Self-deploying enrolment fails without the Intune device licence. Windows LAPS is included with Windows 11 and Entra ID. No Microsoft 365 or Entra ID P1/P2 user licence is assigned, because no user identity exists.
+P |The design creates no user group. Three Entra ID device groups are the only group objects: Autopilot targeting, fleet-wide policy targeting and the pilot ring. Membership rules are in the Technical Configuration Document, 11.2.4.
+P |Conditional Access on this fleet is denial, not grant: no APM identity can authenticate from this hardware. One policy is added.
+TBL|3000,6360
+TH |**Field**||**Value**
+TR |Name||CA-107 - All Users & Guests - All Apps - Participant Kiosk Devices - Block
+TR |Users||Include: All users. Exclude: the two emergency access accounts
+TR |Target resources||All cloud apps
+TR |Conditions||Filtered to devices enrolled through the Participant Kiosk Autopilot deployment profile
+TR |Grant||Block access
+TR |Rollout state||Report-only for the pilot, enforced before national rollout
+END
+P |**An explicit block is required, because inherited protection does not cover this fleet.** The tenant enforces two grants for all users against all cloud apps: one for a compliant or Entra-joined device, and one for multi-factor authentication **or** an Entra-joined device. A Participant Kiosk is Entra-joined and compliant, so it satisfies both, the second without any multi-factor prompt. Being managed and compliant makes the fleet look like a corporate device to every existing grant in the tenant, so denial must be stated rather than inherited (DR-010).
+P |The risk-based tenant policies evaluate a user principal, so they never assess a fleet with no user identity. The device-centred equivalents cover it: the compliance policy, App Control and Defender for Endpoint alerting ([[9.2]]). Phishing-resistant multi-factor authentication is report-only tenant-wide in the most recent Conditional Access export, and is therefore not a control for this fleet. The fourteen Conditional Access policies for the retired kiosk solution all assign to user-identity groups and stop matching anything once that group is removed. They are dispositioned in the change request referenced in [[9.1]], with their sign-in data exported as RFFR evidence before deletion.
+P |Three layers enforce DR-010, so no single failure re-opens Microsoft 365 access from this hardware.
+TBL|1700,2400,5260
+TH |**Layer**||**Control**||**What it stops**
+TR |Identity||CA-107, above||Any APM or Entra-federated identity authenticating from this hardware, including a staff member who sits down at the device
+TR |Device||Edge URL blocklist and allowlist||Navigation to the corporate service surface, before any credential is entered
+TR |Network||Zscaler URL filtering, below||The same destinations at the proxy, covering any client that is not the managed Edge instance
+END
+P |The compliance policy mirrors the device-health and system-security gates in the APM Windows SOE Hardening Standard, so a Kiosk is assessed on the same basis as a staff device, with a minimum operating system version pinned in addition. A failing device is marked noncompliant immediately and alerted to Digital Operations. Settings are in the Technical Configuration Document, 11.4.1. Every connection is TLS-encrypted: TLS 1.2 minimum, TLS 1.3 where supported, TLS 1.0 and 1.1 disabled. Cipher suites are in the Technical Configuration Document, 11.4.4.
+P |**Application control and device hardening.** The fleet is excluded from the estate App Control for Business policy and receives its own pair. The fleet allow-list is a fraction of the size of a staff device's and is correspondingly tighter (DR-017). Application control is enforced, not audited, and is the primary compensating control for the removable-media exclusions below: it prevents an executable brought in on a USB drive from running.
+TBL|3120,1560,1560,3120
+TH |**Rule option**||**Estate**||**Participant Kiosk**||**Reason for the difference**
+TR |Enabled: Script Enforcement||No (script control off)||**Yes (script control on)**||The estate policy leaves PowerShell and similar unconstrained. On this fleet it is enabled, because the removable-media exceptions below make script execution from USB the most likely attack path
+TR |Enabled: Managed Installer||Yes||No||Applications are installed only by Intune from a trusted publisher, so a managed installer would only widen the trust surface
+TR |Enabled: Allow Supplemental Policies||Yes||No||Nothing extends the base policy. Any change is a change to the base policy itself, under change control
+TR |Enabled: Unsigned System Integrity Policy||Yes||No, the policy is signed||The policy is signed with the APM code-signing certificate, so it cannot be replaced or removed by an attacker with local access
+END
+P |The audit-mode policy runs on the pilot ring first. The enforced policy reaches production once no unexpected block is observed. Delivery mechanism, rule options and the publisher allow-list are in the Technical Configuration Document, 12.1.3 and A.8.
+P |Three controls in the hardening standard are incompatible with the approved participant use case, all relating to removable media. Participants must be able to carry a resume to and from the device on a USB drive, an approved requirement (user story 15), and the fleet has no printing capability to substitute for it.
+TBL|2400,1500,1400,4060
+TH |**Control excluded**||**Standard**||**Participant Kiosk**||**Compensating controls**
+TR |All Removable Storage classes: Deny all access||Enabled (ASD, Met)||Not enabled||AutoPlay/AutoRun disabled on all drives; Defender scan of removable drives; the ASR rule blocking untrusted and unsigned processes from USB; App Control enforced with script enforcement on; File Explorer scoped to the participant folders and removable drives with no shell, command prompt or task manager
+TR |Removable Disks: Deny write access||Enabled (ASD, Met)||Disabled||As above. Write access is required to save a resume. The device holds no corporate data, so the exfiltration surface is the participant's own document
+TR |Write access to removable data-drive not protected by BitLocker||Block (Microsoft baseline, Met)||Not configured||Participants bring personal, unencrypted USB drives; requiring BitLocker would make the transfer path unusable and would encrypt a member of the public's own media
+END
+P |The exclusions are delivered by assignment rather than by editing the estate policies, and are recorded as accepted risks in the Participant Kiosk RFFR Statement of Applicability, owned by APM Cyber Security. No other device population is affected. The fleet is excluded from no other hardening control, and specifically not from application control. LibreOffice hardening compensates for the absence of an Office macro policy: macro execution disabled outright, active content blocked, no autorecovery copy written, no recent-documents list. Values are in the Technical Configuration Document, 12.1.8.
+P |**SOE Hardening Standard alignment.** The Participant Kiosk is a Windows 11 Enterprise endpoint governed by the same document as every other APM Windows device: the APM Windows SOE Hardening Standard V3.0, benchmarked against the ASD Windows Hardening Guidelines and the Microsoft Windows 11 and Edge baselines. The fleet inherits the standard, excludes the controls above that the use case cannot satisfy, compensates for each, and adds the controls below that a staffed device does not need. Each exclusion is named, justified, compensated and assigned an owner for RFFR assessment.
+TBL|2900,2100,4360
+TH |**Policy (standard)**||**Applies**||**Relevance**
+TR |Windows 11 security baseline (OS)||As written||AutoPlay/AutoRun blocks, Credential Guard, virtualisation-based security, SMB v1 disabled, signed-scripts-only PowerShell, Remote Assistance and Remote Shell disabled, built-in Administrator and Guest disabled and renamed
+TR |Attack surface reduction rules||As written||The USB untrusted-process block (primary compensating control for the USB exception), credential-theft and obfuscated-script blocking
+TR |BitLocker drive encryption||Fixed drive as written; removable-drive settings excluded||XTS-AES 256-bit, recovery key escrowed to Entra ID. Pre-boot authentication varied under SOE-05
+TR |Microsoft Edge security baseline||As written, at device scope||Password manager disabled, certificate error overrides prevented, SmartScreen enforced, DNS-over-HTTPS off
+TR |Developer tools restriction||As written||The fleet is never in the developer exception group
+TR |Windows compliance policy||Fleet-specific object||Reproduces the standard's device-health gates; corporate compliance policies are excluded from this fleet
+END
+P |The fleet is deliberately stricter than the staff SOE in two places. The Microsoft Store is disabled outright, where the standard permits it for some government contracts. The interactive logon inactivity limit is 600 seconds and restarts the device, against the standard's 900-second lock.
+TBL|2800,1800,4760
+TH |**Control**||**Value**||**Purpose**
+TR |Application Control, fleet variant||Own audit and enforced policy pair, replacing the estate assignment||Above
+TR |Multi-app Assigned Access||Edge, LibreOffice, File Explorer, Zscaler tray, TeamViewer only||Removes the shell, Settings, command prompt and Task Manager
+TR |Automatic logon with a named local account||Credential generated on-device, held in the LSA secret||No credential exists for a member of the public to obtain, guess or be given
+TR |Logon lockdown||Allow log on locally restricted to Administrators and the session account||Extends the standard's deny-list approach to an allow-list
+TR |Inactivity restart||600 seconds, restart rather than lock||Stricter than the standard, and destroys the session rather than locking it
+TR |Session purge||Three layers (6.2)||Guarantees no participant data survives a session
+TR |Turn off the Store application||Enabled||Closes the one control the standard records as set below the benchmark
+TR |LibreOffice application hardening||Macros disabled, active content blocked||Equivalent of the Office macro and active-content controls the standard applies to Microsoft Office
+END
+TBL|700,4200,4460
+TH |**Ref**||**Finding**||**Action**
+TR |SOE-01||Met. The standard sets a minimum device password length of 14 characters||No participant-typed password exists. The session account credential is 32 random characters, and the LAPS-managed administrator password is 30 characters. Both exceed the minimum
+TR |SOE-02||Open. The Windows 11 baseline sets the PowerShell execution policy to signed scripts only. This design depends on device-side scripts||Every script must be signed with the APM code-signing certificate, as must the App Control policy itself. Both are gated on that certificate being issued, the single largest build gate. Owner: APM Solution Engineer, with APM Cyber Security to issue
+TR |SOE-03||Variation submitted. The standard disables all remote-access paths. This design allow-lists TeamViewer||Remote support access model below: attended consent for participant-present sessions, LAPS-managed per-device credentials, named operator accounts with multi-factor authentication, file transfer disabled, session logging to Sentinel. Remote Desktop, Remote Assistance and Remote Shell remain disabled
+TR |SOE-04||Not applicable. The baseline enables blocking account details on sign-in||Nothing is displayed at sign-in and no lock screen is presented, because the device signs itself in with a credential no human ever sees (DR-011)
+TR |SOE-05||Open. The standard requires BitLocker pre-boot authentication, which an unattended automatic-logon device cannot prompt for||Request an approved variation: TPM-only unlock with Secure Boot integrity validation, recovery key escrowed to Entra ID. Owner: Shaun Struik, for APM Cyber Security acceptance
+TR |SOE-06||Open. The corporate Edge hardening configuration is largely user-scoped and does not apply to a device with no corporate user||Convert the Edge configuration to device scope and validate against CIS Microsoft Edge Benchmark Level 2 as the minimum bar. Owner: End User Computing, with Digital Delivery
+TR |SOE-07||Open. The same problem applies to any Windows 11 baseline control assigned at user scope||Audit the ISM Windows 11 baseline assignment for user-scoped components and reproduce them at device scope, with any functional exception documented. Owner: End User Computing, with APM Cyber Security
+END
+P |Figure 4 shows the inheritance model: inherited controls, exclusions with their compensating controls, and fleet-additional controls.
+FIG|soe-inheritance.png|Figure 4. SOE Hardening Standard inheritance model - inherited, excluded and compensated, and fleet-additional controls|1520|1904
+P |**Web filtering and network security.**
+TBL|2340,7020
+TH |**Action**||**Categories / Sites**
+TR |Block||Adult, gambling, explicit content, violence, illegal content
+TR |Block||TikTok, Instagram, X (Twitter)
+TR |Block||Microsoft 365 and Azure corporate service URLs
+TR |Allow||Facebook (community job boards), public AI tools unless categorised high risk
+TR |Allow||Personal webmail (Webmail category), including Outlook.com and Gmail
+TR |Whitelist||All URLs in the managed favourites (3.3)
+END
+P |Remote support is required: the fleet is national and site staff cannot troubleshoot a device in a public area. TeamViewer is retained and allow-listed, a documented variation to the standard's position of disabling every remote-access path (SOE-03). Remote Desktop, Remote Assistance and Remote Shell remain disabled by the inherited baseline and nothing listens on TCP 3389.
+TBL|2730,6630
+TH |**Aspect**||**Design**
+TR |Support scenarios||Attended, where an operator joins the participant's session with consent, and administrative, where an operator signs in to an idle device with no participant present
+TR |Support account and credentials||A local account on that device only, in its local Administrators group, with no Entra ID role and no access to any other device. Password unique per device, rotated by Windows LAPS and escrowed to Entra ID, with an audit record per retrieval
+TR |Operator controls||Operators authenticate to the TeamViewer tenant with named accounts and multi-factor authentication; no shared or per-device connection password is used, and file transfer is disabled in both directions
+TR |Logging and version control||Connection reports export to Microsoft Sentinel alongside the Windows security log. A single deployed major version is pinned in the App Control publisher rule, so a different build cannot be side-loaded
+END
+P |Figure 5 shows the access control model: device-only identity, and the three layers that keep corporate services off the device.
+FIG|access-control-model.png|Figure 5. Access control model - device-only identity, and the three layers that keep corporate services off the device|1520|1380
+P |**Risk register.** Where residual risk is accepted, the accepting party is named in the treatment.
+TBL|560,2500,900,900,3200,1300
+TH |**ID**||**Risk**||**Likelihood**||**Impact**||**Treatment**||**Owner**
+TR |R-01||A device in a public area is tampered with or stolen||Medium||Low||BitLocker on the fixed drive, Secure Boot, App Control enforced, no persistent data, no corporate credential on the device, asset register and site physical controls. Residual accepted by APM Cyber Security||Digital Operations
+TR |R-02||Malware is introduced on a participant USB drive||Medium||Medium||AutoPlay and AutoRun disabled, Defender scan of removable drives, ASR rule blocking untrusted and unsigned processes from USB, App Control enforced with script enforcement on||APM Cyber Security
+TR |R-03||A staff member signs in to a corporate service from a Participant Kiosk||Medium||Medium||Three-layer block, above. Residual: a non-federated third-party service not covered by Conditional Access, treated by Zscaler category policy and accepted by APM Cyber Security||APM Cyber Security
+TR |R-04||A participant recovers the previous participant's data||Low||High||Three purge layers ([[6.2]]), ephemeral browser profiles, restart-triggered purge||Digital Delivery
+TR |R-05||The Assigned Access profile fails to apply and the device exposes a full desktop||Low||High||Fail-secure by design: no automatic logon occurs and no usable account is presented. Intune reports the failure and the compliance alert routes to Digital Operations||Digital Operations
+TR |R-06||A remote support session is misused||Low||Medium||Attended consent for participant-present sessions, LAPS-managed per-device credentials, named operator accounts with multi-factor authentication, file transfer disabled, session logging to Sentinel, above||Digital Operations
+TR |R-07||An unpatched LibreOffice vulnerability is exploited by a malicious document||Medium||Medium||Automated patching ([[9.1]]). Macros and active content are disabled outright, Defender vulnerability management reports the installed version, and App Control prevents any dropped payload from executing||APM Cyber Security
+TR |R-08||A device is used to attack the site or corporate network||Low||High||Default-deny egress on the APM-KIOSK VLAN, no route to corporate systems, Zscaler inspection, device-initiated outbound traffic only, EAP-TLS device-certificate authentication on the Wi-Fi network||Network team
+TR |R-09||The EAP-TLS device certificate has no rotation or renewal mechanism and could expire unnoticed fleet-wide (DR-020)||Medium||Medium||Certificate validity period is set long enough to outlast the device's operational life; expiry is monitored via Intune certificate reporting. No automated rotation exists in this design||APM network lead with Identity and Endpoint
+TR |R-10||The APM code-signing certificate is not issued in time (SOE-02)||Medium||High||Escalated as a program dependency. Without it the session scripts cannot run under the signed-scripts-only execution policy and App Control cannot be deployed signed||Shaun Struik, escalated to the PM
+END
+H1 |8. Service Availability and Disaster Recovery
+H2 |8.1 Business Service Tiering
+P |The solution supports participant access to employment services, and its availability affects APM's ability to meet Workforce Australia and Inclusive Employment Australia service deed obligations. It is classified Tier 3: important but not mission-critical, where an outage is disruptive but does not immediately stop core business operations.
+P |The sign-in path has no cloud dependency. A device with no internet connection still powers on, signs itself in and presents LibreOffice, because the session account is local and Windows holds its credential. Connectivity is required for browsing, management and patching, not for the device to be usable.
+H2 |8.2 Service Availability
+TBL|2340,2340,4680
+TH |**Component**||**Availability Target**||**Dependency**
+TR |Device session (power on to usable session)||No external dependency||Local only. Assigned Access and the local account are on the device
+TR |Microsoft Entra ID||99.99% (Microsoft SLA)||Required for device authentication and compliance reporting, not for the session to start
+TR |Microsoft Intune||99.9% (Microsoft SLA)||Required for policy and application delivery, not for the session to start
+TR |Internet access via Zscaler||Per existing APM SLA||Required for browsing. A Zscaler outage leaves the device usable for LibreOffice work only
+TR |Physical device||Hardware dependent||Dell hardware warranty and Wi-Fi coverage at the site
+TR |Patch My PC publishing||Not runtime-critical||An outage delays a LibreOffice update; it does not affect a device in service
+END
+H2 |8.2 Disaster recovery & Resilience
+P |The architecture is stateless, and recovery follows from that:
+B |No persistent data. Nothing to recover: every session starts from clean device state
+B |No cloud identity. No account to restore, no password to reissue, no directory dependency for a device to be used
+B |Device failure. Replace the device and register its hardware hash in Autopilot; it self-provisions with no data migration. Where the replacement has previously run a self-deploying deployment, clear its Autopilot record first (Technical Configuration Document, 4.6.2)
+B |Site failure. Devices at other sites are unaffected; there is no shared component between sites other than the Microsoft and Zscaler services
+B |Tenant-level failure. A Participant Kiosk continues to run its current configuration and remains usable for local document work; policy and application changes resume when the service returns
+B |App Control recovery. The enforced policy is signed, so deleting an Intune profile does not remove it. A replacement policy signed with the same certificate and set to audit mode is produced and held in escrow before the enforced policy deploys. Applying it is the documented rollback
+H1 |9. Service Management
+H2 |9.1 Service Management principles
+B |All changes follow APM's existing change management process
+B |Intune policy and application changes are deployed to the pilot device group before broad rollout
+B |Operational runbooks are maintained for routine tasks: device replacement, remote support, application updates and purge failure
+B |No participant identity exists to administer, so the fleet has no account, password or licensing runbook
+P |Incident reporting follows the APM Cyber Incident Response Plan. A suspected or actual security incident involving a Participant Kiosk is reported immediately through APM Assist and logged as a ServiceNow ticket. A P1 or P2 incident is also recorded in the Major Cyber Security Incident Register.
+P |The kiosk solution in place before this design carries identities, cloud resources, policies and a domain this design does not use. Dormant components are removed under change control rather than left in place (DR-016), raised as a separate change request with its own approval, sequence, rollback and evidence obligations. The Azure landing zone, its private DNS resolution and the test network are retained and handed to other use cases rather than deleted.
+P |Windows Autopatch manages the fleet, covering quality, feature, driver and firmware updates. A pilot ring validates each release before the fleet, and updates install and restart outside business hours. Deployment groups, restart profile and Delivery Optimization settings are in the Technical Configuration Document, 12.6.
+H2 |9.2 Monitoring, Logging, Reporting and Alerting
+P |All sources below export to Microsoft Sentinel through the existing APM connectors. Sentinel is the correlation and retention layer, approximately 180 days per policy, and the RFFR evidence source.
+TBL|1860,3700,3800
+TH |**Platform**||**Metrics**||**Alerting**
+TR |Microsoft Intune||Device compliance state, profile success and failure, application install state, Autopilot enrolment outcomes||Alert to Digital Operations on any Assigned Access profile failure, the condition that leaves a device without automatic logon (R-05)
+TR |Microsoft Defender for Endpoint, including vulnerability management||Device alerts, ASR and removable-media events, installed software inventory, CVE exposure and the fleet exposure score||Alert to APM Cyber Security on any device alert of medium severity or above; exposure reviewed at the existing weekly vulnerability review
+TR |Microsoft Entra ID and Windows LAPS||Device authentication and compliance events, sign-ins blocked by CA-107, and LAPS password retrieval events from the audit log||Alert to APM Cyber Security on a blocked corporate sign-in from a Kiosk. LAPS retrievals reported monthly to Digital Operations, with unexpected retrievals investigated
+TR |Zscaler, purge and idle scripts||Web activity logs per the existing APM standard; scheduled task results and script exit codes from Intune remediation reporting||Existing APM alerting policy for web activity. Alert on repeated purge failure on the same device
+TR |Microsoft Sentinel||The aggregate of every source above||The correlation and retention layer for the fleet, and the source for RFFR evidence
+END
+P |The fleet has no user sign-in anomaly detection, because it has no user identity. The device-centred equivalent is in the table above: legitimate use of this fleet never involves an APM identity, so a blocked corporate sign-in from Participant Kiosk hardware is the alerting condition.
+H1 |Appendix A: Terms & Abbreviations
+TBL|2000,7360
+TH |**Term**||**Definition**
+TR |ADMX||Administrative template file format used by Windows Group Policy and Intune
+TR |APM||Advanced Personnel Management
+TR |ASD||Australian Signals Directorate
+TR |ASR||Attack Surface Reduction
+TR |CA||Conditional Access
+TR |CIS||Center for Internet Security
+TR |CSP||Configuration Service Provider
+TR |DEWR||Department of Employment and Workplace Relations
+TR |DNS||Domain Name System
+TR |EAP-TLS||Extensible Authentication Protocol - Transport Layer Security
+TR |EDR||Endpoint Detection and Response
+TR |ESP||Enrolment Status Page
+TR |FQDN||Fully Qualified Domain Name
+TR |ISM||Information Security Manual (ASD)
+TR |ISMS||Information Security Management System
+TR |LAPS||Local Administrator Password Solution
+TR |MDM||Mobile Device Management
+TR |MFA||Multi-Factor Authentication
+TR |PII||Personally Identifiable Information
+TR |RFFR||Right Fit For Risk
+TR |SaaS||Software as a Service
+TR |SLA||Service Level Agreement
+TR |SOE||Standard Operating Environment
+TR |SSID||Service Set Identifier
+TR |TLS||Transport Layer Security
+TR |TPM||Trusted Platform Module
+TR |UEFI||Unified Extensible Firmware Interface
+TR |USB||Universal Serial Bus
+TR |VLAN||Virtual Local Area Network
+TR |WDAC||Windows Defender Application Control, now App Control for Business
+TR |ZIA||Zscaler Internet Access
+END

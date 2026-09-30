@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Participant Kiosk - figures (V1.0)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../styles.css">
+<script src="../../templates/detailed-design/authoring/qa-checks.js"></script>
+<style>body{margin:0;background:#EDEFF4;padding:40px 0}.dgm-fig{margin:0 auto 40px;box-shadow:0 10px 30px rgba(31,45,88,.12)}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px}.dgm-life{stroke:#41507F;stroke-width:1.4;stroke-dasharray:3 4;opacity:.55}.dgm-box.is-deny{background:#8E1B2C;border-color:#8E1B2C}.dgm-box.is-deny h4{color:#fff}.dgm-box.is-deny p{color:#F3D2D8}</style>
+</head><body>
+
+<!-- Figures authored at 760px wide; snapshot at 2x. SVG viewBox = full figure size. -->
+
+<!-- ===== F1 - SOLUTION CONTEXT (4.1) ===== -->
+<div class="dgm-fig" id="f1" style="width:760px;height:620px">
+<div class="dgm-cap" style="height:56px;padding:0 20px"><b style="font-size:16px">Participant Kiosk solution context</b></div>
+<div class="dgm-stage" style="height:564px;padding-top:56px">
+<svg class="dgm-wires" viewBox="0 0 760 620" style="top:0;left:0;width:760px;height:620px">
+<defs>
+<marker id="f1n" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="f1o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker>
+<marker id="f1r" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#8E1B2C"></path></marker>
+</defs>
+<line x1="184" y1="254" x2="184" y2="234" stroke="#1F2D58" stroke-width="2.2"></line>
+<line x1="144" y1="234" x2="616" y2="234" stroke="#1F2D58" stroke-width="2.2"></line>
+<line x1="144" y1="234" x2="144" y2="212" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f1n)"></line>
+<line x1="380" y1="234" x2="380" y2="212" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f1n)"></line>
+<line x1="616" y1="234" x2="616" y2="212" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f1n)"></line>
+<line x1="336" y1="294" x2="402" y2="294" stroke="#F89728" stroke-width="2.2" marker-end="url(#f1o)"></line>
+<line x1="568" y1="334" x2="568" y2="348" stroke="#F89728" stroke-width="2.2" marker-end="url(#f1o)"></line>
+<line x1="150" y1="388" x2="150" y2="436" stroke="#8E1B2C" stroke-width="2.2" marker-end="url(#f1r)"></line>
+</svg>
+<div class="dgm-zone" style="left:16px;top:80px;width:728px;height:132px"><span>MANAGEMENT PLANE &middot; APM CORPORATE TENANT</span></div>
+<div class="dgm-box is-navy" style="left:34px;top:112px;width:220px;height:96px"><h4>Microsoft Entra ID</h4><p>Device object only. No user identity exists for this fleet.</p></div>
+<div class="dgm-box is-navy" style="left:270px;top:112px;width:220px;height:96px"><h4>Microsoft Intune</h4><p>Device-licensed. Policy, applications, compliance, Autopilot.</p></div>
+<div class="dgm-box is-navy" style="left:506px;top:112px;width:220px;height:96px"><h4>Defender for Endpoint P2</h4><p>EDR and vulnerability telemetry, device-scoped.</p></div>
+<div class="dgm-box is-accent" style="left:34px;top:256px;width:300px;height:130px"><h4>Participant Kiosk</h4><p>Windows 11 Enterprise, multi-app Assigned Access, automatic logon to a Windows-managed local account. Edge, LibreOffice, USB.</p></div>
+<div class="dgm-box" style="left:410px;top:256px;width:316px;height:76px"><h4>Zscaler Internet Access</h4><p>On-device Client Connector, local breakout. Filtering, inspection, logging.</p></div>
+<div class="dgm-box" style="left:410px;top:352px;width:316px;height:58px"><h4>Approved internet and personal webmail</h4></div>
+<div class="dgm-box is-deny" style="left:34px;top:440px;width:692px;height:58px"><h4>Microsoft 365, Azure and corporate services - blocked at three independent layers</h4></div>
+<div class="dgm-lbl is-accent" style="left:344px;top:272px">443</div>
+<div class="dgm-lbl" style="left:172px;top:400px">blocked</div>
+<div class="dgm-legend" style="left:34px;top:516px"><span><i></i>Device management</span><span><i class="is-accent"></i>Inspected egress</span><span><i style="border-top-color:#8E1B2C"></i>Denied</span></div>
+<p class="dgm-note" style="left:34px;top:548px;width:692px">Every connection is device-initiated and outbound; nothing connects inbound to a device. The interface catalogue in 4.4 lists each path with its protocol and purpose.</p>
+</div>
+</div>
+
+<!-- ===== F2 - PROVISIONING FLOW (5.1.6) ===== -->
+<div class="dgm-fig" id="f2" style="width:760px;height:900px">
+<div class="dgm-cap" style="height:56px;padding:0 20px"><b style="font-size:16px">Participant Kiosk provisioning</b></div>
+<div class="dgm-stage" style="height:844px;padding-top:56px">
+<svg class="dgm-wires" viewBox="0 0 760 900" style="top:0;left:0;width:760px;height:900px">
+<defs><marker id="f2n" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker></defs>
+<line x1="380" y1="184" x2="380" y2="204" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f2n)"></line>
+<line x1="380" y1="288" x2="380" y2="308" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f2n)"></line>
+<line x1="380" y1="392" x2="380" y2="412" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f2n)"></line>
+<line x1="380" y1="496" x2="380" y2="516" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f2n)"></line>
+<line x1="380" y1="600" x2="380" y2="620" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f2n)"></line>
+<line x1="380" y1="704" x2="380" y2="724" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f2n)"></line>
+</svg>
+<div class="dgm-box is-accent" style="left:100px;top:104px;width:560px;height:80px"><h4>1 &middot; Device preparation - Deployment Team</h4><p>Wipe, install Windows 11 Enterprise, register the hardware hash, and assign the device to its Entra location group for the destination site.</p></div>
+<div class="dgm-box is-accent" style="left:100px;top:208px;width:560px;height:80px"><h4>2 &middot; First boot at the site</h4><p>The device connects to the hidden APM-KIOSK SSID during OOBE and the Autopilot registration is detected.</p></div>
+<div class="dgm-box is-navy" style="left:100px;top:312px;width:560px;height:80px"><h4>3 &middot; Self-deploying tenant join</h4><p>Autopilot joins the device to the APM corporate tenant by TPM-backed attestation. No user signs in, and no user account is created.</p></div>
+<div class="dgm-box is-navy" style="left:100px;top:416px;width:560px;height:80px"><h4>4 &middot; Intune enrolment</h4><p>The device consumes an Intune device licence and lands in sg-dyn-dvc-cdg-participant-kiosk, named APM-PK-[RRR] by the Autopilot template.</p></div>
+<div class="dgm-box is-navy" style="left:100px;top:520px;width:560px;height:80px"><h4>5 &middot; Policy and application delivery</h4><p>Security baseline, Assigned Access, Edge hardening, idle restart, purge scripts, App Control, LAPS, LibreOffice, Zscaler and TeamViewer.</p></div>
+<div class="dgm-box is-navy" style="left:100px;top:624px;width:560px;height:80px"><h4>6 &middot; Enrolment Status Page and rename</h4><p>The ESP blocks until every required application and policy has applied. The rename job appends the site digits: APM-PK-1231001.</p></div>
+<div class="dgm-box is-accent" style="left:100px;top:728px;width:560px;height:80px"><h4>7 &middot; Automatic logon</h4><p>The device restarts and Windows signs in the Assigned Access account. No credential is entered, displayed or held by APM.</p></div>
+<div class="dgm-key" style="left:100px;top:830px"><span><em style="background:#F89728"></em>Vendor and on-site steps</span><span><em style="background:#1F2D58"></em>Cloud-side steps</span></div>
+</div>
+</div>
+
+<!-- ===== F3 - APPLICATION DELIVERY AND TRUST CHAIN (5.2.4) ===== -->
+<div class="dgm-fig" id="f3" style="width:760px;height:780px">
+<div class="dgm-cap" style="height:56px;padding:0 20px"><b style="font-size:16px">Application delivery and trust chain</b></div>
+<div class="dgm-stage" style="height:724px;padding-top:56px">
+<svg class="dgm-wires" viewBox="0 0 760 780" style="top:0;left:0;width:760px;height:780px">
+<defs>
+<marker id="f3n" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="f3r" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#8E1B2C"></path></marker>
+</defs>
+<line x1="281" y1="168" x2="281" y2="186" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f3n)"></line>
+<line x1="281" y1="264" x2="281" y2="282" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f3n)"></line>
+<line x1="281" y1="360" x2="281" y2="378" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f3n)"></line>
+<line x1="281" y1="456" x2="281" y2="474" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f3n)"></line>
+<line x1="281" y1="552" x2="281" y2="570" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f3n)"></line>
+<line x1="530" y1="612" x2="556" y2="612" stroke="#8E1B2C" stroke-width="2.2" marker-end="url(#f3r)"></line>
+</svg>
+<div class="dgm-box" style="left:34px;top:92px;width:494px;height:76px"><h4>1 &middot; Vendor release</h4><p>LibreOffice Fresh MSI from libreoffice.org, signed by The Document Foundation.</p></div>
+<div class="dgm-box" style="left:34px;top:188px;width:494px;height:76px"><h4>2 &middot; Patch My PC Publisher</h4><p>Detects the release, verifies the vendor signature, publishes into Intune with supersedence.</p></div>
+<div class="dgm-box" style="left:34px;top:284px;width:494px;height:76px"><h4>3 &middot; Intune Win32 application</h4><p>Approved by Digital Delivery. Assigned Required, install context System.</p></div>
+<div class="dgm-box" style="left:34px;top:380px;width:494px;height:76px"><h4>4 &middot; Pilot ring</h4><p>SG-APM-ParticipantDevice-UpdateRing-Pilot, approximately 10 devices.</p></div>
+<div class="dgm-box" style="left:34px;top:476px;width:494px;height:76px"><h4>5 &middot; Fleet, three days later</h4><p>SG-APM-ParticipantDevice-Devices, matching the quality update deferral.</p></div>
+<div class="dgm-box is-accent" style="left:34px;top:572px;width:494px;height:84px"><h4>6 &middot; App Control decision at execution</h4><p>Publisher rule on The Document Foundation signer: a signed update runs with no policy change.</p></div>
+<div class="dgm-box is-deny is-centred" style="left:560px;top:582px;width:166px;height:64px"><h4>Any other binary is denied</h4></div>
+<div class="dgm-legend" style="left:34px;top:676px"><span><i></i>Delivery step</span><span><i style="border-top-color:#8E1B2C"></i>Denied at execution</span></div>
+<p class="dgm-note" style="left:34px;top:706px;width:692px">TeamViewer is pinned to a single major version in the App Control policy, so a TeamViewer update is a change to both the application and the policy, raised together. Windows and Edge are serviced by Windows Autopatch.</p>
+</div>
+</div>
+
+<!-- ===== F4 - LOGICAL NETWORK AND SECURITY ZONES (5.3) ===== -->
+<div class="dgm-fig" id="f4" style="width:760px;height:780px">
+<div class="dgm-cap" style="height:56px;padding:0 20px"><b style="font-size:16px">Logical network and security zones</b></div>
+<div class="dgm-stage" style="height:724px;padding-top:56px">
+<svg class="dgm-wires" viewBox="0 0 760 780" style="top:0;left:0;width:760px;height:780px">
+<defs>
+<marker id="f4n" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="f4o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker>
+</defs>
+<line x1="336" y1="180" x2="402" y2="180" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f4n)"></line>
+<line x1="568" y1="238" x2="568" y2="316" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f4n)"></line>
+<line x1="120" y1="438" x2="144" y2="516" stroke="#F89728" stroke-width="2.2" marker-end="url(#f4o)"></line>
+<line x1="210" y1="438" x2="380" y2="516" stroke="#F89728" stroke-width="2.2" marker-end="url(#f4o)"></line>
+<line x1="300" y1="438" x2="600" y2="516" stroke="#F89728" stroke-width="2.2" marker-end="url(#f4o)"></line>
+</svg>
+<div class="dgm-zone" style="left:16px;top:88px;width:728px;height:168px"><span>APM SITE &middot; APM-KIOSK &middot; VLAN 73</span></div>
+<div class="dgm-box is-accent" style="left:34px;top:124px;width:300px;height:112px"><h4>Participant Kiosk</h4><p>Windows 11 Enterprise, multi-app Assigned Access. Edge and LibreOffice, no cloud store.</p></div>
+<div class="dgm-box" style="left:410px;top:124px;width:316px;height:112px"><h4>Site network - Meraki</h4><p>Hidden APM-KIOSK SSID, EAP-TLS device certificate from Intune. <code>10.73.0.0/16</code>, a unique <code>/26</code> per site. 20 Mbps per site.</p></div>
+<div class="dgm-zone" style="left:16px;top:288px;width:728px;height:168px"><span>PERIMETER AND EGRESS CONTROL</span></div>
+<div class="dgm-box is-accent" style="left:34px;top:324px;width:692px;height:112px"><h4>Zscaler - Client Connector (on-device) and ZIA</h4><p>The Zscaler Client Connector installed on the device forwards traffic directly to Zscaler Internet Access: local breakout, with no site firewall in the path. URL filtering, threat protection and SSL inspection in the cloud. Logs 180 days.</p></div>
+<div class="dgm-zone" style="left:16px;top:488px;width:728px;height:132px"><span>APPROVED DESTINATIONS</span></div>
+<div class="dgm-box is-navy" style="left:34px;top:524px;width:220px;height:80px"><h4>Device management</h4><p>Entra ID, Intune, Defender</p></div>
+<div class="dgm-box" style="left:274px;top:524px;width:212px;height:80px"><h4>Approved internet</h4><p>Managed favourites and webmail</p></div>
+<div class="dgm-box" style="left:506px;top:524px;width:220px;height:80px"><h4>Windows Update</h4><p>Patching and app content</p></div>
+<div class="dgm-lbl" style="left:350px;top:158px">443</div>
+<div class="dgm-lbl" style="left:578px;top:262px">default deny</div>
+<div class="dgm-lbl is-accent" style="left:250px;top:452px">ZIA policy</div>
+<div class="dgm-legend" style="left:34px;top:640px"><span><i></i>Routed path</span><span><i class="is-accent"></i>ZIA-inspected egress</span></div>
+<p class="dgm-note" style="left:34px;top:670px;width:692px">Default deny at the Meraki edge; TCP 443 outbound only, device-initiated, forwarded directly by the on-device Zscaler Client Connector. There is no site firewall in the egress path, no Azure subscription and no cloud resource in this solution, so no credential-plane destination appears on the allow-list. Address plan, rule baseline and endpoint detail are in the tables that follow.</p>
+</div>
+</div>
+
+<!-- ===== F5 - INTERNET INTERACTION SEQUENCE (5.3.3.1) ===== -->
+<div class="dgm-fig" id="f5" style="width:760px;height:724px">
+<div class="dgm-cap" style="height:56px;padding:0 20px"><b style="font-size:16px">Participant Kiosk to internet interaction sequence</b></div>
+<div class="dgm-stage" style="height:668px;padding-top:56px">
+<svg class="dgm-wires" viewBox="0 0 760 724" style="top:0;left:0;width:760px;height:724px">
+<defs>
+<marker id="f5n" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="f5o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker>
+</defs>
+<line class="dgm-life" x1="70" y1="158" x2="70" y2="546"></line>
+<line class="dgm-life" x1="194" y1="158" x2="194" y2="546"></line>
+<line class="dgm-life" x1="318" y1="158" x2="318" y2="546"></line>
+<line class="dgm-life" x1="442" y1="158" x2="442" y2="546"></line>
+<line class="dgm-life" x1="566" y1="158" x2="566" y2="546"></line>
+<line x1="78" y1="196" x2="186" y2="196" stroke="#1F2D58" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#f5n)"></line>
+<line x1="202" y1="246" x2="310" y2="246" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f5n)"></line>
+<line x1="326" y1="296" x2="434" y2="296" stroke="#F89728" stroke-width="2.2" marker-end="url(#f5o)"></line>
+<line x1="450" y1="346" x2="558" y2="346" stroke="#F89728" stroke-width="2.2" marker-end="url(#f5o)"></line>
+<line x1="558" y1="396" x2="450" y2="396" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f5n)"></line>
+<line x1="434" y1="446" x2="326" y2="446" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f5n)"></line>
+<line x1="186" y1="496" x2="78" y2="496" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f5n)"></line>
+</svg>
+<div class="dgm-box is-centred" style="left:12px;top:92px;width:116px;height:62px"><h4>Participant</h4></div>
+<div class="dgm-box is-accent is-centred" style="left:136px;top:92px;width:116px;height:62px"><h4>Device</h4></div>
+<div class="dgm-box is-centred" style="left:260px;top:92px;width:116px;height:62px"><h4>Site network</h4></div>
+<div class="dgm-box is-accent is-centred" style="left:384px;top:92px;width:116px;height:62px"><h4>Zscaler ZIA</h4></div>
+<div class="dgm-box is-navy is-centred" style="left:508px;top:92px;width:116px;height:62px"><h4>Internet</h4></div>
+<div class="dgm-step" style="left:57px;top:183px">1</div>
+<div class="dgm-lbl" style="left:90px;top:170px">sits down at an open session</div>
+<div class="dgm-step" style="left:181px;top:233px">2</div>
+<div class="dgm-lbl" style="left:214px;top:220px">hidden SSID + EAP-TLS from Intune</div>
+<div class="dgm-step" style="left:305px;top:283px">3</div>
+<div class="dgm-lbl is-accent" style="left:338px;top:266px;width:398px;white-space:normal;line-height:1.35">Zscaler Client Connector forwards directly - local breakout, no Palo Alto hop</div>
+<div class="dgm-step" style="left:429px;top:333px">4</div>
+<div class="dgm-lbl is-accent" style="left:462px;top:320px">URL filtering, SSL inspection</div>
+<div class="dgm-step" style="left:537px;top:383px">5</div>
+<div class="dgm-lbl" style="left:463px;top:396px">response</div>
+<div class="dgm-step" style="left:413px;top:433px">6</div>
+<div class="dgm-lbl" style="left:188px;top:433px">content shown in Edge</div>
+<div class="dgm-step" style="left:165px;top:483px">7</div>
+<div class="dgm-lbl" style="left:56px;top:483px">session purged</div>
+<div class="dgm-legend" style="left:34px;top:570px"><span><i class="is-dashed"></i>Participant interaction</span><span><i></i>Routed traffic</span><span><i class="is-accent"></i>ZIA-inspected path</span></div>
+<p class="dgm-note" style="left:34px;top:604px;width:692px">Steps 2 to 6 are system interactions and carry no remote-desktop hop: the participant browses on the device itself. Step 7 fires on the inactivity restart and destroys the profile, browser data and downloads. The device's Zscaler Client Connector forwards directly to Zscaler Internet Access; there is no Palo Alto hop in this path. Rule detail sits in the accompanying Meraki egress table.</p>
+</div>
+</div>
+
+<!-- ===== F6 - ZSCALER TENANT OVERVIEW (5.3.4.1) ===== -->
+<div class="dgm-fig" id="f6" style="width:760px;height:840px">
+<div class="dgm-cap" style="height:56px;padding:0 20px"><b style="font-size:16px">Zscaler tenant overview, as supplied</b></div>
+<div class="dgm-stage" style="height:784px;padding-top:56px">
+<svg class="dgm-wires" viewBox="0 0 760 840" style="top:0;left:0;width:760px;height:840px">
+<defs>
+<marker id="f6n" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="f6o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker>
+</defs>
+<line x1="300" y1="140" x2="560" y2="140" stroke="#1F2D58" stroke-width="2.2" marker-start="url(#f6n)" marker-end="url(#f6n)"></line>
+<line x1="300" y1="160" x2="598" y2="256" stroke="#F89728" stroke-width="2.2" marker-end="url(#f6o)"></line>
+<line x1="200" y1="188" x2="200" y2="320" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f6n)"></line>
+<line x1="330" y1="600" x2="670" y2="600" stroke="#41507F" stroke-width="2" stroke-dasharray="6 5"></line>
+<line x1="670" y1="600" x2="670" y2="348" stroke="#41507F" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#f6n)"></line>
+<line x1="180" y1="488" x2="180" y2="566" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f6n)"></line>
+</svg>
+<div class="dgm-box is-navy is-centred" style="left:130px;top:104px;width:170px;height:80px"><h4>Zscaler Cloud</h4></div>
+<div class="dgm-box is-centred" style="left:560px;top:104px;width:170px;height:80px"><h4>Internet</h4></div>
+<div class="dgm-box is-accent is-centred" style="left:560px;top:256px;width:170px;height:84px"><h4>Device and location based enforcement</h4></div>
+<div class="dgm-zone" style="left:34px;top:320px;width:500px;height:370px"><span>APM SITE</span></div>
+<div class="dgm-zone is-accent" style="left:58px;top:388px;width:250px;height:278px"><span>PARTICIPANT DEVICE</span></div>
+<div class="dgm-box is-accent is-centred" style="left:78px;top:424px;width:210px;height:64px"><h4>PAC forwarding</h4></div>
+<div class="dgm-box is-navy is-centred" style="left:78px;top:562px;width:210px;height:80px"><h4>Device</h4><p>Participant session</p></div>
+<div class="dgm-lbl" style="left:316px;top:112px">HTTPS</div>
+<div class="dgm-lbl is-accent" style="left:474px;top:206px">no user identity</div>
+<div class="dgm-lbl" style="left:150px;top:246px">HTTPS</div>
+<div class="dgm-lbl" style="left:410px;top:610px">HTTPS</div>
+<div class="dgm-legend" style="left:34px;top:706px"><span><i></i>Direct HTTPS path</span><span><i class="is-accent"></i>Enforcement binding</span><span><i class="is-dashed"></i>PAC-forwarded traffic</span></div>
+<p class="dgm-note" style="left:34px;top:736px;width:692px">Reproduced as supplied by the network delivery team. The SAML, SCIM and identity-provider objects in that configuration are not created: this fleet has no user identity, so enforcement binds to the device group and the site location. The tunnel, PAC forwarding and URL filtering categories apply unchanged. Mechanism confirmed under DR-107.</p>
+</div>
+</div>
+
+<!-- ===== F7 - SESSION LIFECYCLE AND PURGE (6.3) ===== -->
+<div class="dgm-fig" id="f7" style="width:760px;height:540px">
+<div class="dgm-cap" style="height:56px;padding:0 20px"><b style="font-size:16px">Session lifecycle and data purge</b></div>
+<div class="dgm-stage" style="height:484px;padding-top:56px">
+<svg class="dgm-wires" viewBox="0 0 760 540" style="top:0;left:0;width:760px;height:540px">
+<defs><marker id="f7n" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker></defs>
+<line x1="40" y1="300" x2="714" y2="300" stroke="#1F2D58" stroke-width="2.4" marker-end="url(#f7n)"></line>
+<line class="dgm-life" x1="110" y1="246" x2="110" y2="284"></line>
+<line class="dgm-life" x1="250" y1="316" x2="250" y2="328"></line>
+<line class="dgm-life" x1="395" y1="246" x2="395" y2="284"></line>
+<line class="dgm-life" x1="535" y1="316" x2="535" y2="328"></line>
+<line class="dgm-life" x1="655" y1="246" x2="655" y2="284"></line>
+</svg>
+<div class="dgm-box is-navy" style="left:34px;top:108px;width:206px;height:134px"><h4>1 &middot; Boot and auto sign-in</h4><p>Startup purge removes any profile that survived a power loss. Edge starts with an ephemeral profile.</p></div>
+<div class="dgm-box" style="left:300px;top:108px;width:206px;height:134px"><h4>3 &middot; Idle warning</h4><p>At nine minutes a full-screen warning counts down the final 60 seconds. Any input dismisses it.</p></div>
+<div class="dgm-box is-navy" style="left:560px;top:108px;width:166px;height:134px"><h4>5 &middot; Clean session</h4><p>The device returns to a fresh participant session, ready for the next person.</p></div>
+<div class="dgm-box is-accent" style="left:150px;top:328px;width:212px;height:112px"><h4>2 &middot; Session in use</h4><p>Documents in the local profile or on the participant's USB. Nothing is written to a cloud store.</p></div>
+<div class="dgm-box is-navy" style="left:425px;top:328px;width:224px;height:112px"><h4>4 &middot; Restart at ten minutes</h4><p>The shutdown script deletes the profile, Public Downloads, temp and the print spool.</p></div>
+<div class="dgm-step" style="left:96px;top:286px">1</div>
+<div class="dgm-step" style="left:236px;top:286px">2</div>
+<div class="dgm-step" style="left:381px;top:286px">3</div>
+<div class="dgm-step" style="left:521px;top:286px">4</div>
+<div class="dgm-step" style="left:641px;top:286px">5</div>
+<div class="dgm-key" style="left:34px;top:462px"><span><em style="background:#1F2D58"></em>Purge or clean state</span><span><em style="background:#fff;border:1.6px solid #B9C0D4;box-sizing:border-box"></em>Warning</span><span><em style="background:#F89728"></em>Participant data present</span></div>
+<p class="dgm-note" style="left:34px;top:492px;width:692px">The same event ends the session and cleans it up, so there is no path where a session ends without a purge. The boot-time layer covers the one case a shutdown script cannot: a hard power-off.</p>
+</div>
+</div>
+
+<!-- ===== F8 - ACCESS CONTROL MODEL (7.2.4) ===== -->
+<div class="dgm-fig" id="f8" style="width:760px;height:690px">
+<div class="dgm-cap" style="height:56px;padding:0 20px"><b style="font-size:16px">Access control model</b></div>
+<div class="dgm-stage" style="height:634px;padding-top:56px">
+<svg class="dgm-wires" viewBox="0 0 760 690" style="top:0;left:0;width:760px;height:690px">
+<defs>
+<marker id="f8n" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="f8r" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#8E1B2C"></path></marker>
+</defs>
+<line x1="279" y1="172" x2="279" y2="192" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f8n)"></line>
+<line x1="279" y1="272" x2="279" y2="292" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f8n)"></line>
+<line x1="279" y1="372" x2="279" y2="392" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f8n)"></line>
+<line x1="279" y1="472" x2="279" y2="492" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f8n)"></line>
+<line x1="530" y1="234" x2="556" y2="234" stroke="#8E1B2C" stroke-width="2.2" marker-end="url(#f8r)"></line>
+<line x1="530" y1="334" x2="556" y2="334" stroke="#8E1B2C" stroke-width="2.2" marker-end="url(#f8r)"></line>
+<line x1="530" y1="434" x2="556" y2="434" stroke="#8E1B2C" stroke-width="2.2" marker-end="url(#f8r)"></line>
+</svg>
+<div class="dgm-box is-accent" style="left:34px;top:96px;width:692px;height:76px"><h4>Participant Kiosk - device identity only</h4><p>Entra-joined device object, Intune managed. The session runs as a Windows-managed local account. No user signs in to Windows, and no corporate identity exists on the device.</p></div>
+<div class="dgm-box" style="left:34px;top:196px;width:494px;height:76px"><h4>Layer 1 &middot; Identity - CA-APM-PK-BlockCorporateAccess</h4><p>All users, all cloud apps, filtered on the fleet enrolment profile. Break-glass accounts excluded.</p></div>
+<div class="dgm-box" style="left:34px;top:296px;width:494px;height:76px"><h4>Layer 2 &middot; Device - Edge URL blocklist</h4><p>Navigation to the Microsoft 365 and Azure surface is refused before any credential is entered.</p></div>
+<div class="dgm-box" style="left:34px;top:396px;width:494px;height:76px"><h4>Layer 3 &middot; Network - Zscaler URL filtering</h4><p>The same destinations blocked at the proxy, covering any client that is not the managed Edge.</p></div>
+<div class="dgm-box is-deny is-centred" style="left:560px;top:208px;width:166px;height:52px"><h4>Blocked</h4></div>
+<div class="dgm-box is-deny is-centred" style="left:560px;top:308px;width:166px;height:52px"><h4>Blocked</h4></div>
+<div class="dgm-box is-deny is-centred" style="left:560px;top:408px;width:166px;height:52px"><h4>Blocked</h4></div>
+<div class="dgm-box is-navy" style="left:34px;top:496px;width:692px;height:76px"><h4>What a participant can reach</h4><p>Approved job search, government, support and training sites, personal webmail, and LibreOffice on the device. Nothing that requires an APM identity.</p></div>
+<div class="dgm-legend" style="left:34px;top:596px"><span><i></i>Permitted path</span><span><i style="border-top-color:#8E1B2C"></i>Corporate service, denied</span></div>
+<p class="dgm-note" style="left:34px;top:626px;width:692px">Conditional Access is used here to deny rather than to grant: whoever authenticates from this hardware is refused, which is why one policy replaces the seven the superseded design required.</p>
+</div>
+</div>
+
+<!-- ===== F9 - SOE HARDENING STANDARD INHERITANCE (7.3.1) ===== -->
+<div class="dgm-fig" id="f9" style="width:760px;height:952px">
+<div class="dgm-cap" style="height:56px;padding:0 20px"><b style="font-size:16px">SOE Hardening Standard inheritance model</b></div>
+<div class="dgm-stage" style="height:896px;padding-top:56px">
+<svg class="dgm-wires" viewBox="0 0 760 952" style="top:0;left:0;width:760px;height:952px">
+<defs>
+<marker id="f9n" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1F2D58"></path></marker>
+<marker id="f9o" markerWidth="11" markerHeight="9" refX="9.5" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F89728"></path></marker>
+</defs>
+<line x1="150" y1="200" x2="150" y2="252" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f9n)"></line>
+<line x1="400" y1="200" x2="400" y2="252" stroke="#F89728" stroke-width="2.2" marker-end="url(#f9o)"></line>
+<line x1="640" y1="200" x2="640" y2="252" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f9n)"></line>
+<line x1="400" y1="420" x2="400" y2="444" stroke="#F89728" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#f9o)"></line>
+<line x1="150" y1="420" x2="150" y2="678" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f9n)"></line>
+<line x1="400" y1="650" x2="400" y2="678" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f9n)"></line>
+<line x1="706" y1="420" x2="706" y2="678" stroke="#1F2D58" stroke-width="2.2" marker-end="url(#f9n)"></line>
+</svg>
+<div class="dgm-box is-navy" style="left:34px;top:104px;width:692px;height:96px"><h4>APM Windows SOE Hardening Standard V3.0</h4><p>748 controls across 11 Intune policies. Benchmarked against the ASD Windows Hardening Guidelines, the Microsoft Windows 11 v24H2 baseline and the Microsoft Edge security baseline v139. Governs every APM Windows endpoint, including this fleet.</p></div>
+<div class="dgm-box" style="left:34px;top:256px;width:214px;height:164px"><h4>Inherited unchanged</h4><p>OS baseline, ASR rules, BitLocker on the fixed drive, Edge baseline, developer-tools restriction.</p></div>
+<div class="dgm-box is-accent" style="left:268px;top:256px;width:264px;height:164px"><h4>Excluded - 3 controls</h4><p>Removable storage deny-all; removable-disk deny write; BitLocker required on removable media. Scoped to SG-APM-ParticipantDevice-Devices only.</p></div>
+<div class="dgm-box" style="left:552px;top:256px;width:174px;height:164px"><h4>Fleet-additional</h4><p>App Control fleet variant, Assigned Access with auto-logon, logon lockdown, 600s restart, profile purge, Store off, LibreOffice hardening.</p></div>
+<div class="dgm-zone is-accent" style="left:268px;top:444px;width:420px;height:206px"><span>COMPENSATING CONTROLS</span></div>
+<div class="dgm-box" style="left:284px;top:472px;width:192px;height:164px"><h4>Already in the standard</h4><p>AutoPlay and AutoRun off all drives; Defender scans removable drives; ASR blocks untrusted and unsigned processes running from USB.</p></div>
+<div class="dgm-box" style="left:488px;top:472px;width:192px;height:164px"><h4>Added by this design</h4><p>App Control enforced with script enforcement ON; File Explorer scoped to removable drives; no shell, command prompt or Task Manager.</p></div>
+<div class="dgm-box is-navy" style="left:34px;top:682px;width:692px;height:96px"><h4>Participant Kiosk posture</h4><p>Assessed on the same basis as a staff device, with three named removable-media exclusions carrying documented compensating controls, accepted by APM Cyber Security in the RFFR Statement of Applicability and reviewed annually with the standard.</p></div>
+<div class="dgm-legend" style="left:34px;top:798px"><span><i></i>Inherited or added control</span><span><i class="is-accent"></i>Exclusion</span><span><i class="is-dashed is-accent"></i>Requires compensation</span></div>
+<p class="dgm-note" style="left:34px;top:832px;width:692px">The fleet is excluded from no device hardening control other than the three removable-media controls shown. There are no identity policy exclusions, because there is no participant identity to exclude. Alignment items, including the user-scope to device-scope conversions, are listed in the SOE alignment tables.</p>
+</div>
+</div>
+
+<script>window.addEventListener('load',()=>{setTimeout(()=>{const r=window.qa();window.__qa=r;console.log('QA-SUMMARY '+JSON.stringify({ok:r.ok,overlap:r.overlap.fails,contrast:r.contrast.fails,overflow:r.overflow.fails,escapes:r.escapes.fails,orphans:r.orphans.fails,legends:r.legends.fails,occlusion:r.occlusion.fails,clip:r.clip.fails}));['overlap','contrast','overflow','escapes','orphans','legends','occlusion','clip'].forEach(k=>{if(r[k].fails)console.log('QA-'+k, JSON.stringify(r[k].out.slice(0,8)))})},600)});</script>
+</body></html>

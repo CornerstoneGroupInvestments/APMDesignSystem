@@ -1,0 +1,676 @@
+H1 |1. Introduction
+H2 |1.1 Purpose
+P |This document is the detail design for the APM Standard User Standard Operating Environment delivered on Azure Virtual Desktop. It replaces the existing Windows 10 Azure Virtual Desktop environment, and converts the production Windows 11 thick client SOE into a virtual desktop channel and specifies the AVD components, the Intune policy inheritance and the network design required to run it.
+P |The SOE is one build with two channels. A user works on a physical Windows 11 laptop, or on a Windows 11 Enterprise multi-session host reached through the Windows App. The hardening standard, the Intune policy stack and the compliance position are the same in both. Every control that cannot apply to a multi-session host is listed in [[7]] with the control that replaces it.
+P |Configuration values, console paths and build steps are not in this document. They are specified in the companion Technical Configuration Document.
+H2 |1.2 Audience
+TBL|2800,6560
+TH |**Audience**||**What they are asked to do**
+TR |Business Sponsor, Business Partners||Endorse the two-channel model and the service behaviour during an outage: [[2]], [[3.3]], [[8.1]]
+TR |Digital Transformation and Architecture||Approve the architecture, the component standards and the placement in the APM Azure landing zone: [[4]], [[5]]
+TR |Cyber Security||Approve the policy inheritance, the five varied controls, the Conditional Access design and the RFFR position: [[7]]
+TR |Network Management||Allocate the address range, approve the subnet plan, the route table and the firewall policy: [[5.3]]
+TR |Digital Operations||Accept the monitoring, patching, availability and support model: [[8]], [[9]]
+TR |EUC Team||Create the application assignment groups and validate the compliance policy and configuration profiles: [[5.4.11]], [[5.4.12]]
+TR |Digital Delivery, Project Management Office||Build from the Technical Configuration Document, using this document for architectural context, and close the items in [[3.4]]
+END
+H1 |2. Overview
+P |APM operates a Windows 11 thick client SOE. Devices are hybrid joined: domain members in on-premises Active Directory, synchronised to Microsoft Entra ID, with ADFS providing federated authentication. They are Intune managed and hardened under the APM Windows SOE Hardening Standard V3.0, which carries 748 controls across 11 Intune policies, benchmarked against the ASD Windows Hardening Guidelines, the Microsoft Windows 11 v24H2 security baseline and the Microsoft Edge security baseline v139. App Control for Business runs in enforcement.
+P |ADFS is being decommissioned. This design takes no dependency on it: session hosts are Entra ID joined.
+P |Where the two channels diverge, the divergence is named. There are four: the device join type, SOE update by image replacement in place of in-place patching, the five varied controls in [[7]], and the multi-session application requirements in [[5.4]]. Everything else is common.
+P |This design delivers the same SOE on Azure Virtual Desktop. Session hosts run Windows 11 Enterprise multi-session on a pooled host pool in Australia East, orchestrated by Nerdio Manager for Enterprise. Hosts are Entra ID joined and Intune enrolled, so the same 11 policy objects govern them. User state persists in FSLogix profile containers on Azure Files Premium.
+P |The solution deploys into the APM Azure landing zone. It requires a new /23 address allocation and a spoke virtual network peered to the Australia East hub. Egress follows the landing zone forced tunnel pattern through the hub Palo Alto next-generation firewalls. Web traffic is filtered per user by Zscaler Client Connector for VDI and a Cloud Connector in the spoke; the firewalls do not forward spoke traffic to Zscaler. No public IP address, inbound port or internet-facing endpoint is created in the spoke.
+P |Australia East is the only region in scope. Nerdio audit events, session host diagnostics, host pool connection events, Azure Files transactions and firewall logs land in the Australia East Log Analytics workspaces and Microsoft Sentinel.
+H2 |2.1 Scope
+P |**In scope**
+B |Windows 11 Enterprise multi-session pooled host pool in Australia East, orchestrated by Nerdio Manager for Enterprise: provisioning, auto-scale, image lifecycle and drain-mode reimaging
+B |Golden image build and versioning through Azure Compute Gallery, including Microsoft 365 Apps with shared computer activation, Microsoft Teams with AVD media optimisation, Microsoft Edge and the FSLogix agent, the AVD agents, Defender for Endpoint onboarding and Zscaler Client Connector for VDI
+B |FSLogix profile containers on Azure Files Premium, reached over a private endpoint
+B |Per-user web filtering through Zscaler Client Connector for VDI on each session host and a Zscaler Cloud Connector pair in the AVD spoke, with the VDI group, template and forwarding profile for the host pool
+B |Inheritance of the 11 hardening standard policies onto the session host device group, the controls that cannot apply and the AVD profiles that replace them
+B |A multi-session compliance policy and the Conditional Access design for AVD access
+B |Host pool RDP redirection properties, including the clipboard, drive and printer positions
+B |Mapped network drive access from a session host
+B |Printing from a session host to printers at an APM site
+B |Address allocation, subnet plan, route table, network security groups, DNS resolution and private endpoints in a new AVD spoke, and the hub firewall policy the design requires
+B |Application delivery: baked into the image, MSIX App Attach through Nerdio, or Intune Win32
+B |Monitoring, logging and alerting into the Log Analytics workspaces and Microsoft Sentinel, and the patching lifecycle
+B |Service tiering, availability, disaster recovery posture and the implementation sequence
+P |**Out of scope**
+B |The Windows 11 thick client SOE, which is in production and is the reference baseline for this design
+B |Participant Kiosk, ES take-home device, Privileged Access and Developer SOE, each covered by its own document
+B |Nerdio Manager for Enterprise platform deployment, which is operational and is consumed by this design
+B |Line-of-business application packaging and certification, which is a separate workstream
+B |App Control for Business policy authoring. The thick client policy is inherited as issued. The script enforcement setting it carries is raised in [[3.4]] as G-04
+B |Landing zone platform changes. The hub firewall build, management group structure, policy baseline and platform RBAC model are inherited
+B |Printing to a printer at a user's home. Printer redirection is disabled for both postures ([[5.4.6]])
+B |A second Azure region. Australia East is the only region in this design
+B |RFFR accreditation audit. This document supports the ISMS and does not constitute it
+H2 |2.2 Guiding Principles
+TBL|2400,6960
+TH |**Principle**||**What it means here**
+TR |One SOE, two channels||The session host is assigned the same policy objects as the laptop, not a copy of them. A control is varied only where a multi-session host cannot carry it
+TR |Identity model||The AVD channel is Entra ID join and Intune only. Staff accounts remain hybrid identities. No Active Directory Domain Services membership, no Group Policy and no ADFS dependency in the session host path
+TR |Deploy into the landing zone, do not fork it||The design consumes the APM Azure landing zone: hub peering, forced tunnel egress, central private DNS and platform RBAC
+TR |No public ingress||Session traffic uses the Microsoft managed reverse connect transport. No public IP address or inbound port exists in the spoke
+TR |The image is the unit of change||Session hosts are replaced from a new image version, not patched in place. A versioned image is both the deployment mechanism and the rollback control
+TR |Separable from Active Directory and ADFS||The AVD channel creates no new dependency on on-premises Active Directory or ADFS. Where an option would create one, it is named as such and the cost of unwinding it is stated before the option is taken ([[5.4]])
+TR |Observable from the first host||Diagnostic settings, Defender for Endpoint, Intune reporting and the Nerdio log export are configured during build
+END
+H2 |2.3 Assumptions
+TBL|682,4354,4324
+TH |**Ref**||**Assumption**||**Impact if incorrect**
+TR |A-01||All staff hold Microsoft 365 E5, with a subset on E7. The Windows 11 Enterprise E5 user subscription licence carries the AVD access right and the multi-session use right, so no additional licence is required. Confirmed with SoftwareOne||AVD licensing must be procured before the pilot
+TR |A-02||Nerdio Manager for Enterprise is deployed, operational and licensed for the staff user population, and can manage a second workspace and host pool||Host pool lifecycle, auto-scale and image management revert to native AVD tooling and manual operation
+TR |A-03||Network Management allocates a /23 from the Australia East supernet and peers the AVD spoke to the Australia East hub||No spoke can be built. First dependency in the implementation sequence ([[9.1]])
+TR |A-04||FinOps governance and budget cover exist for AVD compute, Azure Files Premium, Compute Gallery replication and the supporting platform services||Auto-scale parameters become a cost control rather than a capacity control
+TR |A-05||The owners of the 11 hardening standard policies add the AVD session host device group to the assignment scope of each, with no change to policy content||Eleven forked policy objects are required for AVD, which doubles the maintenance surface of the hardening standard
+TR |A-06||The APM code-signing certificate is available for session host script signing||Session host automation runs unsigned, which is inconsistent with the hardening standard's PowerShell position
+TR |A-07||Zscaler Internet Access provides web filtering per user. Zscaler Client Connector for VDI runs in each user session on the host, authenticates the signed-in user, and tunnels that session's web traffic to a Zscaler Cloud Connector in the AVD spoke, which forwards it to Zscaler Internet Access with the user identity attached (DR-021)||Web policy and logs attribute to a session host instead of a person, as the network path does
+TR |A-08||Session host operating system disks are encrypted by Azure platform-managed keys, and APM accepts platform encryption in place of BitLocker on a pooled host (SOE-01 in [[7]])||A guest-level encryption solution is required, which BitLocker cannot provide on an unattended pooled virtual machine
+TR |A-09||Staff accounts remain hybrid identities: on-premises Active Directory accounts synchronised to Microsoft Entra ID. The design changes the device join type, not the user identity type. Microsoft Entra Kerberos authentication to Azure Files supports a hybrid identity signing in on an Entra ID joined host, so the session host join type is not a factor||If staff accounts move to cloud only, the profile store authentication path is re-assessed and DR-004's alternatives apply
+END
+H1 |3. Business Architecture
+H2 |3.2 Business Reference architecture
+P |The staff endpoint is a managed Windows 11 laptop. It carries a fixed cost per seat, a procurement and build lead time per starter, and a physical dependency: the device has to be in the user's hands.
+P |This design adds a second delivery channel for the same desktop. The user reaches a hardened Windows 11 desktop from an APM laptop or from a personal device running the Windows App. The desktop, its policy set and its data handling are identical in both cases.
+P |Three business outcomes follow. A starter or a short-term worker is productive without a device build. A user whose laptop fails keeps working from any compatible endpoint. Staff work from a personal device without APM data being stored on it.
+P |The personas placed on AVD in the first release are contact centre and shared-desk staff, short-term and seasonal staff, and staff working from a personal device. Field staff who work offline stay on the laptop channel.
+H2 |3.3 Business Requirements
+TBL|560,1500,4400,700,2200
+TH |**ID**||**Category**||**Requirement**||**Priority**||**Met by**
+TR |BR-01||Desktop||Deliver the APM Windows 11 desktop as a service, reachable from a compatible endpoint||Must||[[4.1]], [[5.4]]
+TR |BR-02||Security||Apply the same hardening standard as the thick client SOE, with every variation named and compensated||Must||[[7]]
+TR |BR-03||Identity||Authenticate with Entra ID and multi-factor authentication. No ADFS and no Active Directory Domain Services dependency||Must||[[7]], DR-003
+TR |BR-04||User state||Persist the user profile between sessions and between hosts||Must||[[5.4]], DR-004
+TR |BR-05||Applications||Deliver Microsoft 365 Apps, Teams, Edge and the line-of-business set to a session||Must||[[5.4]], DR-008
+TR |BR-06||Files||Reach the existing mapped network drive from a session||Must||[[5.4]], G-01
+TR |BR-07||Printing||Print from a session to printers at an APM site||Must||[[5.4.6]], DR-013, G-09
+TR |BR-08||Data handling||Prevent extraction of APM data from a session to an unmanaged endpoint||Must||[[7]], DR-012
+TR |BR-09||Capacity||Scale host capacity to demand without manual intervention||Must||[[5.4]], DR-014
+TR |BR-10||Availability||Meet a Tier 2 service availability target||Must||[[8.1]], [[8.2]]
+TR |BR-11||Operations||Support and monitor the service from the existing Digital Operations toolset||Must||[[9.1]], [[9.2]]
+TR |BR-12||Compliance||Hold the RFFR position the thick client SOE evidences||Must||[[7]]
+TR |BR-13||Identity||Create no new dependency on on-premises Active Directory or ADFS, so both can be separated from the AVD channel without redesign||Must||[[5.4]], DR-019
+TR |BR-14||Currency||Deliver an SOE update by replacing the session host from a new golden image version, not by patching it in place||Must||[[5.4]], DR-015
+TR |BR-15||Desktop||Present the standard APM desktop in a session: the corporate desktop and lock screen image, the corporate Start menu and taskbar layout, and Edge opening on the APM homepage with the APM favourites present||Must||[[5.4]], DR-020
+TR |BR-16||Experience||Give the user the same working experience as the thick client: the same application set, the same drives and printers, multi-monitor and headset support, and a session that survives a network drop||Must||[[5.4]]. Drives and printers are reached from the session host, not redirected from the endpoint ([[5.4.5]], [[5.4.6]])
+END
+H2 |3.4 Gap treatment
+P |Open items. An item marked information required blocks the Technical Configuration Document section that depends on it.
+TBL|560,2600,3400,1500,1300
+TH |**ID**||**Item**||**Action**||**Owner**||**Needed by**
+TR |G-01||The mapped network drive back end is not recorded in any document available to this design||Confirm the back end, then apply the matching path in [[5.4]]: an on-premises file server reached through the landing zone, an Azure Files share reached over a private endpoint, or migration to SharePoint Online with the mapped drive retired. All three are specified||Digital Operations||Before the Technical Configuration Document is issued
+TR |G-02||**Closed.** Network Management has allocated 10.40.90.0/23 to this solution, and every new object in this spoke takes instance 002, because the 001 instance of each name is already in use||Recorded as concrete CIDRs in [[5.3.2]] and in the resource names in [[5.1.2]]. No further action||Network Management||Closed
+TR |G-03||Two identity facts are unproven: that staff accounts remain hybrid identities for the life of this design, and that the profile container mounts on an Entra ID joined host for a hybrid identity user||Record the planned date of any move of staff accounts to cloud only. Prove the mount with T-15 in Appendix B, on a fully hardened host under the production Conditional Access set. FSLogix profile storage depends on both||Digital Transformation and Architecture||Before the profile share is built
+TR |G-04||The inherited App Control for Business policy does not enforce script control, so PowerShell and equivalent script hosts are unconstrained. ASD Essential Eight application control expects script control||Decide whether to enable script enforcement on the thick client policy, which would apply to both channels, or accept the position and record it in the RFFR Statement of Applicability||Cyber Security||Before the pilot
+TR |G-05||Staff-Windows-Compliance-Policy sets no minimum operating system version||Add a minimum build to the AVD compliance policy, so a session host on a superseded image is marked non-compliant||Cyber Security||Before the pilot
+TR |G-06||Session host sizing is not established. Users per host, virtual machine SKU and disk type are unknown||Measure concurrency, sessions per host and profile growth during the pilot, then fix the SKU and the auto-scale thresholds||Digital Operations||End of pilot
+TR |G-07||Security log retention in the Australia East security workspace is shorter than APM's 180-day requirement for security logs||Extend retention or record the shortfall as an accepted risk||Cyber Security||Before go-live
+TR |G-08||The application deployment and desktop configuration definitions for the current staff SOE are not held by this design. The hardening standard covers security settings only||Supply the Intune exports for: the Microsoft 365 Apps deployment (update channel, architecture, app inclusion list), the Teams deployment, the OneDrive configuration profile (Known Folder Move, Files On-Demand), the Edge configuration profile (managed favourites JSON, homepage, start-up URLs), the desktop and lock screen branding profile, and the line-of-business application list. Each drops into [[5.4.4]] and [[5.4.9]] as a stated value||Digital Operations||Before the Technical Configuration Document is issued
+TR |G-09||The printing mechanism is not settled. Printing is from the session host to APM site printers ([[5.4.6]]), and the path needs routing, firewall rules and name resolution to the site print destinations, none of which exists today||Choose the mechanism: Universal Print, direct IP printing with drivers in the image, or an existing on-premises print server. Then raise the routing, firewall and DNS requirements with Network Management. The choice decides whether a domain dependency returns to an Entra ID joined host||Digital Operations with Network Management||Before the Technical Configuration Document is issued
+TR |G-10||Zscaler Client Connector for VDI is enabled on the Zscaler tenant by a Zscaler Support request, and the tunnel ports from the VDI agent to the Cloud Connector are set by the Zscaler configuration for that tenant||Raise the enablement request. Record the VDI agent to Cloud Connector ports and the Cloud Connector to Zscaler service edge ports, so the network security group rules in [[5.3.5]] and the hub firewall rules in [[5.3.6]] carry exact values||Cyber Security||Before the pilot
+TR |G-11||The Cloud Connector subnet takes 10.40.91.64/26 from the range held in reserve in [[5.3.2]], and the Cloud Connector virtual machine size and instance count are not yet fixed||Network Management to confirm the subnet. Size the Cloud Connector pair against measured concurrency from G-06||Network Management||Before the pilot
+TR |G-12||Two grants in the existing policy set are not visible in the tenant export||Confirm AllUsers_AllAccess_DeviceRequired excludes the Azure Virtual Desktop application, and that the grant in AllUsers_WVDApp_MFAtimeout is multi-factor authentication or a managed device, so an unmanaged endpoint can still start a session||Cyber Security||Before the pilot
+END
+H1 |4. Application Architecture
+H2 |4.1 System Context Diagram
+P |The solution has two tiers. The endpoint tier presents the session and holds no APM data. The session host tier runs the desktop in the AVD spoke.
+FIG|solution-context.png|Figure 1. Standard User SOE on AVD - solution context|1520|1760
+P |Figure 1 shows the endpoint contexts, the session host tier in the AVD spoke, the management and identity plane in the APM tenant, the profile and image storage reached over private endpoints, and the forced tunnel egress path through the hub firewall.
+H2 |4.2 Solution/Product Component Inventory
+TBL|2600,6760
+TH |**Component**||**Role**
+TR |Windows App||The client on the endpoint. Deployed to APM laptops by Intune, installed by the user on a personal device
+TR |Azure Virtual Desktop control plane||Microsoft managed brokering, gateway and diagnostics. Reached by reverse connect
+TR |Pooled host pool||The compute tier. Windows 11 Enterprise multi-session hosts in Australia East
+TR |Nerdio Manager for Enterprise||Host pool lifecycle, auto-scale, image build and drain-mode reimaging
+TR |Azure Compute Gallery||Versioned golden images and the rollback point
+TR |Azure Files Premium||FSLogix profile containers and the MSIX App Attach package share
+TR |Microsoft Entra ID||Identity, device join, Conditional Access and multi-factor authentication
+TR |Microsoft Intune||Configuration profiles, compliance policy and application delivery to session hosts
+TR |Microsoft Defender for Endpoint||Endpoint detection and response, and vulnerability telemetry from every session host
+TR |Zscaler Internet Access||Web filtering, threat protection and logging for browsing from a session, applied per user
+TR |Zscaler Client Connector for VDI||Agent in each user session on the host. Authenticates the user and tunnels that session's web traffic to the Cloud Connector
+TR |Zscaler Cloud Connector||Virtual machine pair in the AVD spoke. Terminates the VDI agent tunnels and forwards traffic to Zscaler Internet Access with the user context
+TR |Hub Palo Alto next-generation firewalls||Inspection and policy enforcement for traffic leaving the AVD spoke. Cloud Connector tunnels are permitted and not inspected
+TR |Log Analytics and Microsoft Sentinel||Operational and security telemetry, correlation and retention
+END
+H2 |4.3 Solution Interface Diagram
+P |Figure 2 traces a sign-in from an endpoint to a working session. Each interface carries the identifier used in [[4.4]].
+FIG|session-sequence.png|Figure 2. Sign-in to working session - interface sequence|1520|1560
+P |Conditional Access is evaluated twice: once when the client authenticates to the Azure Virtual Desktop application, and once when the session's own user token is issued inside the session. The profile container mounts before the desktop is presented, so a storage or permission failure appears as a sign-in failure and not as a lost profile. Teams media does not traverse the session host.
+H2 |4.4 Solution/Product Interface catalogue
+TBL|560,2300,1900,1700,2900
+TH |**ID**||**Interface**||**Protocol and port**||**Authentication**||**Path**
+TR |I-01||Endpoint to Entra ID||HTTPS, TCP 443||OpenID Connect with multi-factor authentication||Public internet to a Microsoft managed endpoint
+TR |I-02||Endpoint to AVD gateway||HTTPS, TCP 443 outbound. UDP 3478 where RDP Shortpath is available||Reverse connect, brokered||Outbound only. No inbound port is opened
+TR |I-03||Session host to Entra ID||HTTPS, TCP 443||Device join and primary refresh token||Egress through the hub firewall
+TR |I-04||Session host to Intune||HTTPS, TCP 443||MDM enrolment channel||Egress through the hub firewall
+TR |I-05||Session host to AVD control plane||HTTPS, TCP 443||Agent registration token, then agent identity||Egress through the hub firewall
+TR |I-06||Session host to Azure Files Premium||SMB 3.1.1, TCP 445, encryption in transit required||Microsoft Entra Kerberos ticket, issued to the signed-in hybrid identity||Private endpoint inside the spoke. Never over the internet
+TR |I-07||Session host to Microsoft 365||HTTPS, TCP 443||Modern authentication as the signed-in user||Egress through the hub firewall
+TR |I-08||Session host to Defender for Endpoint||HTTPS, TCP 443||Onboarded device identity||Egress through the hub firewall
+TR |I-09||Session to Zscaler Cloud Connector||Zscaler Client Connector for VDI tunnel, ports per G-10||The signed-in user, authenticated by the VDI agent against the Zscaler tenant||Inside the virtual network, avdhosts subnet to zscc subnet
+TR |I-10||Cloud Connector to Zscaler Internet Access||Zscaler tunnel to the Zscaler service edge, ports per G-10||Cloud Connector provisioning key||Egress through the hub firewall, permitted and not inspected
+TR |I-10||Session host to Compute Gallery and App Attach share||HTTPS, TCP 443. SMB, TCP 445 for VHDX mount||Managed identity||Private endpoint inside the spoke
+TR |I-11||Nerdio to Azure Resource Manager and the AVD control plane||HTTPS, TCP 443||Managed identity and service principal||Management plane. Does not traverse the session host data path
+TR |I-12||Session host to Windows Update||HTTPS, TCP 443||Service endpoint||Image build subnet only. Production hosts are replaced, not patched
+TR |I-13||Session host to the mapped drive back end||SMB, TCP 445, or HTTPS, TCP 443||As the signed-in user||Path depends on the back end confirmed under G-01
+TR |I-14||Endpoint to Teams service||HTTPS, TCP 443 and UDP media||As the signed-in user on the endpoint||Media is handled by the endpoint, not the session host
+END
+H1 |5. Technology Architecture
+P |The architecture has three planes. The endpoint plane is the point of access and holds no APM data. The compute plane is the pooled session host fleet in the AVD spoke. The platform plane is identity, management, storage and telemetry in the APM tenant and landing zone.
+H2 |5.1 Technology Component Standards
+H3 |5.1.1 Component standards
+TBL|2600,4200,2560
+TH |**Function**||**Standard**||**Status**
+TR |Session host operating system||Windows 11 Enterprise multi-session, current Enterprise release||Approved
+TR |Security baseline benchmark||ASD Windows Hardening Guidelines, Microsoft Windows 11 v24H2 security baseline, Microsoft Edge security baseline v139, as stated by the APM Windows SOE Hardening Standard V3.0||Approved, inherited
+TR |Host pool type||Pooled, breadth-first load balancing||Approved
+TR |Orchestration||Nerdio Manager for Enterprise||Approved, existing platform
+TR |Profile management||FSLogix profile containers on Azure Files Premium||Approved
+TR |Image management||Azure Compute Gallery, versioned image definitions||Approved
+TR |Device identity||Microsoft Entra ID join. No hybrid join and no domain membership||Approved
+TR |User identity||Hybrid identity: on-premises Active Directory account synchronised to Microsoft Entra ID. Unchanged by this design||Existing
+TR |Device management||Microsoft Intune||Approved
+TR |Endpoint security||Microsoft Defender for Endpoint||Approved
+TR |Web filtering||Zscaler Internet Access through the existing tenancy, per user through Zscaler Client Connector for VDI and Cloud Connector||Approved (DR-021)
+TR |Egress inspection||Hub Palo Alto VM-Series next-generation firewalls||Approved, inherited
+TR |Spoke egress||Forced tunnel by user-defined route to the hub firewall. No NAT Gateway and no public IP in the spoke||Approved, inherited
+TR |Name resolution||Azure-provided DNS in the spoke, with central private DNS zones linked from the connectivity subscription||Approved, inherited
+TR |Telemetry||Azure Monitor with Log Analytics, and Microsoft Sentinel||Approved, inherited
+END
+P |No Azure Firewall and no NAT Gateway is deployed in the AVD spoke. The landing zone forces spoke egress through the hub firewalls, and a second inspection point would duplicate the control. No Azure Bastion is deployed. Session hosts are administered through Nerdio and Intune, and a host that needs hands-on work is reimaged.
+H3 |5.1.2 Naming convention
+P |Three standards govern the objects in this solution, one per plane. The APM Intune Naming Schema V1.0 names Intune objects and Entra ID security groups. The Conditional Access convention is the tenant series. The ESLZ naming standard names Azure resources.
+P |The Intune schema form is Scope-Platform-Type-Function-Ring-Version. This design adds one Scope value, AVD, on the same basis as the existing CDG value: a distinct management target with its own policy set. The addition is recorded for APM ITS management approval.
+TBL|2900,3100,3360
+TH |**Object type**||**Name**||**Note**
+TR |Configuration profile||AVD-W11-CFG-[Function]-P-1.0||Six profiles, listed in [[7]]
+TR |Compliance policy||AVD-W11-COM-Session Host-P-1.0||Replaces Staff-Windows-Compliance-Policy on session hosts
+TR |Session host device group||sg-dyn-dvc-avd-session-hosts||Dynamic, matched on the session host name prefix and an Entra ID join type, which excludes the hybrid joined thick client fleet
+TR |Pilot host ring||sg-stc-dvc-avd-session-hosts-ring1||Static. Policy and image changes land here first
+TR |AVD entitlement||sg-stc-usr-avd-standard-user||Drives workspace publication and profile share entitlement
+TR |Desktop assignment||sg-stc-usr-avd-desktop-managed, sg-stc-usr-avd-desktop-unmanaged||One group per redirection posture, assigned to the matching application group
+TR |AVD operators||sg-stc-usr-avd-operators||Nerdio and host pool operational access
+TR |Image builders||sg-stc-usr-avd-image-builders||The identities permitted to write a new image version to the Compute Gallery
+END
+P |Four Conditional Access policies apply to this solution.
+TBL|3300,4400,1660
+TH |**Policy**||**Name**||**State**
+TR |AVD access||AllUsers_WVDApp_MFAtimeout||Existing, enforced. All users, the Azure Virtual Desktop application, multi-factor authentication with a sign-in frequency
+TR |Unmanaged device block||AllUsers_AllAccess_DeviceRequired||Existing, enforced. All users, all apps, compliant or hybrid joined device. An unmanaged endpoint fails it for every application it reaches directly
+TR |Microsoft 365 from a session host||CA-210 - Org Users - Microsoft 365 - AVD Session Hosts - Allow - Require MFA and Compliant Device||New. Replaces the two hybrid-only grants for session hosts
+TR |Location restriction||CA-102 - All Users &amp; Guests - All Apps - Locations exc. AU, Corporate - Block||Existing, enforced
+END
+P |One Conditional Access policy is created, CA-210 - Org Users - Microsoft 365 - AVD Session Hosts - Allow - Require MFA and Compliant Device. AllUsers_Office365_DeviceRequired and AllUsers_Sharepoint_DeviceRequired grant access only to a hybrid joined device, and session hosts are Entra ID joined, so the session hosts are excluded from both by device filter and CA-210 takes their place: for the AVD entitlement group, Office 365 from a session host requires multi-factor authentication and a compliant device together. CA-210 is confirmed unused in the tenant immediately before creation.
+P |CA-102 blocks all users and guests, against all cloud apps, from any location other than Australia and the named corporate locations. It applies to this solution already, and no AVD-specific location policy is created. The tenant also carries an older report-only twin of the same control, AllUsers_UnapprovedCountries_Block; it is not relied on and its retirement sits with Cyber Security.
+P |Azure resource names follow the ESLZ form [region]-[abbreviation]-[environment]-[security domain]-[descriptor]-[instance], with a shortform concatenated variant where the resource type prohibits hyphens. The region and instance values below are fixed.
+TBL|3000,3000,3360
+TH |**Resource**||**Name**||**Note**
+TR |Virtual network||auea-vnet-avd-ctrl-002||New. **Instance 002: the 001 instance of this name is already in use.** Address range 10.40.90.0/23, allocated by Network Management ([[5.3.2]])
+TR |Subnets||auea-snet-avd-ctrl-[descriptor]-002||Four, [[5.3]]
+TR |Route table||auea-rt-avd-ctrl-002||New. **Instance 002, for the same reason as the virtual network.** One table, associated to all four subnets
+TR |Network security groups||auea-nsg-avd-ctrl-[descriptor]-002||One per subnet, named in full in [[5.3.5]]
+TR |Private endpoints||auea-pep-avd-ctrl-[descriptor]-002||Two: profile share and App Attach share
+TR |Host pool, workspace, application groups||auea-avdhp-avd-ctrl-staff-002, auea-avdws-avd-ctrl-staff-002, auea-avdag-avd-ctrl-staff-[managed/unmanaged]-002||One pool, one workspace, two desktop application groups
+TR |Storage accounts||aestacfslogix001, aestacappattach001||Shortform concatenated, as the standard requires for storage accounts
+TR |Compute Gallery and image definition||aegalacstaff001, auea-img-avd-ctrl-w11ms-002||A Compute Gallery name cannot contain a hyphen, so it takes the shortform variant
+TR |Session host virtual machines||Prefix aevmacstd, with Nerdio appending a numeric suffix||Follows the ESLZ server host format
+END
+H2 |5.2 Integration standards and patterns
+P |N/A. This design introduces no integration pattern. There is no new application programming interface, extract-transform-load process, message broker or middleware. Every interface in [[4.4]] is a product-native protocol between named components.
+H2 |5.3 Network & Infrastructure Standards & Patterns
+P |This design requires a new spoke virtual network, peered to the Australia East hub. It does not create a firewall, an egress path or a hybrid connection. Those are landing zone services and are consumed as built.
+H3 |5.3.1 Naming convention
+P |Network object names are specified with every other object in [[5.1]], which is the single home for the naming convention in this design.
+H3 |5.3.2 Address plan
+P |Australia East uses the supernet 10.40.0.0/16. Network Management has allocated **10.40.90.0/23** to this solution, which closes G-02. The virtual network is auea-vnet-avd-ctrl-002 ([[5.1.2]]).
+P |The /23 carries four subnets by function: session hosts on a /24, private endpoints on a /27, image build on a /27, and the Zscaler Cloud Connector on a /26 (G-11). A /25 is held in reserve inside the same /23, so a second host pool needs no new allocation and no new peering. Subnet CIDRs are in the Technical Configuration Document, 6.1.2.
+H3 |5.3.3 Routing
+P |Every subnet carries a route table with a default route to the hub firewall, so no session host reaches the internet directly. The hub carries a return route to the allocated range. Route values are in the Technical Configuration Document, 6.1.2.
+H3 |5.3.4 DNS
+P |Session hosts use Azure-provided DNS. The Azure Files private DNS zone is linked from the connectivity subscription, and no DNS server is deployed in the spoke. DNS values are in the Technical Configuration Document, 6.1.3.
+H3 |5.3.5 Network security groups
+P |One network security group per subnet, denying inbound from the internet on every subnet and limiting each subnet's outbound traffic to its function. Rules are in the Technical Configuration Document, 6.1.6.
+H3 |5.3.6 Named egress destinations
+P |The hub firewall permits a named set of destinations from the AVD spoke and denies and logs everything else. Web traffic from the session hosts reaches the firewall only inside the Cloud Connector tunnels, which the firewall permits from the zscc subnet without inspection. The destination list is in the Technical Configuration Document, 6.1.6.
+H3 |5.3.7 Connectivity and resilience
+TBL|3000,6360
+TH |**Aspect**||**Position**
+TR |Session transport||Microsoft managed reverse connect. Outbound TCP 443 from the endpoint and the host. No inbound port and no public IP in the spoke
+TR |Availability zones||Session hosts are distributed across the three Australia East availability zones by the Nerdio host pool configuration
+TR |Peering||Spoke to Australia East hub, created with the spoke. Gateway transit disabled, remote gateway use disabled
+TR |Bandwidth per session||Sized on Microsoft guidance for a productivity workload with Teams media offloaded to the endpoint. The constraining link is the user's own internet connection
+TR |Hybrid connectivity||Not provisioned by this design. The hub carries VPN gateway capability if G-01 resolves to an on-premises file server
+END
+FIG|network-topology.png|Figure 3. AVD spoke, subnet plan and forced tunnel egress|1520|1800
+H2 |5.4 Technology component Deployment Patterns
+H3 |5.4.1 Golden image
+P |The image is built in the avdbuild subnet, captured to the Compute Gallery as a new version, and replicated within Australia East. Nerdio drives the build.
+TBL|3000,6360
+TH |**Item**||**Value**
+TR |Base||Windows 11 Enterprise multi-session, current Enterprise release, from the Azure Marketplace
+TR |Baked in||Microsoft 365 Apps, Teams, OneDrive, Edge, FSLogix agent, AVD agents, Defender for Endpoint onboarding, Zscaler Client Connector for VDI. Every one is installed per machine. The VDI agent is not enrolled on the image build virtual machine. A per-user installer does not survive a pooled host and would install once per profile
+TR |Not baked in||Line-of-business applications, which are delivered by MSIX App Attach or Intune Win32. Desktop and browser configuration, which is applied by Intune policy so it can change without an image rebuild ([[5.4]])
+TR |Versioning||One version per monthly cycle. The previous two versions are retained as rollback points
+TR |Validation||Every version is proven in the test environment (Appendix B) and on the production validation host pool before the fleet is reimaged
+END
+P |An SOE change reaches a user by replacing the host, not by patching it. The cycle below is the only route by which the operating system, the baked-in application set, a security baseline update or a driver changes on a session host.
+TBL|2000,4400,2960
+TH |**Step**||**What happens**||**Cadence**
+TR |1. Build||Nerdio builds a host from the current base image in the avdbuild subnet, applies operating system and application updates, and captures it to the Compute Gallery as a new version||Monthly, and out of cycle for a critical security update
+TR |2. Validate||The test environment runs the applicable tests in B.6 against the new version||Per version
+TR |3. Pilot||The validation host pool is reimaged to the new version. A nominated user group works on it||Per version, one week
+TR |4. Fleet||The production pool is reimaged in drain mode. No user is signed out mid-session||Per version
+TR |5. Rollback||If a regression appears, the pool is reimaged to the previous retained version||On demand, target 4 hours
+END
+P |Three kinds of change do not go through the image. An Intune policy change is assigned to the device group and applies on the next evaluation cycle. An MSIX App Attach package update is a catalogue change. An Intune Win32 application update is delivered to the running host. Each is a separate change record, and none requires an image rebuild.
+H3 |5.4.2 Host pool and capacity
+P |Every host pool, workspace and application group in this design is newly created in Nerdio Manager for Enterprise. Nothing is repurposed from an existing pool.
+TBL|3000,6360
+TH |**Item**||**Value**
+TR |Host pool type||Pooled, breadth-first load balancing
+TR |Provenance||New. Created in Nerdio for this solution. No existing pool is repurposed and no pool is shared with another use case
+TR |Isolation from privileged tiers||No host pool, workspace, application group, image, profile share or session host in this design is shared with the Privileged Access use case. Privileged and high-privileged access runs on its own hardened image and its own pools, and a standard user session is never an administrative access path
+TR |Virtual machine SKU and users per host||To be fixed at the end of the pilot under G-06
+TR |Auto-scale||Nerdio dynamic auto-scale on active session count, with a working-hours minimum and an out-of-hours floor
+TR |Drain and reimage||Drain mode, then reimage from the current gallery version. Users are not signed out mid-session
+TR |Validation pool||A separate small pool on the new image version, used before the fleet is reimaged
+END
+P |The standard user pools sit in the AVD spoke with their own subnets and network security groups ([[5.3]]), and a privileged session is entitled through a different group and reaches a different pool. A standard user holds no entitlement to a privileged pool and no local administrator rights in their own session ([[7]]).
+H3 |5.4.3 Profile containers
+TBL|3000,6360
+TH |**Item**||**Value**
+TR |Mechanism||FSLogix profile container, VHDX, one per user
+TR |Storage||Azure Files Premium share on aestacfslogix001, reached over a private endpoint
+TR |Authentication||Microsoft Entra Kerberos. The ticket is issued to the signed-in hybrid identity, so no domain-joined session host is required. `CloudKerberosTicketRetrievalEnabled` is set on the session host, and the mount is proven by T-15 under G-03
+TR |Failure behaviour||Fail closed. If the container cannot mount, sign-in fails. No temporary profile is created and no user data is written to the host
+TR |Redirections||Office and Teams caches held in the container. Windows Search per user index held in the container
+END
+H3 |5.4.4 Application delivery
+P |The application set a user gets in a session is the thick client set. The table below is what is present at first sign-in.
+TBL|2400,2600,4360
+TH |**Application**||**Delivery**||**Note**
+TR |Word, Excel, PowerPoint, Outlook, OneNote||Microsoft 365 Apps, baked into the image||Shared computer activation. Which applications the suite installs, and which are excluded, are taken from the existing staff configuration (G-08)
+TR |Microsoft Teams||Baked into the image||New Teams with AVD media optimisation. Calling, meetings and screen share all supported
+TR |OneDrive||Baked into the image||Files On-Demand. The user's OneDrive is present without the container holding every file
+TR |Microsoft Edge||Baked into the image||APM favourites and homepage applied by policy ([[5.4.9]])
+TR |Line-of-business applications||MSIX App Attach, or Intune Win32||The set is the list under G-08. Anything needing a local administrator to install is not delivered
+TR |Not delivered||-||Applications requiring elevation to install, and drivers for a peripheral attached to the endpoint ([[5.4.10]])
+END
+P |Four applications carry a multi-session requirement that does not exist on a thick client. Each is stated below with the setting that makes it work on a pooled host.
+TBL|2000,3400,3960
+TH |**Application**||**Multi-session requirement**||**Why**
+TR |Microsoft 365 Apps||**Shared computer activation enabled.** Installed per machine from the Office Deployment Tool. Update channel and the app inclusion list are taken from the existing staff configuration (G-08)||Without shared computer activation, the first user to sign in consumes the machine's activation and every later user on that host is refused. This is the single setting that most often breaks a pooled build
+TR |Microsoft Teams||New Teams, per-machine install, with the **AVD media optimisation** components: the WebRTC redirector service on the host and the Teams desktop client on the endpoint||Media is then handled by the endpoint. Without it, every call is rendered on the session host and processor use scales with the number of callers on that host
+TR |OneDrive||Per-machine install, Files On-Demand enabled, Known Folder Move configuration taken from the existing staff policy (G-08)||Files On-Demand keeps the profile container small. Known Folder Move and FSLogix both claim the user's folders, so the two are reconciled before the pilot rather than after
+TR |Microsoft Edge||Installed with the image. Security settings inherited from `APM-W11-SEC-Edge Baseline-P-1.2`. Favourites, homepage and start-up behaviour applied by the configuration profile in [[5.4.9]]||The security baseline does not carry favourites or a homepage. Those are separate settings and are not currently held by this design (G-08)
+END
+P |Delivery method by application class.
+TBL|2600,3200,3560
+TH |**Method**||**Used for**||**Reason**
+TR |Baked into the image||The common set in [[5.4.1]]||Always present, no first-run delay, no per-session mount
+TR |MSIX App Attach through Nerdio||The broad line-of-business set||A package update is a catalogue change, not an image rebuild
+TR |Intune Win32||Applications that cannot be packaged as MSIX, and anything needed by a subset of users||Reuses the packaging the laptop channel already has
+TR |Not delivered||Anything requiring a local administrator to install, or a driver for a peripheral attached to the endpoint||A standard user in a session has no elevation path
+END
+H3 |5.4.5 Mapped network drive
+P |Mapped drive access is in scope. The back end is confirmed under G-01. All three paths are specified so the build can proceed as soon as the answer is known.
+TBL|2400,3400,3560
+TH |**Back end**||**Path from a session host**||**What the build requires**
+TR |On-premises Windows file server||SMB 445 from the avdhosts subnet, through the hub firewall, over a landing zone hybrid connection||A firewall rule to the server, a route to the on-premises range, and conditional DNS forwarding. The only option that puts a domain dependency back onto an Entra ID joined host, and it is the option that fights the join model
+TR |Azure Files share||SMB 445 to a private endpoint in the avdpe subnet||A second private endpoint, a private DNS record, and share-level RBAC on the AVD entitlement group. No firewall change
+TR |SharePoint Online||HTTPS 443 as the signed-in user, with OneDrive sync or a direct library link||No network change. The mapped drive is retired and the migration is a separate workstream
+END
+P |The drive letter and the mount mechanism are specified in the Technical Configuration Document once G-01 is closed.
+P |**Drive access is server-side, from the session host to the APM share.** It is not drive redirection from the user's endpoint. Endpoints in this solution include unmanaged personal devices as well as APM laptops, and a redirected local drive would present the user's own device inside the session rather than the APM file store they need. Endpoint drive redirection is a separate control and stays closed for the unmanaged posture ([[7]]).
+P |The drive path is subject to the network security group and firewall rules on the avdhosts subnet ([[5.3]]), so the back end chosen under G-01 carries a firewall and routing requirement rather than an endpoint setting. And the mount authenticates as the signed-in user, so it behaves identically from a managed and an unmanaged endpoint: what the user reaches does not depend on the device they connected from.
+H3 |5.4.6 Printing
+P |**Printing is from the session host to printers at an APM site.** It is not client-side printer redirection. Endpoints in this solution include unmanaged personal devices, and a redirected printer would present whatever printer that device happens to have, which for a personal device at home is not an APM printer and not a device APM maintains a driver for.
+P |The print path therefore runs from the avdhosts subnet to the APM site print infrastructure, which makes it a network requirement rather than an endpoint setting.
+TBL|3000,6360
+TH |**Requirement**||**Detail**
+TR |Routing and firewall||A route from the avdhosts subnet to the APM site ranges over the landing zone hybrid connection, and hub firewall rules permitting the print protocols to the print destinations. Neither exists today: the named egress list in [[5.3.6]] carries no on-premises destination
+TR |Name resolution||Conditional DNS forwarding to on-premises for the print destination, the same mechanism G-01 needs if the mapped drive back end is an on-premises file server ([[5.3.4]])
+TR |Queue and driver||Per the mechanism chosen under G-09
+TR |Printer redirection||Disabled for both postures ([[7]]). Printing does not depend on it
+END
+P |Printing to a printer at a user's home is not supported. Home printers are not APM-managed devices and no driver set is maintained for them.
+P |**The mechanism is open under G-09.** Three are available and they differ in what each one reintroduces.
+TBL|2600,3400,3360
+TH |**Mechanism**||**What it needs**||**What it costs**
+TR |Universal Print||Universal Print licences, a connector for printers that are not natively Universal Print capable, and printer registration in Entra ID||No print server and no domain dependency. The only option that leaves the Entra ID join model intact
+TR |Direct IP printing from the session host||A driver per printer model in the golden image, and a firewall rule per print destination||Driver maintenance becomes part of the monthly image cycle, and a driver change forces an image version
+TR |Existing on-premises print server||SMB and RPC to the print server, and an authentication path to it||Puts a domain dependency back onto an Entra ID joined host, which is the same objection [[5.4.5]] records against the on-premises file server option and the one that fights the join model (DR-019)
+END
+H3 |5.4.7 Windows App on endpoints
+P |APM laptops receive the Windows App as a required application from Intune. On a personal device the user installs the Windows App from the platform store and signs in with their APM account. No management profile is applied to a personal device.
+H3 |5.4.8 Separability from Active Directory and ADFS
+P |The AVD channel is built so that on-premises Active Directory and ADFS can be separated from it without redesign. Three things carry that property, and one option would break it.
+TBL|2600,3300,3460
+TH |**Element**||**Position today**||**What separation would require**
+TR |Session host join||Entra ID joined. No domain membership, no Group Policy, no line of sight to a domain controller||Nothing. The session host is already separated
+TR |Authentication to the session||Entra ID with multi-factor authentication. ADFS is not in the path||Nothing. Decommissioning ADFS does not affect an AVD sign-in
+TR |Profile store||Azure Files Premium with Microsoft Entra Kerberos, authenticating the signed-in hybrid identity||If staff accounts move to cloud only, re-assess the authentication path. DR-004 records Azure NetApp Files as the alternative. The only element with a residual link to Active Directory, and it is a user identity link, not a device one
+TR |Mapped network drive||Back end unconfirmed (G-01)||An on-premises file server back end would put a domain dependency back onto an Entra ID joined host and must be migrated before Active Directory is retired. The Azure Files and SharePoint Online options carry no such link
+END
+P |No component of this design requires a domain controller to be reachable from the AVD spoke. The named egress list in [[5.3]] contains no on-premises destination, and the route table carries no route to an on-premises range unless G-01 resolves to a file server.
+H3 |5.4.9 Desktop and browser configuration
+P |The standard APM desktop is applied by Intune configuration profile, not baked into the image, so branding and favourites change without an image rebuild. Two profiles are created, both assigned to the AVD entitlement group.
+TBL|2600,3000,3760
+TH |**Profile**||**Setting**||**Value**
+TR |AVD-W11-CFG-Desktop Branding-P-1.0||Desktop image||The corporate desktop image, staged on the session host by the image build and referenced by local path. A URL source is not used, because every host would fetch it on first sign-in through the hub firewall
+TR |AVD-W11-CFG-Desktop Branding-P-1.0||Lock screen image||The corporate lock screen image, same staging. Shown on the disconnect screen
+TR |AVD-W11-CFG-Desktop Branding-P-1.0||Image change by the user||Prevented, matching the thick client SOE
+TR |AVD-W11-CFG-Desktop Branding-P-1.0||Start menu layout||The corporate pinned set, applied by policy so every session presents the same Start menu. Taken from the existing staff configuration (G-08)
+TR |AVD-W11-CFG-Desktop Branding-P-1.0||Taskbar layout||The corporate pinned set. The Windows widgets, chat and search-highlights entries are removed, as on the thick client
+TR |AVD-W11-CFG-Desktop Branding-P-1.0||First sign-in experience||The out-of-box privacy, Windows Hello and OneDrive setup prompts are suppressed. A user signing in to a freshly provisioned host reaches the desktop, not a setup wizard
+TR |AVD-W11-CFG-Edge Configuration-P-1.0||Managed favourites||The APM favourites set, as JSON. Taken from the existing staff Edge configuration (G-08)
+TR |AVD-W11-CFG-Edge Configuration-P-1.0||Start-up behaviour and homepage||Open the APM homepage on start-up, and set it as the home button target. URL taken from the existing staff configuration (G-08)
+TR |AVD-W11-CFG-Edge Configuration-P-1.0||New tab page||The APM homepage, matching the thick client
+END
+P |Neither profile changes a security setting. `APM-W11-SEC-Edge Baseline-P-1.2` remains the only policy that governs Edge security, and it is inherited unchanged ([[7]]). Where a branding profile and the security baseline set the same key, the security baseline wins and the branding profile does not set it.
+H3 |5.4.10 User experience in a session
+P |A session presents the same desktop the user has on a thick client. Each row below is tested.
+TBL|2200,3200,3960
+TH |**Aspect**||**What the user gets**||**How it is delivered**
+TR |Sign in||APM account and multi-factor authentication in the Windows App, then the desktop. No second sign-in inside the session, and no setup wizard on a freshly provisioned host||Single sign-on to the session host. First-run prompts suppressed by the branding profile
+TR |Desktop||The corporate wallpaper, the corporate Start menu and taskbar, and the same application set as the thick client||`AVD-W11-CFG-Desktop Branding-P-1.0`
+TR |Applications||Word, Excel, PowerPoint, Outlook, OneNote, Teams, OneDrive and Edge, present at first sign-in. Line-of-business applications per the list under G-08||Baked into the image, or MSIX App Attach, or Intune Win32 ([[5.4.4]])
+TR |Files||OneDrive with Files On-Demand, the mapped network drive once G-01 is resolved, and Downloads inside the profile container||[[5.4.3]], [[5.4.5]]
+TR |Printing||APM site printers, presented in the session print dialogue from the session host||Server-side printing from the session host ([[5.4.6]], G-09)
+TR |Monitors||Multi-monitor, up to the Windows App limit on the endpoint, with the session spanning all displays and honouring per-monitor scaling||Host pool RDP properties. Confirmed on a multi-monitor endpoint during the pilot
+TR |Audio and video||Headset, microphone and camera work in Teams and in the browser. Call quality does not degrade as more users join the host||Camera and microphone redirection enabled for both postures. Teams AVD media optimisation keeps media off the session host ([[5.4.4]])
+TR |Copy and paste||From a managed endpoint, clipboard both ways. From an unmanaged endpoint, none. Drive redirection is closed for both, and the mapped drive is presented from the session host||Two desktop application groups, one per posture ([[7]])
+TR |Network drop||The session survives a short drop and the user reconnects to the same session with applications open. A longer drop disconnects the session, which stays available for 4 hours||Reverse connect reconnection, and the session time limits in `AVD-W11-CFG-Session Time Limits-P-1.0`
+TR |Idle||An idle session disconnects at 1 hour and a disconnected session signs out at 4 hours, at which point unsaved work in an open application is lost||`AVD-W11-CFG-Session Time Limits-P-1.0`. Communicated to users before rollout
+TR |Performance||Application launch and document open times comparable to the thick client. Measured, not assumed||Session host sizing and users per host fixed from pilot measurement (G-06)
+END
+P |Four things a user has on a thick client and does not have in a session. Each is a consequence of the pooled multi-session model, not an omission.
+TBL|2600,6760
+TH |**Not available**||**Why, and what the user does instead**
+TR |Offline working||A session needs a network connection. Staff whose work requires offline access stay on the thick client channel ([[3.2]])
+TR |Local administrator rights||A standard user in a session has no elevation path. An application that needs installing is requested and delivered by MSIX App Attach or Intune Win32
+TR |USB devices and removable media||USB redirection is disabled for both postures, and a pooled host has no removable drive. Files move through OneDrive or the mapped drive
+TR |A peripheral needing a local driver||A scanner, label printer or signature pad attached to the endpoint is not presented in the session. Those workflows stay on the thick client
+END
+H3 |5.4.11 Application groups
+P |The EUC Team creates the Entra ID groups that assign line-of-business applications to session hosts, and assigns each application to its group. Microsoft 365 Apps, Teams, OneDrive and Edge are baked into the image and take no assignment group.
+TBL|2600,2000,2400,2360
+TH |**Application**||**Delivery**||**Assignment group**||**Status**
+TR |==[Application name]==||==[MSIX App Attach or Intune Win32]==||==[Group name]==||==[To be supplied under G-08]==
+END
+P |The application list and the group names come from the existing staff SOE definitions under G-08. Build detail is in the Technical Configuration Document, 4.5.6.
+H3 |5.4.12 Compliance policy and configuration profile validation
+P |The EUC Team validates AVD-W11-COM-Session Host-P-1.0 and the seven AVD configuration profiles on the pilot ring before the production assignment is made. A setting passes validation when the pilot host reports it as applied and the value matches the Technical Configuration Document, 4.5.6.
+TBL|3600,2900,2860
+TH |**Object**||**Validated by**||**Date**
+TR |AVD-W11-COM-Session Host-P-1.0||==[EUC Team member]==||==[Date]==
+TR |The seven AVD configuration profiles in [[7]]||==[EUC Team member]==||==[Date]==
+TR |The 11 inherited thick client policies||==[EUC Team member]==||==[Date]==
+END
+H3 |5.4.13 Operating system and application updates
+P |Session hosts are updated only by replacement from a new golden image version (DR-015). Windows Update for Business rings, Windows Autopatch and Patch My PC are not assigned to session hosts. A pooled host is started and stopped by auto-scale, so the times it is online are not known in advance and an update ring cannot guarantee an install window on it.
+TBL|3600,5760
+TH |**Estate update mechanism**||**Session hosts**
+TR |Windows Update for Business rings: ==[ring names to be confirmed]==||Excluded. sg-dyn-dvc-avd-session-hosts added as an assignment exclusion
+TR |Windows Autopatch: ==[group names to be confirmed, or not used]==||Excluded
+TR |Patch My PC: ==[published application assignments to be confirmed]==||Excluded
+END
+P |The monthly image version carries the operating system cumulative update, the Microsoft 365 Apps and Edge updates, the Defender platform update and the application versions current at build. An out-of-cycle version is built for a critical security update. Windows Update is reachable from the image build subnet only.
+H1 |6. Information & Data Architecture
+H2 |6.1 Information Model
+P |This design creates no new data store. User data exists in three places.
+TBL|2600,6760
+TH |**Location**||**Content and lifetime**
+TR |Session host||Transient. Application working state for the duration of the session. Removed when the host is reimaged
+TR |FSLogix profile container||Persistent. The user profile, application settings and Office and Teams caches. One container per user
+TR |Microsoft 365 and the mapped drive back end||Persistent, existing. Mail, files and documents. This design changes the access path, not the store
+END
+H2 |6.2 Information Classification
+P |A session handles the same information as the laptop channel, up to and including APM Internal and Personal Information. The classification is unchanged by the delivery channel. The profile container holds cached corporate data and is protected to the same standard as the store it caches.
+H2 |6.3 Analytics and reporting Patterns
+P |N/A. This design creates no reporting data store, semantic model or business dashboard. Operational and security telemetry is covered in [[9.2]].
+H1 |7. Cyber & Security Architecture
+P |**Position.** The session host is a managed Windows 11 device in the APM tenant. It is assigned the same Intune policy objects as a laptop. Five controls cannot apply to a pooled multi-session host and are varied, each with a compensating control. Everything else is inherited without modification.
+P |**RFFR and ASD.** APM operates under the Workforce Australia and Inclusive Employment Australia Service Deeds, which require compliance with the Right Fit For Risk framework. The five variations below are recorded as accepted variations in the Standard User AVD RFFR Statement of Applicability, owned by Cyber Security.
+P |**Inherited policy set.** The 11 policies of the APM Windows SOE Hardening Standard V3.0 are assigned to the session host device group. Control counts are taken from the standard.
+TBL|560,2900,2400,600,2900
+TH |**#**||**Policy**||**Intune profile**||**Controls**||**Position on a session host**
+TR |1||Windows 11 security baseline (OS)||APM-W11-SEC-Baseline-P-1.2||594||Inherited. A small number of device-lock, power and physical-adapter settings report not applicable, listed under SOE-04 and SOE-05
+TR |2||Microsoft Edge security baseline||APM-W11-SEC-Edge Baseline-P-1.2||25||Inherited unchanged
+TR |3||Developer tools restriction||APM-W11-SEC-Edge Dev Baseline-P-2.0||1||Inherited unchanged
+TR |4||Developer tools exception group||APM-W11-SEC-Edge Dev Exception-P-2.0||1||Inherited. Reaches an AVD user only through existing exception group membership
+TR |5||Hardened Edge baseline, accessibility exception||APM-Edge-Hardened-Baseline-V1.0-Accessibility||25||Inherited. Exception group membership only
+TR |6||Hardened Edge baseline, LastPass exception||APM-Edge-Hardened-Baseline-V1.0-LastPass||25||Inherited. Exception group membership only
+TR |7||BitLocker drive encryption||APM-W11-SEC-Bitlocker-P-1.1||20||**Not assigned.** Varied, SOE-01
+TR |8||Removable storage control and removable-drive encryption||APM-WIN-SEC-USB Baseline-P-1.0||16||Inherited. The removable-drive encryption settings report not applicable, SOE-03
+TR |9||Application Control||App Control Audit and Enforced pair, base policy v2026.03.27.0216, 18 trusted signers||12||Inherited, in enforcement. Script enforcement is not set, raised as G-04
+TR |10||Attack surface reduction rules||APM-WIN-SEC-ASR-P-1.0||20||Inherited unchanged
+TR |11||Windows compliance policy (Staff)||Staff-Windows-Compliance-Policy||9||**Not assigned.** Varied, SOE-02
+END
+P |Total across the standard: 748 controls. 568 meet or exceed the ASD or Microsoft baseline, 171 are additional hardening beyond it, 9 are set below the benchmark with a recorded reason. The benchmark is the Microsoft Windows 11 v24H2 security baseline, as stated by the standard. The session host image tracks the current Windows 11 Enterprise release, and a new release is assessed against the standard as part of the monthly image cycle in [[5.4]].
+P |**Varied controls.**
+TBL|700,2500,3300,2860
+TH |**Ref**||**Control varied**||**Why it cannot apply**||**Compensating control**
+TR |SOE-01||APM-W11-SEC-Bitlocker-P-1.1, 20 controls, including additional authentication at startup||BitLocker is not used on a pooled session host. A host that must boot unattended into a host pool cannot hold a pre-boot authenticator||Operating system and data disks are encrypted by Azure platform-managed keys. Azure Files Premium is encrypted at rest and requires encryption in transit. Accepted under A-08
+TR |SOE-02||Staff-Windows-Compliance-Policy, 9 controls||The policy requires BitLocker, so every session host would be marked non-compliant and Conditional Access would deny access||AVD-W11-COM-Session Host-P-1.0 evaluates the eight remaining device health and system security gates, plus a minimum operating system build added under G-05
+TR |SOE-03||Removable-drive encryption, carried in APM-WIN-SEC-USB Baseline-P-1.0 and in the OS baseline||A pooled session host has no removable media. Drive redirection from the endpoint is the equivalent path||Drive redirection is closed for both postures in the host pool RDP properties below. The removable storage deny rules remain assigned and report not applicable
+TR |SOE-04||Physical network adapter controls, including minimising simultaneous connections to the internet or a Windows domain||A session host has one virtual network interface, no wireless adapter and no bridging capability||Egress is controlled by the route table and the hub firewall, which is a stronger control than an adapter setting
+TR |SOE-05||Device lock, sleep, hibernate and screen-saver settings||A pooled host is never physically present and never sleeps. A lock screen on a session host is not reachable by a user||AVD-W11-CFG-Session Time Limits-P-1.0 disconnects an idle session at 1 hour and signs out a disconnected session at 4 hours, which terminates access rather than locking it
+END
+P |**Added policies.** Seven Intune objects exist only for AVD.
+TBL|3300,6060
+TH |**Object**||**Purpose**
+TR |AVD-W11-CFG-FSLogix Profile-P-1.0||Profile container path, size, redirections and fail-closed behaviour
+TR |AVD-W11-CFG-Session Time Limits-P-1.0||Idle disconnect at 1 hour, disconnected sign-out at 4 hours, active session limit not set
+TR |AVD-W11-CFG-Multi-Session Host-P-1.0||Multi-session specific settings: per-user Windows Search index, Teams optimisation, timezone redirection
+TR |AVD-W11-COM-Session Host-P-1.0||The session host compliance policy, replacing Staff-Windows-Compliance-Policy
+TR |AVD-W11-CFG-Desktop Branding-P-1.0||Desktop and lock screen image, per [[5.4]]
+TR |AVD-W11-CFG-Edge Configuration-P-1.0||Managed favourites, homepage and start-up behaviour, per [[5.4]]. Sets no security key
+TR |AVD-W11-CFG-Defender-P-1.0||Antivirus scan model and the FSLogix and App Attach exclusions, below
+END
+P |**Identity and access.** Session hosts are Entra ID joined. There is no hybrid join, no Active Directory Domain Services membership and no ADFS dependency in the session host path. The thick client fleet remains hybrid joined and federated by ADFS, which is being decommissioned. Staff accounts themselves are unchanged. They remain hybrid identities, synchronised from on-premises Active Directory to Entra ID, and they authenticate to Entra ID with multi-factor authentication (A-09).
+P |**Separability.** Nothing in the session host path requires on-premises Active Directory or ADFS. The session host holds no domain membership and needs no line of sight to a domain controller. The one residual link is the user identity: the profile store authenticates a hybrid identity through Microsoft Entra Kerberos, so a move of staff accounts to cloud only re-opens that decision and nothing else. The position element by element is in [[5.4]].
+P |**Conditional Access.** Three existing enforced policies apply and one policy is created ([[5.1.2]]). AllUsers_WVDApp_MFAtimeout requires multi-factor authentication to the Azure Virtual Desktop application for every user. AllUsers_AllAccess_DeviceRequired requires a compliant or hybrid joined device for every application, so an unmanaged endpoint reaches Microsoft 365 only from inside a session. CA-210 requires multi-factor authentication and a compliant device for Office 365 from a session host. CA-102 blocks sign-in from outside Australia and the corporate locations.
+P |**Location restriction is inherited, not created.** CA-102 - All Users &amp; Guests - All Apps - Locations exc. AU, Corporate - Block is enforced tenant-wide against all users, all guests and all cloud apps, and blocks authentication from any location other than Australia and the named corporate locations. It applies to the Azure Virtual Desktop application and to a session host on the same terms as any other resource, so a user cannot reach an AVD session from outside Australia. No AVD-specific location policy is created. AllUsers_UnapprovedCountries_Block is report-only and is not relied on.
+P |CA-102 evaluates the location of the authenticating endpoint, not of the session host, which is always in Australia East. A user on a personal device overseas is therefore blocked at authentication, before a session exists, which is the intended behaviour and the reason the control needs no AVD-specific variant.
+P |The session hosts are excluded from AllUsers_Office365_DeviceRequired and AllUsers_Sharepoint_DeviceRequired by a device filter matching the session host name prefix aevmacstd, an Entra ID trust type and a compliant state, so no endpoint outside the host pool matches it. CA-210 includes exactly the same filter, so every device excluded from the two hybrid-only grants is caught by the replacement.
+FIG|access-control-model.png|Figure 4. Access control model - managed and unmanaged endpoint paths|1520|1760
+P |**Device redirection.** Conditional Access decides whether a session may be established. It does not decide what may leave the session. Redirection is a host pool RDP property, so two desktop application groups are published on the same host pool, one per posture, and a user is assigned to one of them.
+P |Neither the mapped drive nor printing depends on redirection. Both are reached from the session host: the drive over SMB to the APM share ([[5.4.5]]) and printing to APM site printers over the print path ([[5.4.6]]). Redirection is therefore a pure data-egress control here, and drive and printer redirection are closed for both postures.
+TBL|2600,3300,3460
+TH |**Redirection**||**Managed endpoint**||**Unmanaged endpoint**
+TR |Clipboard||Enabled, both directions||Disabled
+TR |Drive||Disabled||Disabled
+TR |Printer||Disabled||Disabled
+TR |Camera and microphone||Enabled||Enabled
+TR |USB device||Disabled||Disabled
+END
+P |**Web filtering is per user.** Zscaler Client Connector for VDI runs in each user session on the session host. It authenticates the signed-in user against the Zscaler tenant, and tunnels that session's web traffic to the Zscaler Cloud Connector pair in the zscc subnet ([[5.3.2]]). The Cloud Connector forwards the traffic to Zscaler Internet Access with the user context attached, so web policy is applied to the user and every Zscaler log entry names the user, on a host carrying many users behind one address (DR-021).
+TBL|2900,6460
+TH |**Element**||**Value**
+TR |Agent||Zscaler Client Connector for VDI, 64-bit MSI from the Zscaler Admin Console, Infrastructure > Client Connector > App Store for VDI. Installed per machine in the golden image and not enrolled on the build virtual machine
+TR |Zscaler configuration||A VDI group for the host pool, a VDI template and a VDI forwarding profile, in the Zscaler Admin Console
+TR |Cloud Connector||A pair of Cloud Connector virtual machines in auea-snet-avd-ctrl-zscc-002, sized under G-11
+TR |Egress||Cloud Connector to the Zscaler service edge, forced to the hub firewall by the route table ([[5.3.3]]) and permitted there without inspection
+TR |Tenant enablement||Client Connector for VDI is enabled on the Zscaler tenant by Zscaler Support (G-10)
+END
+P |**The standard Zscaler Client Connector is not used.** It supports one user session per host: on a multi-session host it builds a tunnel for the first enrolled user only, and the tunnels of every other concurrent user fail. Client Connector for VDI is the Zscaler agent for multi-session hosts.
+P |**The hub firewall does not forward AVD spoke traffic to Zscaler.** The existing pattern, in which the Palo Alto firewalls send traffic and logs to Zscaler over the Zscaler tunnels and the Zscaler service tag, does not apply to the AVD spoke. No firewall forwarding rule, log flow or Zscaler tunnel carries AVD spoke traffic. The firewall permits the Cloud Connector tunnels to the Zscaler service edge from the zscc subnet only ([[5.3.6]]).
+P |Zscaler Client Connector for VDI processes are excluded from Defender scanning and are allowed by App Control for Business: ZCCVDIService, ZCCVDIHelper, ZCCVDIUI and the ZCCVDI executable, and the log and configuration directory %ProgramData%\ZCCVDI.
+P |**Endpoint detection and response.** Defender for Endpoint is in the image and every session host onboards on provisioning. Hosts are replaced monthly, so the Defender device inventory turns over on the same cycle and stale records are expected.
+P |**Antivirus scan model.** A pooled multi-session host with roaming profile containers scans differently from a thick client, and the default scan configuration produces work with no security value. Two changes are made, both delivered by the AVD-W11-CFG-Defender-P-1.0 profile.
+TBL|3000,2200,4160
+TH |**Setting**||**Value**||**Reason**
+TR |Real-time protection, on-access scanning||Enabled||Inspects a file when it is written or opened, in the session that did it
+TR |Scheduled quick scan||Disabled||A scheduled scan on a pooled host runs against every mounted profile container at once, on a host that is carrying live sessions. The host is replaced monthly from a clean image, so a scheduled sweep of a disk that has a maximum life of one month adds nothing on-access protection has not already done
+TR |Scheduled full scan||Disabled||As above, and a full scan re-reads every mounted VHDX in full
+TR |Catch-up scans||Disabled||A host that was off during a scheduled window is a host that no longer exists
+TR |Cloud-delivered protection and sample submission||Enabled||Unchanged from the inherited baseline
+TR |Scan removable drives||Not applicable||A pooled session host has no removable drive, and USB redirection is closed for both postures
+END
+P |**Exclusions, to prevent the same file being scanned twice.** A profile container is a VHDX on the profile share, mounted into the session. Without exclusions the same content is scanned twice: once as the container file on the host, and again as the files inside it in the session. The exclusions remove the outer scan. They cover the profile and App Attach container files, the FSLogix cache, proxy and temporary VHD files, the FSLogix drivers and service processes, and the Zscaler Client Connector for VDI processes and data directory. The exact paths and processes are in the Technical Configuration Document, 12.1.
+P |An exclusion on the container file does not exclude the files inside it: those are scanned on access in the session, by the same real-time engine, under the same policy. And no exclusion is set for a user data path, an application folder or a download location, so nothing a user writes into a session is excluded from scanning.
+P |**Application control.** The App Control for Business Audit and Enforced pair is inherited unchanged and runs in enforcement on session hosts. Script enforcement is not set in the inherited policy. The decision on enabling it sits with Cyber Security under G-04.
+P |**Decommissioning.** This design decommissions nothing. It adds a channel alongside the thick client SOE and retires no component of it.
+FIG|soe-inheritance.png|Figure 5. Hardening standard inheritance - inherited, varied and added|1520|1720
+H1 |8. Service Availability and Disaster Recovery
+H2 |8.1 Business Service Tiering
+P |The Standard User SOE on AVD is Tier 2. An extended outage stops work for every member of staff whose only channel is AVD. It does not stop participant-facing service delivery, which runs on separate systems.
+TBL|3000,6360
+TH |**Measure**||**Target**
+TR |Service hours||24 hours, 7 days. Business hours are 6am to 8pm Australian Eastern time
+TR |Availability target||99.5 per cent monthly, measured on session establishment success
+TR |Recovery time objective||4 hours
+TR |Recovery point objective||24 hours for profile data
+END
+H2 |8.2 Service Availability
+TBL|3000,6360
+TH |**Layer**||**Availability position**
+TR |AVD control plane||Microsoft managed, multi-region. Not in APM's control. A control plane incident prevents new sessions being brokered. Connected sessions continue
+TR |Session hosts||Distributed across the three Australia East availability zones. Auto-scale replaces a failed host without operator action
+TR |Profile storage||Azure Files Premium, zone-redundant storage in Australia East
+TR |Image||Azure Compute Gallery, replicated within Australia East. The previous two versions are retained
+TR |Network||Single hub, single region. A hub firewall outage removes egress from a session, which is a functional outage even though sessions remain connected
+END
+P |The image is the rollback control. A regression is corrected by reimaging the pool to the previous gallery version, which is rehearsed rather than assumed.
+H2 |8.3 Disaster recovery & Resilience
+P |Recovery is a redeployment, not a failover. There is no warm standby.
+TBL|3000,6360
+TH |**Scenario**||**Recovery**
+TR |Single host failure||Auto-scale provisions a replacement from the current image version. No operator action
+TR |Host pool corruption after an image change||Reimage the pool to the previous gallery version. Target 4 hours
+TR |Availability zone loss in Australia East||Auto-scale provisions hosts in the remaining zones. Profile storage is zone-redundant
+TR |Profile share loss||Restore from Azure Files snapshot. Recovery point 24 hours
+TR |Region loss in Australia East||Not covered by this design. Staff revert to the laptop channel. A second region is out of scope
+END
+P |Cross-region profile replication is not implemented. A regional failure is recovered by falling back to the laptop channel, not by failing the service over.
+H1 |9. Service Management
+H2 |9.1 Service Management principles
+TBL|2600,6760
+TH |**Principle**||**How it applies**
+TR |One service desk||AVD incidents are raised on the existing Digital Operations service desk. No separate queue
+TR |One change process||Image versions, Intune policy changes and Conditional Access changes follow the existing change process. Each is a separate change record
+TR |Ring-based release||A change lands on the pilot ring first, then the fleet. The rings are the two device groups in [[5.1]]
+TR |Reimage rather than repair||A session host that misbehaves is drained and reimaged. Hosts are not repaired in place
+TR |Support model||Level 1 service desk, level 2 Digital Operations, level 3 the platform owner. Nerdio and Intune are the operational consoles
+END
+P |The implementation sequence is five phases. Each phase completes before the next begins.
+TBL|2200,4000,3160
+TH |**Phase**||**Content**||**Exit criterion**
+TR |1. Foundations||Address allocation issued (G-02), spoke and peering created, route table and network security groups applied, firewall rules requested||A test virtual machine in the avdhosts subnet reaches the named egress destinations and nothing else
+TR |2. Platform||Profile and App Attach storage with private endpoints, Compute Gallery and image definition, Nerdio workspace and host pool, Entra groups, Intune AVD profiles, CA-210 in report-only, then On with the session host exclusions before the first user signs in||All objects created and named to [[5.1]]
+TR |3. Image and validation||Image version 1 built and captured. Validation host pool provisioned. The test set in Appendix B run end to end||All 18 tests pass
+TR |4. Pilot||Controlled pilot across the personas in [[3.2]], on both endpoint postures. Conditional Access enforced for the pilot group. Density, sizing and profile growth measured||G-06 closed. Sizing and auto-scale thresholds fixed
+TR |5. Rollout and handover||Entitlement opened progressively. Windows App published to APM laptops and instructions issued for personal devices. Monitoring and alerting confirmed with Digital Operations||Service accepted into support
+END
+H2 |9.2 Monitoring, Logging, Reporting and Alerting
+TBL|2600,3200,3560
+TH |**Source**||**Destination**||**Used for**
+TR |Host pool and session host diagnostics||Australia East operational Log Analytics workspace||Connection success, session duration, host health and capacity
+TR |FSLogix operational events||Australia East operational Log Analytics workspace||Profile mount success and mount duration
+TR |Nerdio audit and operational logs||Australia East operational Log Analytics workspace, forwarded to Microsoft Sentinel||Who changed the host pool, the image or the scaling configuration
+TR |Azure Files transactions and Azure Activity||Operational workspace and Microsoft Sentinel||Storage saturation and configuration change
+TR |Defender for Endpoint||Defender portal and Microsoft Sentinel||Detection, response and vulnerability position per host
+TR |Intune device and compliance reporting||Intune, exported to the operational workspace||Policy application and compliance state per host
+TR |Hub firewall logs||Microsoft Sentinel||Egress denials and traffic analysis
+TR |Zscaler Internet Access web logs||Microsoft Sentinel||Web activity per user, named by the signed-in identity from Client Connector for VDI
+END
+P |Alerts are raised for session establishment failure rate above threshold, profile mount failure, host pool capacity exhaustion, an auto-scale action failing, storage throughput saturation, and a session host reporting non-compliant for more than one evaluation cycle.
+P |Two reports are produced for the service. A monthly capacity and cost report covering concurrency, sessions per host, scale events and consumption. A monthly compliance report covering policy application, compliance state and image version distribution across the fleet.
+H1 |Appendix A: Decision Register
+P |Decisions taken for this design, with the options assessed.
+TBL|620,2000,1900,4840
+TH |**Ref**||**Decision**||**Status**||**Detail and options assessed**
+TR |DR-001||Policy inheritance model||Approved - Cyber Security||Assign the existing 11 hardening standard policies to the session host device group. Options assessed: (a) fork AVD copies of each policy, rejected because it doubles the maintenance surface, (b) a new AVD-specific baseline, rejected because it breaks the single SOE position
+TR |DR-002||Host pool type||Approved - Digital Transformation and Architecture||Pooled multi-session, breadth-first. Options assessed: personal desktops, rejected on cost and on patching model
+TR |DR-003||Session host identity||Approved - Cyber Security||Entra ID join only. No hybrid join and no Active Directory Domain Services. The thick client fleet stays hybrid joined, so join type is one of the four named divergences between the channels ([[2]]). ADFS is being decommissioned, so no design dependency is taken on it. Staff accounts remain hybrid identities (A-09)
+TR |DR-004||Profile storage||Approved - Digital Operations||FSLogix profile containers on Azure Files Premium over a private endpoint, authenticated with Microsoft Entra Kerberos for the signed-in hybrid identity. Options assessed: Azure NetApp Files, held as the alternative if staff accounts move to cloud only, and FSLogix Cloud Cache, rejected for a single-region design
+TR |DR-005||Placement||Approved - Digital Transformation and Architecture||A new spoke virtual network in the APM Azure landing zone, peered to the Australia East hub. Options assessed: deploy into an existing spoke, rejected because the AVD host subnet needs its own network security group and route boundary
+TR |DR-006||Egress path||Approved - Network Management||Inherit the landing zone forced tunnel: a route table on every AVD subnet carrying 0.0.0.0/0 to the hub firewall. Options assessed: local internet breakout from the spoke, rejected because it bypasses inspection
+TR |DR-007||Region||Approved - Digital Transformation and Architecture||Australia East only. Australia South East is not used
+TR |DR-008||Application delivery||Approved - Digital Operations||Mixed: image, MSIX App Attach, Intune Win32, as set out in [[5.4]]
+TR |DR-009||Application control||Approved - Cyber Security||Inherit the thick client policy unchanged, in enforcement. Options assessed: a tighter AVD-specific policy, rejected because two application control policies would diverge
+TR |DR-010||BitLocker||Approved - Cyber Security||Not used on session hosts. Azure platform-managed key encryption on the managed disk instead. SOE-01
+TR |DR-011||Compliance policy||Approved - Cyber Security||A separate AVD compliance policy, because the staff policy requires BitLocker. SOE-02
+TR |DR-012||Data egress boundary||Approved - Cyber Security||Two desktop application groups on one host pool, one per redirection posture. Clipboard closed for unmanaged endpoints. Drive and printer redirection closed for both
+TR |DR-013||Printing||**Approved - Digital Operations. Mechanism open under G-09**||Printing is from the session host to printers at an APM site, not client-side printer redirection: an unmanaged personal endpoint presents no APM printer, and home printing is not supported. Printer redirection is closed for both postures. Options assessed for the mechanism: Universal Print, the only option that adds no domain dependency to an Entra ID joined host; direct IP printing with a driver per model in the golden image, at the cost of driver maintenance inside the monthly image cycle; an existing on-premises print server, which reintroduces the domain dependency DR-019 exists to avoid. Client-side redirection was the position in V1.2 and is withdrawn
+TR |DR-014||Capacity model||Approved - Digital Operations||Nerdio dynamic auto-scale on active session count, with the thresholds fixed at the end of the pilot under G-06
+TR |DR-015||SOE update and patching model||Approved - Digital Operations||Session hosts are replaced from a new golden image version, not patched in place. Monthly cycle, with an out-of-cycle build for a critical security update. The five-step cycle and the three change types that bypass the image are in [[5.4]]. Options assessed: in-place Windows Update on running hosts, rejected because a pooled host cannot be rebooted under load and the fleet would drift version by version
+TR |DR-016||Nerdio log destination||Approved - Cyber Security, Digital Operations||Nerdio audit and operational logs export to the Australia East Log Analytics workspaces and forward to Microsoft Sentinel
+TR |DR-017||Naming||Approved - Digital Transformation and Architecture, pending APM ITS management||Each object is named to the standard that governs its plane, per [[5.1]]. One new Intune Scope value, AVD, is proposed
+TR |DR-018||Test environment placement||Approved - Digital Transformation and Architecture, Network Management||The existing Dev Controlled subscription and virtual network, not a new spoke and not the production AVD spoke. Appendix B
+TR |DR-019||Separability from Active Directory and ADFS||Approved - Digital Transformation and Architecture, Cyber Security||The AVD channel creates no new dependency on on-premises Active Directory or ADFS. Session hosts are Entra ID joined with no domain membership and no domain controller reachability. The only residual link is Entra Kerberos authenticating a hybrid identity to the profile store, which is a user identity link. Options assessed: hybrid joined session hosts with Group Policy, rejected because it would extend the Active Directory dependency into a new estate that is being built after the decision to retire it
+TR |DR-020||Desktop and browser configuration||Approved - Digital Operations||Applied by Intune configuration profile, with the image assets staged on the host by the image build. Options assessed: bake the branding and favourites into the image, rejected because a favourites or homepage change would then require an image rebuild and a fleet reimage
+TR |DR-021||Web filtering enforcement path for a session||Approved - Cyber Security||Web filtering is enforced per user by Zscaler Client Connector for VDI on each session host, tunnelling to a Zscaler Cloud Connector pair in the AVD spoke. The hub firewall does not forward AVD spoke traffic over its Zscaler tunnels. Options assessed: (a) the existing Palo Alto to Zscaler path, rejected because a pooled host carries many users behind one address and the path attributes web activity to the host, not the user; (b) the standard Zscaler Client Connector, rejected because it supports one user session per host; (c) Zscaler Client Connector for VDI with Cloud Connector, selected [[7]]. Consequence: a Cloud Connector pair and the zscc subnet are added to the spoke, under G-10 and G-11
+TR |DR-022||Antivirus scan model on a pooled session host||Approved - Cyber Security||Real-time on-access scanning retained; scheduled quick, full and catch-up scans disabled; FSLogix and App Attach container files, cache paths, filter driver files and service processes excluded. Options assessed: the inherited thick client scan schedule, rejected because a scheduled scan on a pooled host re-reads every mounted profile container while the host carries live sessions, on a disk with a maximum life of one month; no exclusions, rejected because the container file is then scanned as one object on the host while its contents are scanned on access in the session
+TR |DR-023||Host pool provenance and isolation||Approved - Cyber Security||Every host pool, workspace and application group is newly created in Nerdio. Nothing is repurposed, and no pool, image, profile share or session host is shared with the Privileged Access use case. Options assessed: repurpose an existing pool, rejected because a pool carrying another use case cannot be reasoned about as a boundary; one pool serving both standard and privileged access, rejected outright
+END
+H1 |Appendix B: Test Environment
+H2 |B.1 Purpose
+P |A non-production environment is built before any production object is created. It is where the golden image is built, a new Intune profile is first applied, the redirection boundary is first exercised and image rollback is rehearsed.
+P |Three planes are isolated because they are subscription-scoped: Azure compute, network and storage. A test session host cannot reach the production profile share, cannot use the production route table and is unaffected by a change to a production network security group.
+P |Two planes cannot be isolated. Microsoft Intune and Microsoft Entra Conditional Access are tenant-level services. Isolation is by assignment, not by boundary. The hub firewalls and Microsoft Sentinel are also shared. A change proven in test is not thereby proven in production, and the production validation pool is the gate for what test cannot reach.
+H2 |B.2 Placement
+TBL|2900,2200,4260
+TH |**Item**||**Value**||**Note**
+TR |Subscription||aus-sub-dev-controlled-001||Exists. Dev environment, Controlled archetype, so the RFFR control set still applies
+TR |Virtual network||auea-vnet-dev-ctrl-001||Exists, 10.40.24.0/23. **Extended with a second range, 10.40.26.0/23, because 10.40.25.0/24 inside the original /23 is already in use by other non-production workloads.** Already peered to the Australia East hub
+TR |Management group||AUS-MG-CONTROLLED||Same archetype as the production AVD subscription
+TR |Egress||Inherited route table with 0.0.0.0/0 to the hub firewall, as production||The same firewall policy path, though not the same rule set, because rules are written per source prefix
+END
+H2 |B.3 Subnet allocation
+P |The Dev Controlled virtual network is shared with other non-production workloads. The test subnets are taken from the added 10.40.26.0/23 range rather than from 10.40.25.0/24, which is already in use.
+TBL|3000,1700,900,3760
+TH |**Subnet**||**CIDR**||**Usable**||**Purpose**
+TR |auea-snet-dev-ctrl-avdhosts-001||10.40.26.0/26||59||Test session hosts, sized for a test pool plus concurrent reimaging
+TR |auea-snet-dev-ctrl-avdpe-001||10.40.26.64/28||11||Private endpoints for the test profile and App Attach shares
+TR |auea-snet-dev-ctrl-avdbuild-001||10.40.26.80/28||11||Image build
+TR |Unallocated||10.40.26.96/27, 10.40.26.128/25||-||Left free in the shared virtual network
+END
+P |The hub-side return route and the firewall rule set for the test environment are written against 10.40.26.0/23, not against the virtual network's original range.
+H2 |B.4 Azure objects
+P |Names follow the production convention in [[5.1]] with the environment token dev and the security domain ctrl, so a test object is never mistaken for a production one.
+TBL|3000,3200,3160
+TH |**Object**||**Test name**||**Production counterpart**
+TR |Route table||auea-rt-dev-ctrl-001||auea-rt-avd-ctrl-002. Separate table, so a routing change in test cannot reach production
+TR |Network security groups||auea-nsg-dev-ctrl-avdhosts-001, -avdpe-001, -avdbuild-001||The three production groups. The test baseline starts as a copy
+TR |Host pool||auea-avdhp-dev-ctrl-staff-001||auea-avdhp-avd-ctrl-staff-002
+TR |Workspace||auea-avdws-dev-ctrl-staff-001||auea-avdws-avd-ctrl-staff-002
+TR |Application groups||auea-avdag-dev-ctrl-staff-managed-001, -unmanaged-001||Both production groups. Two are required, because the redirection boundary is one of the things being proven
+TR |Profile storage||aestdcfslogix001||aestacfslogix001. A separate account, so no test action can touch a production profile
+TR |App Attach storage||aestdcappattach001||aestacappattach001
+TR |Session hosts||Prefix aevmdcstd||Prefix aevmacstd. The prefixes differ, which is what makes the two dynamic device groups mutually exclusive
+TR |Compute Gallery||Shared: aegalacstaff001||Not duplicated. Test reads the same gallery, so the artefact validated in test is the identical image version promoted to production. This requires a reader role grant to the test subscription's provisioning identity
+END
+H2 |B.5 Intune, Entra ID and Conditional Access
+TBL|3000,3200,3160
+TH |**Object**||**Name**||**Purpose**
+TR |Test device group||sg-dyn-dvc-avd-session-hosts-test||Dynamic, matched on the aevmdcstd prefix. Mutually exclusive with the production group
+TR |Test user group||sg-stc-usr-avd-standard-user-test||The project team and nominated business testers
+TR |Test desktop groups||sg-stc-usr-avd-desktop-managed-test, -unmanaged-test||So one tester can hold each posture and the boundary is tested from both sides
+TR |AVD profile twins||AVD-W11-CFG-FSLogix Profile-T-1.0, -Session Time Limits-T-1.0, -Multi-Session Host-T-1.0||T ring per the Intune schema, assigned only to the test device group
+TR |Compliance policy twin||AVD-W11-COM-Session Host-T-1.0||Proves the compliance policy marks a session host compliant before the production policy is created
+TR |Hardening standard policies||The 11 existing policies, unchanged||The test device group is added to their assignment scope, because inheritance is itself being proven
+TR |Conditional Access||The existing enforced policy set||Evaluated against the test user group, with the G-12 session host exclusion in place
+END
+H2 |B.6 Test set
+P |Twenty tests, each with a pass criterion that is objectively true or false, pass in the test environment before the production build begins, and the set is re-run for every image version and policy change. The test plan is in the Technical Configuration Document, 14.3.1.
+H2 |B.7 Cost and lifecycle
+TBL|2900,6460
+TH |**Aspect**||**Position**
+TR |Running cost||The test pool scales to a single host outside test windows and to zero overnight, using the same auto-scale mechanism as production. Premium profile storage is provisioned at the minimum size the tier permits
+TR |Retention||Retained permanently, not torn down. Every subsequent image version, Intune policy change, network rule change and Conditional Access change is proven here first
+TR |Ownership||Digital Operations after handover, with the APM AVD Build Engineer during the build phases
+TR |Data||No production data is loaded. Test users sign in with their own APM identities, so mail and documents reached from a test session are real. The test profile share therefore holds real cached corporate data and is protected to the same standard as production
+END
+H2 |B.8 Promotion path
+P |A change moves in one direction through four gates and cannot skip one.
+NUM|Made in the test environment: a new image version, a T-ring Intune profile, a network or firewall rule, or a Conditional Access change scoped to the test user group
+NUM|Proven against the applicable tests in B.6
+NUM|Applied to the production pilot ring: the P-ring policy object assigned to sg-stc-dvc-avd-session-hosts-ring1, or the new image version on the validation host pool
+NUM|Promoted to the production host pool by drain-mode reimaging, or by extending the policy assignment to sg-dyn-dvc-avd-session-hosts
+P |A Conditional Access change has no image and no ring. It moves from report-only, to enforced against the test user group, to enforced against the entitlement group. Each step is a separate change record.

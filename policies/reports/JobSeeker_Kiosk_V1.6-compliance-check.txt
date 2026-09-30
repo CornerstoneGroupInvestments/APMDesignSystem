@@ -1,0 +1,240 @@
+APM compliance check - APM_DDD_JobSeeker_Kiosk_V1.6
+Run 2026-07-30 against 32 rules from the APM policy register
+
+Conflicts 1 | Compensated 5 | Gaps 2 | Met 24 | Not applicable 0
+Alignment score 91% of 32 applicable rules
+
+== CONFLICT (1) ==
+
+[SOE-01] Minimum device password length is 14 characters
+  Policy: Windows SOE Hardening Standard V3.0, Win11 OS baseline - Min Device Password Length
+  Requires: Min Device Password Length = 14.
+  Found: "passphrase format was described as approximately 14 characters" - an approximate length does not evidence the 14-character minimum - "The ANIMAL-noun passphrase format was described as approximately 14 characters, and worked examples fell short: "OTTER-blanket" was 13 | The generator's word lists are now constrained so every generated passphrase is at least 14 characters."
+  To comply: Constrain the generator so every credential is at least 14 characters and state the guaranteed minimum, not an approximate length.
+
+== GAP (2) ==
+
+[CRY-04] TLS version and cipher suite must be stated and approved
+  Policy: Cryptography and Key Management Standard, §4.2 TLS cipher suites
+  Requires: TLS 1.2 (16 named suites) or TLS 1.3 (4 named suites). Anonymous DH not permitted. Ephemeral variants only.
+  To comply: State the TLS version and the approved cipher suite list from §4.2 explicitly, rather than relying on platform defaults. Confirm TLS 1.0/1.1 are disabled.
+
+[IRP-02] Incidents reported via APM Assist and logged in ServiceNow
+  Policy: Cyber Incident Response Plan, Reporting / Identification
+  Requires: All staff must immediately report a real or potential incident using APM Assist. All incidents logged in a ServiceNow ticket; P1/P2 update the Major Cyber Security Incident Register.
+  To comply: Name the reporting path (APM Assist, ServiceNow) in the service management section so operational staff have a defined route.
+
+== COMPENSATED (5) ==
+
+[CRY-01] Key rotation maximum age
+  Policy: Cryptography and Key Management Standard, §5 key rotation table
+  Requires: Production internet-facing or production data: 60 days. Production not internet-facing: 90 days. Non-production internet-facing: 90 days. Non-production: 180 days.
+  Found: 12-month = 360 days, policy maximum 60 days - "DR-004 | Password rotation frequency | Agreed | 12-month rotation for kiosk device credentials."
+  Found: 12-month = 360 days, policy maximum 60 days - "The password itself is rotated on a separate 12-month schedule by the rotation runbook, not by this remediation."
+  Found: 12-month = 360 days, policy maximum 60 days - "Rotation runs on a 12-month schedule and on demand for operational or security need."
+  Found: 12 months = 360 days, policy maximum 60 days - "au Password delivery | Kiosk lock screen (username, password, data wipe notice) Password rotation | Every 12 months MFA | Not required - device is trust anchor; conditional access restricts sign-in - The device is authenticated via its hardware hash and TPM attestation during initial device enrolment Group membership | SG-APM-Kiosk-Users END UPN format and example use the apmkiosk."
+  Found: 90 days = 90 days, policy maximum 60 days - "Soft delete retains the previous version for 90 days as rollback cover."
+  Compensating controls present: displayed on the .{0,20}lock screen; device-bound; bound .{0,30}conditional access; no corporate (data|information); single device; one physical
+  To comply: Obtain a CISO ruling that account credentials are governed by the Identity and IT Access Management Standard rather than §5 keying material, OR record an accepted risk in the RFFR SoA with the blast-radius argument, OR shorten the rotation interval to 60 days.
+
+[POS-05] Clear desk and clear screen policy is enforced
+  Policy: Cyber Security Posture Statement, §4.1 Physical Security
+  Requires: Clear desk and screen policy enforced through the Information Security Code of Practice.
+  Found: matched "display | Device-specific password" - "1 Summary of Design 3411,5949 Aspect | Design Account Creation | Account created based on device serial number on addition to Kiosk device group Password scope | Unique password per device/user Password generation | Azure Automation Runbook generates per-user Lock screen display | Device-specific password shown on each device Rotation | Rotate all passwords individually per schedule or as required"
+  Found: matched "shown on each device
+Rotation | Rotate all password" - "1 Summary of Design 3411,5949 Aspect | Design Account Creation | Account created based on device serial number on addition to Kiosk device group Password scope | Unique password per device/user Password generation | Azure Automation Runbook generates per-user Lock screen display | Device-specific password shown on each device Rotation | Rotate all passwords individually per schedule or as required"
+  Found: matched "showing the device UPN and current passphrase), so no password" - "8 Lock Screen Image Generation The Credential Proxy renders the per-device lock-screen PNG server-side (showing the device UPN and current passphrase), so no password is exposed to the device as text."
+  Found: matched "showing the device-specific sign-in credential" - "Each kiosk device retrieves its per-device lock-screen image through the Credential Proxy Azure Function App, which renders it server-side showing the device-specific sign-in credentials."
+  Compensating controls present: per-device; device-bound; no corporate; rotated; conditional access
+  To comply: If information is deliberately displayed on screen, argue it against this clause explicitly rather than leaving the contradiction to be found in review.
+
+[SOE-03] Removable storage is deny-all by default
+  Policy: Windows SOE Hardening Standard V3.0, USB Baseline - removable storage
+  Requires: All Removable Storage classes: Deny all access = Enabled. Removable Disks: Deny write access = Enabled. BitLocker requires encryption on removable drives.
+  Found: matched "Deny Write Access | Disable" - "0 Removable Disk Deny Write Access | Disable Removable Disk Deny Write Access (User) | Disable Deny write access to removable drives not protected by Bitlocker | Disabled Control use of Bitlocker on removable drives | Disabled END 5."
+  Found: matched "Deny Write Access (User) | Disable" - "0 Removable Disk Deny Write Access | Disable Removable Disk Deny Write Access (User) | Disable Deny write access to removable drives not protected by Bitlocker | Disabled Control use of Bitlocker on removable drives | Disabled END 5."
+  Found: matched "USB storage permitted" - "6 Device Restrictions 1274,3569,4517 Element | Specification | Rationale OS Mode | Kiosk Mode (locked down) | Prevents user tampering Peripheral Access | Peripheral Access - Restricted to approved use cases (USB storage permitted, other peripheral access limited by policy) | Minimises misuse while allowing approved job seeker functions Local Storage | No persistent data | Protects sensitive inform"
+  Found: matched "removable drives" enabled" - "Compensated by: AutoPlay and AutoRun disabled on all drives; "Scan removable drives" enabled in Defender; ASR "Block untrusted and unsigned processes that run from USB" enforced; the kiosk App Control policy in enforced mode with script enforcement enabled (4."
+  Compensating controls present: autoplay; autorun; scan removable; block untrusted and unsigned processes; app ?control; application control; file explorer[^.]{0,40}removable; exception polic
+  To comply: Removable media is administratively disabled by default under the Posture Statement §4.3 with an explicit-approval path. Deliver the exception by assignment (exclude the device group from the estate USB baseline and assign a purpose-built exception profile), record the compensating controls, and cite the §4.3 approval clause plus who granted it.
+
+[SOE-05] Remote Assistance, Remote Shell and inbound RDP are disabled
+  Policy: Windows SOE Hardening Standard V3.0, Win11 OS baseline - remote access
+  Requires: Configure Offer/Solicited Remote Assistance = Disabled. Allow Remote Shell Access = Disabled. Allow users to connect remotely using Remote Desktop Services = Disabled.
+  Found: matched "TeamViewer" - "1 Scope • Physical kiosk device provisioning and configuration (Dell kiosk devices, Windows 11 Enterprise) • Windows Autopilot self-deploying mode • Multi-app Assigned Access kiosk configuration via Intune (Edge, File Explorer (USB only), Zscaler, TeamViewer) • Intune policy configuration • Microsoft Edge browser hardening (bookmarks, homepage, content filtering, data clearing) • Microsoft 365 Off"
+  Found: matched "TeamViewer" - "Multi-app Assigned Access presents Edge, File Explorer (removable drives only), the Zscaler tray and TeamViewer to every non-admin user via GlobalProfile."
+  Found: matched "TeamViewer" - "2348,7012 Allow/Block | Applications Allowed | Microsoft Edge, Zscaler tray, TeamViewer, Explorer (USBs only) Blocked | Everything else END 4."
+  Found: matched "TeamViewer" - "signer | Tray application only TeamViewer | Publisher rule, TeamViewer Germany GmbH signer, pinned to the deployed major version | Remote support, see 4."
+  Compensating controls present: attended; consent; mfa|multi-factor; per-device; file transfer disabled; session log; sentinel
+  To comply: Prefer an approved path (Intune Remote Help or Defender live response), which removes the variation. If a third-party tool is retained, document the full access model and obtain explicit CISO acceptance as a variation to the estate remote-access position.
+
+[SOE-06] Account details must not be shown on the sign-in screen
+  Policy: Windows SOE Hardening Standard V3.0, Win11 OS baseline - Block user from showing account details on sign-in
+  Requires: Block user from showing account details on sign-in = Enabled. Lock screen further hardened (no camera, no slide show, no app notifications).
+  Found: matched "display | Device-specific password" - "1 Summary of Design 3411,5949 Aspect | Design Account Creation | Account created based on device serial number on addition to Kiosk device group Password scope | Unique password per device/user Password generation | Azure Automation Runbook generates per-user Lock screen display | Device-specific password shown on each device Rotation | Rotate all passwords individually per schedule or as required"
+  Found: matched "shown on each device
+Rotation | Rotate all password" - "1 Summary of Design 3411,5949 Aspect | Design Account Creation | Account created based on device serial number on addition to Kiosk device group Password scope | Unique password per device/user Password generation | Azure Automation Runbook generates per-user Lock screen display | Device-specific password shown on each device Rotation | Rotate all passwords individually per schedule or as required"
+  Found: matched "showing the device UPN and current passphrase), so no password" - "8 Lock Screen Image Generation The Credential Proxy renders the per-device lock-screen PNG server-side (showing the device UPN and current passphrase), so no password is exposed to the device as text."
+  Found: matched "showing the device-specific sign-in credential" - "Each kiosk device retrieves its per-device lock-screen image through the Credential Proxy Azure Function App, which renders it server-side showing the device-specific sign-in credentials."
+  Compensating controls present: per-device; device-bound; conditional access; unusable; no corporate; rotated
+  To comply: Record as an argued deviation naming both this control and the clear desk and screen policy in the Posture Statement §4.1, with the reason a displayed credential is safe here and the reason autologon was rejected. Obtain APM Cyber Security acceptance.
+
+== MET (24) ==
+
+[AI-01] AI use requires ELT sign-off, a business case and a privacy impact assessment
+  Policy: Artificial Intelligence Policy, Approval for use of AI
+  Requires: AI use must be signed off by the ELT member for the business, with assessments by the regional Data Privacy and Digital leaders. Business case and privacy impact assessment required. Human in the loop for decision-making.
+  Found: states "data privacy" - "1 Business Context The kiosk solution is a response to three target business outcomes: consistent data privacy across all sites, standardised device management at scale, and compliance with RFFR accreditation requirements under the Workforce Australia Service Deed."
+  Found: states "approval" - "Any later change to this posture is a design change requiring APM Cyber Security approval under RFFR."
+  Found: states "approval" - "Any subsequent change to the Key Vault network posture is a design change subject to APM Cyber approval under RFFR."
+  Compensating controls present: ephemeral; no corporate data; job seeker
+
+[AI-02] Every shared AI agent or use case has a named owner and appears in the Agent register
+  Policy: Artificial Intelligence Policy, Ongoing governance of AI use
+  Requires: Every shared AI agent, use case or deployment must have an explicitly assigned owner responsible for accuracy, relevance and maintenance. A central regional Agent register records purpose, owner and audience.
+  Found: states "owner" - "Business owners and operations staff should be involved in reviewing the business requirements traceability and design decisions."
+  Found: states "Owner" - "This operating model was approved by the APM Business Owner."
+  Found: states "Owner" - "This operating model was approved by the APM Business Owner."
+
+[CMP-01] Controls and exclusions must appear in the RFFR Statement of Applicability
+  Policy: Compliance Management Plan, Statement of Applicability
+  Requires: The SoA lists all Annex A controls, states applicability, justifies inclusion/exclusion and references implementation. The RFFR SoA additionally covers DEWR contractual obligations and ISM controls.
+  Found: states "RFFR" - "The design meets Right Fit for Risk (RFFR) accreditation requirements for protecting job-seeker PII."
+  Found: states "RFFR" - "1 Scope • Physical kiosk device provisioning and configuration (Dell kiosk devices, Windows 11 Enterprise) • Windows Autopilot self-deploying mode • Multi-app Assigned Access kiosk configuration via Intune (Edge, File Explorer (USB only), Zscaler, TeamViewer) • Intune policy configuration • Microsoft Edge browser hardening (bookmarks, homepage, content filtering, data clearing) • Microsoft 365 Off"
+  Found: states "RFFR" - "2 Out of Scope • CTA Laptop image design (separate document) • Outreach laptop design (separate document) • Network infrastructure and site cabling • Printing from kiosk devices, including printer hardware procurement and physical placement (job seekers email required documents to their case worker for printing) • End-user training material and laminated instruction sheets (operational deliverable"
+
+[CMP-02] Changes to the operating environment are notifiable to DEWR within 5 days
+  Policy: Compliance Management Plan, Annual compliance calendar
+  Requires: Notify DEWR within 5 days of any changes to APM or subcontractor circumstances that may affect the risk profile, to enable re-categorisation.
+  Found: states "DEWR" - "Overview APM delivers Workforce Australia employment services under contract with the Department of Employment and Workplace Relations (DEWR)."
+  Found: states "Notif" - "4 App Profile 3200,6580 Setting | Value Name | apm-js-kiosk-users-ap Rule Order | 2 Forwarding Profile | apm-js-kiosk-users-fp Status | Enabled ZIA Posture Profile | Leave blank Install Zscaler SSL Certificate | On Install WFP Driver | On Location Policy Override | Off Notification Template | Legacy Notification Template User groups | apm-js-kiosk-users-internet Users | None Follow Global Settings"
+  Found: states "Notif" - "4 App Profile 3200,6580 Setting | Value Name | apm-js-kiosk-users-ap Rule Order | 2 Forwarding Profile | apm-js-kiosk-users-fp Status | Enabled ZIA Posture Profile | Leave blank Install Zscaler SSL Certificate | On Install WFP Driver | On Location Policy Override | Off Notification Template | Legacy Notification Template User groups | apm-js-kiosk-users-internet Users | None Follow Global Settings"
+
+[CMP-03] Control validation quarterly; ISM updates reviewed quarterly
+  Policy: Compliance Management Plan, Governance and accountability
+  Requires: Control owners validate implementation status, details and applicability quarterly. Published ISM updates reviewed each Mar, Jun, Sep, Dec with applicability and risk analysis.
+  Found: states "quarterly" - "Membership is reviewed quarterly by the service owner Session logging | TeamViewer connection reports (who connected, to which device, when, for how long) are exported to Microsoft Sentinel alongside the Windows security log, so a remote session is correlatable with what happened on the device."
+  Found: states "annual review" - "They are recorded as accepted risks in the kiosk RFFR Statement of Applicability, owned by APM Cyber Security, and reviewed at each annual review of the hardening standard."
+  Found: states "quarterly" - "Check quarterly and alert 60 days out."
+
+[CRY-02] Minimum key sizes for approved algorithms
+  Policy: Cryptography and Key Management Standard, §4.1 approved algorithms
+  Requires: AES 128 min (256 preferred, never ECB). RSA 2048 min (3072 preferred). ECC/ECDH/ECDSA ≥224 bits. SHA-256/384/512. DH 2048 min, ephemeral only.
+
+[CRY-03] Wildcard certificates must not be used
+  Policy: Cryptography and Key Management Standard, §5 PKI
+  Requires: Due to increased risk, wildcard certificates must not be used.
+
+[CRY-05] Certificate issuance requires D&T Operations approval recorded in ITSM
+  Policy: Cryptography and Key Management Standard, §3 Authorisation
+  Requires: X.509 certificates and keying material must be requested and approved by the D&T Operations team, with the request recorded in the IT Service Management application.
+  Found: states "service management" - "It defines the physical device configuration, identity and access controls, security architecture, and service management model required to deliver a standardised, secure, and ephemeral computing environment for job seekers at APM sites nationally."
+  Found: states "service management" - "Outline the implementation sequence, service management model, and operational handover plan 1."
+  Found: states "Service Management" - "Service Management 9."
+
+[CRY-06] Internal and above must be encrypted in transit on every network
+  Policy: Cryptography and Key Management Standard, §4.4 encryption in transit
+  Requires: Internal, Confidential and Restricted MUST use current ASD approved encryption over public/guest, corporate and secured networks alike.
+  Found: states "https" - "2 Kiosk Bookmarks 1592,6483,1285 Link Name | URL | Comments @3@Workforce Australia Online for Individuals Video - Your Workforce Australia Homepage | https://www."
+  Found: states "https" - "com/watch?v=AFnNpzrBGbg | Video - Link Workforce Australia account in myGov | https://youtu."
+  Found: states "https" - "be/lVLdwUecxhc?si=cs11EOO2N-rgPk75 | Video - How to create your profile on Workforce Australia Online for Individuals | https://www."
+
+[IRP-01] Personal or sensitive data incidents are notifiable to DEWR and ASD
+  Policy: Cyber Incident Response Plan, Containment step 9 / ISM 915c
+  Requires: Where an incident affects an environment holding personal/sensitive data, the CIRT Manager and Data Owner notify the Department as Accreditation Authority ASAP via securitycompliancesupport@jobs.gov.au and notify ASD. No action affecting evidence integrity prior to ASD involvement (ISM 915c).
+  Found: states "DEWR" - "Overview APM delivers Workforce Australia employment services under contract with the Department of Employment and Workplace Relations (DEWR)."
+  Found: states "ASD" - "Compliance | The architecture meets RFFR requirements for the handling of job seeker PII, aligning with ISO 27001 and the ASD ISM."
+  Found: states "Notif" - "4 App Profile 3200,6580 Setting | Value Name | apm-js-kiosk-users-ap Rule Order | 2 Forwarding Profile | apm-js-kiosk-users-fp Status | Enabled ZIA Posture Profile | Leave blank Install Zscaler SSL Certificate | On Install WFP Driver | On Location Policy Override | Off Notification Template | Legacy Notification Template User groups | apm-js-kiosk-users-internet Users | None Follow Global Settings"
+
+[IRP-03] Network traffic logs retained 7 days prior to incident discovery
+  Policy: Cyber Incident Response Plan, Retaining evidence
+  Requires: Network traffic logs retained for a period of seven days prior to the discovery of the incident; all retention or removal logged in the chain of custody document.
+  Found: states "retention" - "4 Edge Browser Policies • Setting Name: APM-Kiosk-EdgeHardening • Setting Type: Settings Catalog • Scope: SG-APM-Kiosk-Devices 2621,3113,3626 Policy Key | Value | Purpose RestoreOnStartup | 4 (Open a list of URLs) | Launch to bookmarks/start page ClearBrowsingDataOnExit | Enabled | Deletes all browsing data when Edge closes ForceEphemeralProfiles | Enabled | Edge profile is temporary and discarded"
+  Found: states "0 days" - "7 User Profile Cleanup • Setting Name: APM-Kiosk-ProfileCleanup • Setting Type: ADMX • Scope: SG-APM-Kiosk-Devices • Setting: Delete user profiles older than 0 days on system restart Runs on the kiosk device."
+  Found: states "retention" - "The 90-day soft delete retention on the Key Vault provides recovery cover 4."
+
+[MON-01] Penetration testing prior to go-live, after material change, and annually
+  Policy: Continuous Monitoring Plan, Penetration Testing
+  Requires: Pen testing performed prior to a system going live; after material upgrades or modifications; generally annually. System owner approval required; schedule agreed with System Owners and approved by the CISO.
+  Found: states "annual" - "They are recorded as accepted risks in the kiosk RFFR Statement of Applicability, owned by APM Cyber Security, and reviewed at each annual review of the hardening standard."
+  Found: states "annual" - "• Add the domain and its controls to the annual RFFR and ISMS review so they stay documented."
+  Found: states "Annual" - "3121,3120,3119 Task | Frequency | Owner Domain renewal and registrar lock | Annual, checked quarterly | Cyber Security DNS record review (SPF, DMARC, MX) | Each design review | Cyber Security Mail flow block validation | After any tenant email change | IT Operations Sign-in and spoof monitoring | Continuous (Sentinel) | Security Operations Documentation in ISMS and RFFR | Annual | Compliance Manag"
+
+[MON-02] Continuous vulnerability monitoring via Defender and Wiz.io
+  Policy: Continuous Monitoring Plan, Vulnerability Management
+  Requires: All APM systems are continuously monitored using Defender for Cloud and Defender for Endpoint. Wiz.io continuously monitors cloud service environments. Weekly Cyber/Digital Ops review meeting.
+  Found: states "Defender for Endpoint" - "2 Solution Component Inventory 2399,1541,1541,1541,2338 Component | Product / Service | Version | Licensing | Purpose Physical device OS | Windows 11 Enterprise | Latest | Installed on Imaging | Kiosk device operating system Office suite online | Microsoft 365 Online Apps | Current Channel | Microsoft 365 F3 (web apps; no device-based licensing) | Word, Excel and PowerPoint for document creation a"
+  Found: states "Defender for Endpoint" - "2 Solution Component Inventory 2399,1541,1541,1541,2338 Component | Product / Service | Version | Licensing | Purpose Physical device OS | Windows 11 Enterprise | Latest | Installed on Imaging | Kiosk device operating system Office suite online | Microsoft 365 Online Apps | Current Channel | Microsoft 365 F3 (web apps; no device-based licensing) | Word, Excel and PowerPoint for document creation a"
+  Found: states "Defender for Endpoint" - "Microsoft Defender for Endpoint P2, Defender for Office 365 P2 and Defender for Identity are licensed by APM separately and do not form part of the kiosk user licence."
+
+[MON-03] Assessment must be performed by personnel independent of the system
+  Policy: Continuous Monitoring Plan, CONMON independence
+  Requires: CONMON activities conducted by the Cyber Security Team or personnel of similar skillset independent of the system being assessed; may be internal or third party.
+  Found: states "independent" - "| Must 02 | Accessibility | As a job seeker, I want Windows accessibility features so I can use the device independently | All shortcuts function; features discoverable via Settings/help."
+  Found: states "independent" - "3 Analytics and reporting Patterns Job seeker data follows a strictly ephemeral lifecycle with three independent destruction mechanisms: Job-seeker data exists only on the kiosk device during the session (browser data, the local profile & OneDrive); it is cleared on sign-out When the session ends: Edge data is cleared, the user profile is d"
+  Found: states "independent" - "Platform detection is evaluated independently of device filters, so an anomalous or spoofed device record still fails on platform."
+
+[POS-01] Data residency is Microsoft Australian Azure - Sydney and Melbourne
+  Policy: Cyber Security Posture Statement, §4.2 Data Centres
+  Requires: All data held on APM managed infrastructure is stored in Microsoft Australian Azure, Sydney and Melbourne data centres.
+
+[POS-02] Removable media requires explicit APM ICT stakeholder approval
+  Policy: Cyber Security Posture Statement, §4.3 Enterprise Asset Management
+  Requires: Access to removable media is administratively disabled on APM ICT assets. Explicit approval must be granted by APM ICT stakeholder(s) to allow access to APM approved removable media.
+  Found: states "approved by" - "This operating model was approved by the APM Business Owner."
+  Found: states "approved by" - "This operating model was approved by the APM Business Owner."
+  Found: states "approved by" - "This operating model was approved by the APM Business Owner."
+
+[POS-03] Remote access requires APM VPN or approved VDI
+  Policy: Cyber Security Posture Statement, §6.2 Remote Access
+  Requires: All remote access to the APM network requires APM VPN, or approval to use its VDI. Services monitored during use; all connections encrypted.
+  Found: states "approved" - "Job seekers browse the web directly on the device (Microsoft Edge to the approved job-search, government, support and training sites, and Office for the web)."
+  Found: states "approved" - "Conditional Access restricts sign-in to approved kiosk identities and approved access conditions."
+  Found: states "approved" - "Conditional Access restricts sign-in to approved kiosk identities and approved access conditions."
+  Compensating controls present: encrypted; mfa|multi-factor; session log
+
+[POS-04] MFA, ISM-aligned complex passwords, inactivity session termination
+  Policy: Cyber Security Posture Statement, §5.2 Identity and Access Management
+  Requires: Aligned to the Identity and IT Access Management Standard: MFA, complex passwords aligned to ISM, session termination based on inactivity, need-to-know and least-privilege.
+  Found: states "conditional access" - "Specify Intune configuration profiles, Entra ID groups, conditional access policies, and credential-pipeline settings at build-ready depth 4."
+  Found: states "conditional access" - "1 Scope • Physical kiosk device provisioning and configuration (Dell kiosk devices, Windows 11 Enterprise) • Windows Autopilot self-deploying mode • Multi-app Assigned Access kiosk configuration via Intune (Edge, File Explorer (USB only), Zscaler, TeamViewer) • Intune policy configuration • Microsoft Edge browser hardening (bookmarks, homepage, content filtering, data clearing) • Microsoft 365 Off"
+  Found: states "Conditional Access" - "Conditional Access restricts sign-in to approved kiosk identities and approved access conditions."
+  Compensating controls present: conditional access; device-bound; cannot satisfy; compensating control
+
+[SOE-02] PowerShell execution policy allows only signed scripts
+  Policy: Windows SOE Hardening Standard V3.0, Win11 OS baseline - PowerShell Execution Policy
+  Requires: Execution Policy (Device) = Allow only signed scripts, with script block logging enabled.
+  Found: states "signed" - "It replaces the existing shared device model with a standardised architecture: Dell kiosk hardware running Windows 11 Enterprise as a locked-down, multi-app Assigned Access kiosk."
+  Found: states "signed" - "1 Scope • Physical kiosk device provisioning and configuration (Dell kiosk devices, Windows 11 Enterprise) • Windows Autopilot self-deploying mode • Multi-app Assigned Access kiosk configuration via Intune (Edge, File Explorer (USB only), Zscaler, TeamViewer) • Intune policy configuration • Microsoft Edge browser hardening (bookmarks, homepage, content filtering, data clearing) • Microsoft 365 Off"
+  Found: states "signed" - "0 and supports Autopilot self-deploying enrolment | Hardware must be re-specified; deployment model changes A-02 | Hardware hashes are registered in Autopilot at the point of procurement | Manual hash registration required per device on-site A-03 | Zscaler proxy/web filtering is applied at the network layer (existing APM standard) | Device-level web filtering must be designed into the image A-04 |"
+
+[SOE-04] Application control must be enforced, and script enforcement is an open estate gap
+  Policy: Windows SOE Hardening Standard V3.0, App Control for Business
+  Requires: App Control Audit and Enforced policies, 18 trusted signers. Script Enforcement is DISABLED estate-wide and flagged in the standard for attention.
+  Found: states "enforce" - "Intune handles device management and policy enforcement; Entra ID in the dedicated apmkiosk."
+  Found: states "enforced" - "A support operator therefore reaches a full desktop only through a non-privileged, device-scoped account, and still cannot install software because App Control is enforced at the device level (4."
+  Found: states "enforced" - "3 and is enforced, not audited."
+  Compensating controls present: asr; attack surface reduction; assigned access; no shell
+
+[SOE-07] Compliance policy must carry the nine device-health gates
+  Policy: Windows SOE Hardening Standard V3.0, Windows compliance policy
+  Requires: BitLocker, Secure Boot, Firewall, TPM, Antivirus, Antispyware, Defender Antimalware, security intelligence up to date, real-time protection - all Required.
+  Found: states "Secure Boot" - "3) Microsoft Defender | Enabled Microsoft Defender antimalware security intelligence up to date | Required Real-time protection | Required Antispyware | Required BitLocker | Enabled Secure Boot | Required Firewall | Enabled TPM | Required END The kiosk compliance policy mirrors the nine device-health and system-security gates in the Windows compliance policy of the APM Windows SOE Hardening Standa"
+
+[SOE-08] Machine inactivity limit is 900 seconds
+  Policy: Windows SOE Hardening Standard V3.0, Win11 OS baseline - Interactive Logon Machine Inactivity Limit
+  Requires: Interactive Logon Machine Inactivity Limit = 900.
+
+[TIP-01] Privileged administration uses separate accounts with added complexity
+  Policy: APM Trusted Insider Program, §3.2 Identity and Access Management
+  Requires: Staff performing privileged administration tasks use separate accounts with trusted insider and additional privileged account protections. Additional password complexity applied. Contractors held to the same controls.
+  Found: states "dedicated support account" - "au) The only member of the local Administrators group on a kiosk device is that device's own dedicated support account (4."
+  Found: states "non-privileged" - "A support operator therefore reaches a full desktop only through a non-privileged, device-scoped account, and still cannot install software because App Control is enforced at the device level (4."
+  Found: states "non-privileged" - "It is the mechanism that allows a support operator to reach a device that is at the lock screen Support account | A dedicated, non-privileged local support account per device, not a privileged-tier (xy or zz) identity and not the device's kiosk user."
+
+[TIP-02] Enterprise password manager and Purview Insider Risk Management
+  Policy: APM Trusted Insider Program, §3.3-3.4
+  Requires: IT Trusted Users provisioned access to an enterprise password management solution. Protective monitoring via external SOC; monitoring includes Microsoft Purview Insider Risk Management. Logging covers authentication events, endpoint protection alerts, internet browsing activity.
+  Found: states "Key Vault" - "au tenant has an Azure subscription suitable for Automation Account, Key Vault and Microsoft Cloud PKI (Intune add-on) provisioning and licensed for the credential pipeline | The per-device credential pipeline (create/rotate password, render lock screen) cannot be deployed A-06 | Job seekers have an active em"
+  Found: states "Key Vault" - "DR-011 | Network posture for the credential pipeline | Approved | A dedicated IPSec tunnel had been built to the private app carrying credential-pipeline traffic (Key Vault and Credential Proxy access)."
+  Found: states "Key Vault" - "The credential pipeline is instead reached over public endpoints: the Key Vault is published with public network access governed solely by Azure RBAC, and the Credential Proxy Function App is internet-facing with SCEP client-certificate mTLS."
